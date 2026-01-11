@@ -1,7 +1,8 @@
 import requests
 import json
 
-ROW_COUNT = 10
+
+ROW_COUNT = 20
 
 #this query is to navigate the PDB database and find the proteins base on the sequences determined by X-ray diffraction ,methods
 query = {
@@ -65,16 +66,16 @@ print(result.json())
 identifier = result.json()["result_set"][0]["identifier"]
 
 #Fetch detailed metadata for that PDB entry
-data = requests.get(f'https://data.rcsb.org/rest/v1/core/entry/{identifier}').json()
+entry_data = requests.get(f'https://data.rcsb.org/rest/v1/core/entry/{identifier}').json()
 
 #Print all top-level data fields (preview)
 print("We get a lot of data (and still, is not everything): ")
-for labels in data:
-  print("\t - "+ labels + ": " + str(data[labels])[:50] + ".......")
+for labels in entry_data:
+  print("\t - "+ labels + ": " + str(entry_data[labels])[:50] + ".......")
 print('\n Let\'s focus on the last bit of information:')
 
 #print all external references (e.g., doi, pubmed, etc.)
-#print(data['rcsb_external_references'])
+print(entry_data.get('rcsb_external_references'))
 
 # Loop over all results and print some information about the experimental conditions
 search_data = result.json()
@@ -89,21 +90,32 @@ for hit in search_data["result_set"]:
 
     # Fetch entry metadata
     entry_data = requests.get(
-        f"https://data.rcsb.org/rest/v1/core/entry/{pdb_id}"
-    ).json()
-
-    # Experimental method
-    method = entry_data.get("exptl", [{}])[0].get("method", "NA")
+  f"https://data.rcsb.org/rest/v1/core/entry/{pdb_id}").json()
 
     # Crystallization conditions (may be missing)
-    crystal_info = entry_data.get("exptl_crystal_grow", [{}])
-    crystal_info = crystal_info[0] if crystal_info else {}
 
-    ph = crystal_info.get("pH", "NA")
-    temperature = crystal_info.get("temp", "NA")
+    crystal_list = entry_data.get("exptl_crystal_grow", [])
+    crystal = crystal_list[0] if crystal_list else {}
 
     print(f"PDB ID: {pdb_id}")
-    print(f"  Method: {method}")
-    print(f"  pH: {ph}")
-    print(f"  Temperature: {temperature}")
+    print("  Crystallization experiment details:")
+    if crystal:
+        for key, value in crystal.items():
+            print(f"    - {key}: {value}")
+    else:
+        print("    - No crystallization details reported")
+
+    # extract actual PDB ID
+    # ---- PubMed / DOI extraction ----
+
+    def extract_pubmed_and_doi(entry_data):
+        pubmed = entry_data.get("rcsb_primary_citation", {}).get("pdbx_database_id_pub_med")
+        doi = entry_data.get("rcsb_primary_citation", {}).get("pdbx_database_id_doi")
+
+        return pubmed, doi
+
+    pubmed, doi= extract_pubmed_and_doi(entry_data)
+
+    print(f"  PubMed IDs: {pubmed if pubmed else 'Not available'}")
+    print(f"  DOIs: {doi if doi else 'Not available'}")
     print("-" * 40)
