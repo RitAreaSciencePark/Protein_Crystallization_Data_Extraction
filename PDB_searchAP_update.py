@@ -91,16 +91,6 @@ def run_pdb_search(identity_cutoff=0.9, row_count=20):
 
     #Fetch detailed metadata for that PDB entry
     entry_data = requests.get(f'https://data.rcsb.org/rest/v1/core/entry/{identifier}').json()
-   
-
-    #Print all top-level data fields (preview)
-    #print("We get a lot of data (and still, is not everything): ")
-    #for labels in entry_data:
-    #print("\t - "+ labels + ": " + str(entry_data[labels])[:50] + ".......")
-    #print('\n Let\'s focus on the last bit of information:')
-
-    #print all external references (e.g., doi, pubmed, etc.)
-    #print(entry_data.get('rcsb_external_references'))
 
     # Loop over all results and print some information about the experimental conditions
     search_data = result.json()
@@ -130,7 +120,6 @@ def run_pdb_search(identity_cutoff=0.9, row_count=20):
         info = {
             "PDB_ID": block.find_value("_entry.id"),
             "Resolution": block.find_value("_refine.ls_d_res_high"),
-            "PubMed_ID": block.find_value("_citation.pdbx_database_id_PubMed"),
             "apparatus": block.find_value("_exptl_crystal_grow.apparatus"),
             "atmosphere": block.find_value("_exptl_crystal_grow.atmosphere"),
             "crystal_id ": block.find_value("_exptl_crystal_grow.crystal_id"),
