@@ -30,7 +30,7 @@ def run_pdb_search(identity_cutoff=0.9, row_count=20):
     """
     Run a PDB search for a given sequence and extract mmCIF experimental data.
     """
-    # ✅ Ask for sequence HERE
+    # Ask for sequence HERE
     seq = get_sequence_from_user()
     # ---------- OUTPUT FILE ----------
     output_csv = "pdb_mmcif_extracted_data.csv"
