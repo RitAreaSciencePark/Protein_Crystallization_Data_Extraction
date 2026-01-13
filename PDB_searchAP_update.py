@@ -30,9 +30,8 @@ def run_pdb_search(identity_cutoff=0.9, row_count=20):
     """
     Run a PDB search for a given sequence and extract mmCIF experimental data.
     """
-    # Ask for sequence HERE
+    # ✅ Ask for sequence HERE
     seq = get_sequence_from_user()
-    
     # ---------- OUTPUT FILE ----------
     output_csv = "pdb_mmcif_extracted_data.csv"
     ROW_COUNT = 20
@@ -91,6 +90,16 @@ def run_pdb_search(identity_cutoff=0.9, row_count=20):
 
     #Fetch detailed metadata for that PDB entry
     entry_data = requests.get(f'https://data.rcsb.org/rest/v1/core/entry/{identifier}').json()
+   
+
+    #Print all top-level data fields (preview)
+    #print("We get a lot of data (and still, is not everything): ")
+    #for labels in entry_data:
+    #print("\t - "+ labels + ": " + str(entry_data[labels])[:50] + ".......")
+    #print('\n Let\'s focus on the last bit of information:')
+
+    #print all external references (e.g., doi, pubmed, etc.)
+    #print(entry_data.get('rcsb_external_references'))
 
     # Loop over all results and print some information about the experimental conditions
     search_data = result.json()
@@ -102,8 +111,27 @@ def run_pdb_search(identity_cutoff=0.9, row_count=20):
 
     pdb_ids = [hit["identifier"] for hit in search_data["result_set"]]
 
+    def extract_pubmed_id(pdb_id):
+        """
+        Fetch PubMed ID for a given PDB entry.
+        """
+        entry_data = requests.get(
+            f"https://data.rcsb.org/rest/v1/core/entry/{pdb_id}"
+        ).json()
+
+        pubmed = entry_data.get(
+            "rcsb_primary_citation", {}
+        ).get(
+            "pdbx_database_id_pub_med", "NA"
+        )
+
+        return pubmed
+
+
     def extract_mmcif_info(pdb_id):
         pdb_id = pdb_id.upper()
+
+        pubmed = extract_pubmed_id(pdb_id)
         cif_file = f"{pdb_id}.cif"
 
         # ---- Download mmCIF file ----
@@ -120,6 +148,7 @@ def run_pdb_search(identity_cutoff=0.9, row_count=20):
         info = {
             "PDB_ID": block.find_value("_entry.id"),
             "Resolution": block.find_value("_refine.ls_d_res_high"),
+            "pubmed_id": pubmed,
             "apparatus": block.find_value("_exptl_crystal_grow.apparatus"),
             "atmosphere": block.find_value("_exptl_crystal_grow.atmosphere"),
             "crystal_id ": block.find_value("_exptl_crystal_grow.crystal_id"),
@@ -140,12 +169,13 @@ def run_pdb_search(identity_cutoff=0.9, row_count=20):
 
         return info
 
+
     output_csv = "pdb_mmcif_extracted.csv"
 
     with open(output_csv, "w", newline="") as f:
         writer = csv.DictWriter(
             f,
-            fieldnames=["PDB_ID", "Resolution", "PubMed_ID", "apparatus", "atmosphere", "crystal_id ", "details", 
+            fieldnames=["PDB_ID", "Resolution", "pubmed_id", "apparatus", "atmosphere", "crystal_id ", "details", 
             "method", "method_ref", "pH", "pressure", "pressure_esd", "seeding", "seeding_ref", "temp", "temp_esd", 
             "temp_details", "time", "pdbx_details", "pdbx_pH_range"])
         writer.writeheader()
