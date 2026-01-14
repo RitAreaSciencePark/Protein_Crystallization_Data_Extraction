@@ -43,6 +43,18 @@ def run_pdb_search(identity_cutoff=0.9, row_count=20):
         "type": "group",
         "logical_operator": "and",
         "nodes": [
+             {
+            "type": "terminal",
+            "service": "sequence",
+            "parameters": {
+                "evalue_cutoff": 1,
+                "identity_cutoff": 0.9,
+                "sequence_type": "protein",
+                "value": seq
+            }
+            },
+            
+            
             {
             "type": "terminal",
             "service": "text",
@@ -57,7 +69,7 @@ def run_pdb_search(identity_cutoff=0.9, row_count=20):
         "request_options": {
         "paginate": {
             "start": 0,
-            "rows": 10
+            "rows": ROW_COUNT
         }
         },
         "return_type": "entry"
