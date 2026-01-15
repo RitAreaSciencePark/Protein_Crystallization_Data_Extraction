@@ -165,7 +165,7 @@ def run_pdb_search(identity_cutoff=0.9, row_count=20):
             "atmosphere": block.find_value("_exptl_crystal_grow.atmosphere"),
             "crystal_id ": block.find_value("_exptl_crystal_grow.crystal_id"),
             "details": block.find_value("_exptl_crystal_grow.details"),
-            "method": block.find_value("_exptl_crystal_grow.methods"),
+            "method": block.find_value("_exptl_crystal_grow.method"),
             "method_ref": block.find_value("_exptl_crystal_grow.method_ref"),
             "pH": block.find_value("_exptl_crystal_grow.pH"),
             "pressure": block.find_value("_exptl_crystal_grow.pressure"),
