@@ -28,7 +28,7 @@ def read_fasta(fasta_file):
     return sequences
 
 # ---------- PDB SEARCH ----------
-def search_pdb(sequence, identity_cutoff=0.5, rows=10):
+def search_pdb(sequence, identity_cutoff=0.5, rows=1000):
 
     query = {
         "query": {
@@ -66,7 +66,7 @@ def search_pdb(sequence, identity_cutoff=0.5, rows=10):
     }
     query["request_options"]["paginate"]["rows"] = rows
 
-    r = requests.post(RCSB_SEARCH_URL, json=query, timeout=10)
+    r = requests.post(RCSB_SEARCH_URL, json=query, timeout=50)
     r.raise_for_status()
 
     return [hit["identifier"] for hit in r.json()["result_set"]]
@@ -117,7 +117,7 @@ def extract_crystallization(pdb_id):
 
 # ---------- MAIN PIPELINE ----------
 def fasta_to_pdb_csv(fasta_file, output_csv):
-    sequences = read_fasta(fasta_file)
+    sequences = read_fasta("/home/ruth/Protein_Crystallization_Data_Extraction/Data/cleaned_KaiB_MSA.fasta")
 
     with open(output_csv, "w", newline="") as f:
 
@@ -127,28 +127,42 @@ def fasta_to_pdb_csv(fasta_file, output_csv):
             "method", "method_ref", "pH", "pressure", "pressure_esd", "seeding", "seeding_ref", "temp", "temp_esd", 
             "temp_details", "time", "pdbx_details", "pdbx_pH_range"]
 
-        writer = csv.DictWriter(f, fieldnames=fieldnames)
-        writer.writeheader()
+        dict_writer = csv.DictWriter(f, fieldnames=fieldnames)
+
+        dict_writer.writeheader()
+
+        # ---- TRACK WRITTEN PDB IDs ----
+        written_pdb_ids = set()
 
 
         for query_id, sequence in sequences.items():
             print(f"Searching PDB for {query_id}...")
 
             #...Write the sequence line no column
-            raw_writer.writerow([query_id, sequence])
+            #raw_writer.writerow([query_id, sequence]
 
             pdb_ids = search_pdb(sequence)
 
             for pdb_id in pdb_ids:
+
+                # ---- SKIP IF PDB_ID ALREADY WRITTEN ----
+                if pdb_id in written_pdb_ids:
+                    continue
+
                 try:
                     cryst = extract_crystallization(pdb_id)
-                    writer.writerow({
-                        "PDB_ID": pdb_id,
-                        **cryst
-                    })
+                    #writer.writerow({
+                       # "PDB_ID": pdb_id,
+                       # **cryst
+                   # })
+                    dict_writer.writerow(cryst)
+                    written_pdb_ids.add(pdb_id)
+
                 except Exception as e:
                     print(f"Failed for {pdb_id}: {e}")
-
+            
+            # ---- BLANK LINE BETWEEN SEQUENCES ----
+            raw_writer.writerow([])
 
 # ---------- RUN ----------
 if __name__ == "__main__":
