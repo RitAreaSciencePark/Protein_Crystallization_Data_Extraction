@@ -28,7 +28,7 @@ def read_fasta(fasta_file):
     return sequences
 
 # ---------- PDB SEARCH ----------
-def search_pdb(sequence, identity_cutoff=0.5, rows=100):
+def search_pdb(sequence, identity_cutoff=0.5, rows=10):
 
     query = {
         "query": {
@@ -66,7 +66,7 @@ def search_pdb(sequence, identity_cutoff=0.5, rows=100):
     }
     query["request_options"]["paginate"]["rows"] = rows
 
-    r = requests.post(RCSB_SEARCH_URL, json=query, timeout=30)
+    r = requests.post(RCSB_SEARCH_URL, json=query, timeout=10)
     r.raise_for_status()
 
     return [hit["identifier"] for hit in r.json()["result_set"]]
@@ -120,15 +120,23 @@ def fasta_to_pdb_csv(fasta_file, output_csv):
     sequences = read_fasta(fasta_file)
 
     with open(output_csv, "w", newline="") as f:
+
+        raw_writer = csv.writer(f)
+
         fieldnames=["PDB_ID", "Resolution", "pubmed_id", "apparatus", "atmosphere", "crystal_id ", "details", 
             "method", "method_ref", "pH", "pressure", "pressure_esd", "seeding", "seeding_ref", "temp", "temp_esd", 
             "temp_details", "time", "pdbx_details", "pdbx_pH_range"]
+
         writer = csv.DictWriter(f, fieldnames=fieldnames)
         writer.writeheader()
 
 
         for query_id, sequence in sequences.items():
             print(f"Searching PDB for {query_id}...")
+
+            #...Write the sequence line no column
+            raw_writer.writerow([query_id, sequence])
+
             pdb_ids = search_pdb(sequence)
 
             for pdb_id in pdb_ids:
