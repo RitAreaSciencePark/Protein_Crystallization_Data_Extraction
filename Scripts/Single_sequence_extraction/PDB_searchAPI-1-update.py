@@ -48,7 +48,7 @@ def run_pdb_search(identity_cutoff=0.9, row_count=20):
             "service": "sequence",
             "parameters": {
                 "evalue_cutoff": 1,
-                "identity_cutoff": 0.9,
+                "identity_cutoff": 0.5,
                 "sequence_type": "protein",
                 "value": seq
             }
@@ -84,8 +84,6 @@ def run_pdb_search(identity_cutoff=0.9, row_count=20):
 
     # If you want to know the total number of pages (e.g., to do an automated extraction)
     result.raise_for_status()  # stops if request failed
-    PAGE_MAX = result.json()["total_count"]//ROW_COUNT + 1
-    print("rows: ", result.json()["total_count"], "pages:", PAGE_MAX)
 
     # Let's select the first result:
 
@@ -94,24 +92,11 @@ def run_pdb_search(identity_cutoff=0.9, row_count=20):
     else:
         print("No matching structures found.")
 
-    print(result)
-    print(result.json())
-
     #Get a PDB ID from the search results
     identifier = result.json()["result_set"][0]["identifier"]
 
     #Fetch detailed metadata for that PDB entry
     entry_data = requests.get(f'https://data.rcsb.org/rest/v1/core/entry/{identifier}').json()
-   
-
-    #Print all top-level data fields (preview)
-    #print("We get a lot of data (and still, is not everything): ")
-    #for labels in entry_data:
-    #print("\t - "+ labels + ": " + str(entry_data[labels])[:50] + ".......")
-    #print('\n Let\'s focus on the last bit of information:')
-
-    #print all external references (e.g., doi, pubmed, etc.)
-    #print(entry_data.get('rcsb_external_references'))
 
     # Loop over all results and print some information about the experimental conditions
     search_data = result.json()
@@ -119,46 +104,38 @@ def run_pdb_search(identity_cutoff=0.9, row_count=20):
     if search_data["total_count"] == 0:
         raise ValueError("No matching PDB entries found")
 
-    print("\nExtracting experimental conditions:\n")
+    print("\nExtracting experimental conditions")
 
-    pdb_ids = [hit["identifier"] for hit in search_data["result_set"]]
+    pdb_hits = {hit["identifier"]: hit.get("score") for hit in search_data["result_set"]}
 
     def extract_pubmed_id(pdb_id):
         """
         Fetch PubMed ID for a given PDB entry.
         """
         entry_data = requests.get(
-            f"https://data.rcsb.org/rest/v1/core/entry/{pdb_id}"
-        ).json()
+            f"https://data.rcsb.org/rest/v1/core/entry/{pdb_id}").json()
 
-        pubmed = entry_data.get(
-            "rcsb_primary_citation", {}
-        ).get(
-            "pdbx_database_id_pub_med", "NA"
-        )
+        pubmed = entry_data.get("rcsb_primary_citation", {}).get("pdbx_database_id_pub_med", "NA")
 
         return pubmed
 
 
-    def extract_mmcif_info(pdb_id):
+    def extract_mmcif_info(pdb_id, score):
         pdb_id = pdb_id.upper()
-
         pubmed = extract_pubmed_id(pdb_id)
-        cif_file = f"{pdb_id}.cif"
 
-        # ---- Download mmCIF file ----
-        response = requests.get(f"https://files.rcsb.org/view/{pdb_id}.cif")
-        response.raise_for_status()
+        # ---- Fetch mmCIF file directly from PDB ----
+        url = f"https://files.rcsb.org/view/{pdb_id}.cif"
+        response = requests.get(url)
+        response.raise_for_status()  # Raise error if download fails
 
-        with open(cif_file, "wb") as f:
-            f.write(response.content)
-
-        # ---- Read mmCIF ----
-        doc = gemmi.cif.read(cif_file)
-        block = doc.sole_block()     
+        # ---- Parse mmCIF directly from text ----
+        doc = gemmi.cif.read_string(response.text)
+        block = doc.sole_block()  # Get the main data block
 
         info = {
             "PDB_ID": block.find_value("_entry.id"),
+            "score": score,
             "Resolution": block.find_value("_refine.ls_d_res_high"),
             "pubmed_id": pubmed,
             "apparatus": block.find_value("_exptl_crystal_grow.apparatus"),
@@ -187,15 +164,15 @@ def run_pdb_search(identity_cutoff=0.9, row_count=20):
     with open(output_csv, "w", newline="") as f:
         writer = csv.DictWriter(
             f,
-            fieldnames=["PDB_ID", "Resolution", "pubmed_id", "apparatus", "atmosphere", "crystal_id ", "details", 
+            fieldnames=["PDB_ID", "score", "Resolution", "pubmed_id", "apparatus", "atmosphere", "crystal_id ", "details", 
             "method", "method_ref", "pH", "pressure", "pressure_esd", "seeding", "seeding_ref", "temp", "temp_esd", 
             "temp_details", "time", "pdbx_details", "pdbx_pH_range"])
         writer.writeheader()
 
-        for pdb_id in pdb_ids:
+        for pdb_id, score in pdb_hits.items():
             try:
-                data = extract_mmcif_info(pdb_id)
-                writer.writerow(data)
+                row= extract_mmcif_info(pdb_id, score)
+                writer.writerow(row)
             except Exception as e:
                 print(f"Failed for {pdb_id}: {e}")
 
