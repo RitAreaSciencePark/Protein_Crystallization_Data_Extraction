@@ -1,200 +1,105 @@
-import requests
-import gemmi
-import csv
-import os
+import pandas as pd
 import re
+import os
 
-def get_sequence_from_user():
-    seq = input(
-        "Enter protein sequence (single-letter amino acid code, no FASTA header):\n"
-    ).strip().upper()
-
-    seq = re.sub(r"\s+", "", seq)
-    if not seq:
-        raise ValueError("Sequence cannot be empty")
-
-    if not re.fullmatch(r"[ACDEFGHIKLMNPQRSTVWY]+", seq):
-        raise ValueError(
-            "Sequence contains invalid characters. "
-            "Use only standard amino acids (ACDEFGHIKLMNPQRSTVWY)."
-        )
-
-    return seq
-
-def parse_from_pdbx_details(details_text):
+# ---------------- Robust Reagent Extractor ----------------
+def extract_reagents(pdbx_details):
     """
-    Extract crystallization conditions from pdbx_details free text.
-    Returns a dictionary with unique buffers, salts, PEG, protein concentration, etc.
+    Extract Protein, Salt, Buffer, PEG from free-text pdbx_details.
+    Returns a dictionary with lists of strings: 'conc reagent'
     """
-    result = {
-        "protein_concentration": None,
-        "peg": None,
-        "pH": None,
-        "pH_range": None,
-        "time": None,
-        "seeding": None,
-        "ligand": None,
-        "solvent": None
+    if not pdbx_details or pdbx_details in {".", "?", ""}:
+        return {"protein": [], "salt": [], "buffer": [], "peg": []}
+
+    text = pdbx_details.replace("\n", " ").strip().lower()
+
+    # Keyword lists
+    buffers = ["tris", "hepes", "mes", "mops", "bis-tris", "cacodylate", "acetate", "phosphate", "citrate"]
+    salts = ["nacl", "kcl", "mgcl2", "cacl2", "zncl2", "ammonium sulfate", "lithium sulfate", "sodium sulfate", "potassium chloride"]
+    pegs = ["peg", "polyethylene glycol"]
+
+    # Patterns for concentrations (number + unit)
+    conc_pattern = r"(\d+(?:\.\d+)?\s*(?:m|mm|mg/ml|%|g/l))"
+
+    # Initialize lists
+    proteins_list = []
+    salts_list = []
+    buffers_list = []
+    pegs_list = []
+
+    # Split by common delimiters
+    parts = re.split(r"[;,\.]", pdbx_details)
+
+    for part in parts:
+        part_clean = part.strip()
+        if not part_clean:
+            continue
+
+        part_lower = part_clean.lower()
+
+        # --- PEG ---
+        for peg_kw in pegs:
+            if peg_kw in part_lower:
+                conc_match = re.search(r"(\d+(?:\.\d+)?\s*%)", part_clean)
+                conc = conc_match.group(1) if conc_match else ""
+                pegs_list.append(f"{conc} {part_clean}".strip())
+                break  # avoid double-counting
+
+        # --- Buffers ---
+        for buf in buffers:
+            if buf in part_lower:
+                conc_match = re.search(conc_pattern, part_clean, re.I)
+                conc = conc_match.group(1) if conc_match else ""
+                buffers_list.append(f"{conc} {part_clean}".strip())
+                break
+
+        # --- Salts ---
+        for salt in salts:
+            if salt in part_lower:
+                conc_match = re.search(conc_pattern, part_clean, re.I)
+                conc = conc_match.group(1) if conc_match else ""
+                salts_list.append(f"{conc} {part_clean}".strip())
+                break
+
+        # --- Protein (mg/mL or identifier) ---
+        if "mg/ml" in part_lower or re.search(r"\b[A-Z]{1,3}[a-zA-Z0-9\.\-]+\b", part_clean):
+            proteins_list.append(part_clean.strip())
+
+    return {
+        "protein": proteins_list,
+        "salt": salts_list,
+        "buffer": buffers_list,
+        "peg": pegs_list
     }
 
-    if not details_text or details_text in {".", "?"}:
-        return result
 
-    text = details_text.replace("\n", " ").lower()
+# ---------------- Read CSV from terminal ----------------
+input_csv = input("Enter the input CSV filename (with .csv extension): ").strip()
+if not os.path.isfile(input_csv):
+    raise FileNotFoundError(f"File '{input_csv}' not found.")
 
-    # --- Protein concentration + protein name ---
-    protein_matches = re.findall(
-        r"(?:protein(?: mixture)?[:\s]*)?(\d+(?:\.\d+)?\s*(?:mg/ml|g/l|µm|um|mm))\s+([a-z0-9\-\s]+?)(?=,|;|$|\bin\b)",
-        text
-    )
-    proteins = []
-    for conc, name in protein_matches:
-        # remove buffer/salt keywords
-        name_clean = re.sub(
-            r"\b(tris|hepes|mes|mops|cacodylate|acetate|phosphate|citrate|nacl|kcl|mgcl2|cacl2|zncl2|ammonium sulfate|lithium sulfate|sodium sulfate|potassium chloride)\b",
-            "", name
-        ).strip()
-        if name_clean:
-            proteins.append(f"{conc} {name_clean}")
-    if proteins:
-        result["protein_concentration"] = ", ".join(proteins)
+df = pd.read_csv(input_csv)
 
-    # --- PEG with percentage ---
-    peg_match = re.search(r"(?:peg|polyethylene glycol)\s*(\d{1,3}(?:\.\d+)?)\s*%?", text)
-    if peg_match:
-        result["peg"] = f"{peg_match.group(1)}%"
+# Check columns
+if 'pdb_id' not in df.columns or 'pdbx_details' not in df.columns:
+    raise ValueError("CSV must contain 'pdb_id' and 'pdbx_details' columns.")
 
-    # --- pH ---
-    ph_match = re.search(r"ph\s*[=:]?\s*([0-9]+(?:\.[0-9]+)?)", text)
-    if ph_match:
-        result["pH"] = ph_match.group(1)
+# ---------------- Extract reagents for each row ----------------
+df['protein'] = ""
+df['salt'] = ""
+df['buffer'] = ""
+df['peg'] = ""
 
-    # --- pH range ---
-    ph_range_match = re.search(r"ph\s*[=:]?\s*([0-9]+(?:\.[0-9]+)?)\s*(?:-|–|to)\s*([0-9]+(?:\.[0-9]+)?)", text)
-    if ph_range_match:
-        result["pH_range"] = f"{ph_range_match.group(1)}-{ph_range_match.group(2)}"
+for idx, row in df.iterrows():
+    details = row['pdbx_details']
+    reagents = extract_reagents(details)
+    df.at[idx, 'protein'] = "; ".join(reagents['protein'])
+    df.at[idx, 'salt'] = "; ".join(reagents['salt'])
+    df.at[idx, 'buffer'] = "; ".join(reagents['buffer'])
+    df.at[idx, 'peg'] = "; ".join(reagents['peg'])
 
-    # --- Time ---
-    time_match = re.search(r"(\d+(?:\.\d+)?)\s*(days?|hours?|hrs?|h|weeks?)", text)
-    if time_match:
-        result["time"] = time_match.group(0)
+# ---------------- Save output ----------------
+output_csv = "pdb_results_with_reagents.csv"
+df.to_csv(output_csv, index=False)
+print(f"Extracted reagents saved to '{output_csv}'")
 
-    # --- Seeding ---
-    seeding_match = re.search(r"(?:microseeding|macroseeding|seeding|seeded|unseeded|no seeding)", text)
-    if seeding_match:
-        result["seeding"] = seeding_match.group(0)
-
-     # --- Ligand ---
-    ligand_match = re.search(r"(ligand|inhibitor|substrate|cofactor|with\s+[a-z0-9\-]+)", text)
-    if ligand_match:
-        result["ligand"] = ligand_match.group(0)
-
-    # --- Solvent ---
-    solvent_match = re.search(r"\b(water|h2o|ethanol|isopropanol|mpd|glycerol|dmso)\b", text)
-    if solvent_match:
-        result["solvent"] = solvent_match.group(1)
-
-    return result
-
-
-def extract_pubmed_id(pdb_id):
-    entry_data = requests.get(f"https://data.rcsb.org/rest/v1/core/entry/{pdb_id}").json()
-    return entry_data.get("rcsb_primary_citation", {}).get("pdbx_database_id_pub_med", "NA")
-
-def extract_mmcif_info(pdb_id, score):
-    pdb_id = pdb_id.upper()
-    pubmed = extract_pubmed_id(pdb_id)
-
-    url = f"https://files.rcsb.org/view/{pdb_id}.cif"
-    response = requests.get(url)
-    response.raise_for_status()
-    doc = gemmi.cif.read_string(response.text)
-    block = doc.sole_block()
-
-    pdbx_details = block.find_value("_exptl_crystal_grow.pdbx_details")
-    pdbx_ph_range = block.find_value("_exptl_crystal_grow.pdbx_pH_range")
-
-    extracted = parse_from_pdbx_details(pdbx_details)
-
-    info =  info = {
-        "PDB_ID": block.find_value("_entry.id"),
-        "score": score,
-        "Resolution": block.find_value("_refine.ls_d_res_high"),
-        "pubmed_id": pubmed,
-        "details": pdbx_details,
-        "method": block.find_value("_exptl_crystal_grow.method"),
-        "pH": extracted["pH"],
-        "pH_range": pdbx_ph_range,
-        "time": extracted["time"],
-        "seeding": extracted["seeding"],
-        "protein_concentration": extracted["protein_concentration"],
-        "peg": extracted["peg"],
-        "ligand": extracted["ligand"],
-        "solvent": extracted["solvent"]
-    }
-    return info
-
-def run_pdb_search(identity_cutoff=0.9, row_count=20):
-    seq = get_sequence_from_user()
-    output_csv = "pdbx_details_extracted.csv"
-
-    query = {
-        "query": {
-            "type": "group",
-            "logical_operator": "and",
-            "nodes": [
-                {
-                    "type": "terminal",
-                    "service": "sequence",
-                    "parameters": {
-                        "evalue_cutoff": 1,
-                        "identity_cutoff": identity_cutoff,
-                        "sequence_type": "protein",
-                        "value": seq
-                    }
-                },
-                {
-                    "type": "terminal",
-                    "service": "text",
-                    "parameters": {
-                        "attribute": "exptl.method",
-                        "operator": "exact_match",
-                        "value": "X-RAY DIFFRACTION"
-                    }
-                }
-            ]
-        },
-        "request_options": {
-            "paginate": {"start": 0, "rows": row_count}
-        },
-        "return_type": "entry"
-    }
-
-    result = requests.post("https://search.rcsb.org/rcsbsearch/v2/query", json=query)
-    result.raise_for_status()
-    search_data = result.json()
-
-    if search_data["total_count"] == 0:
-        print("No matching PDB entries found.")
-        return
-
-    pdb_hits = {hit["identifier"]: hit.get("score") for hit in search_data["result_set"]}
-
-    with open(output_csv, "w", newline="") as f:
-        fieldnames = ["PDB_ID", "score", "Resolution", "pubmed_id", "details",
-                "method", "pH", "pH_range", "time", "seeding", "protein_concentration", "peg", "ligand", "solvent"]
-        writer = csv.DictWriter(f, fieldnames=fieldnames)
-        writer.writeheader()
-
-        for pdb_id, score in pdb_hits.items():
-            try:
-                row = extract_mmcif_info(pdb_id, score)
-                writer.writerow(row)
-            except Exception as e:
-                print(f"Failed for {pdb_id}: {e}")
-
-    print(f"\nCSV file saved as: {os.path.abspath(output_csv)}")
-
-
-if __name__ == "__main__":
-    run_pdb_search()
