@@ -26,7 +26,7 @@ def get_sequence_from_user():
     return seq
 
 
-def run_pdb_search(identity_cutoff=0.9, row_count=20):
+def run_pdb_search():
     """
     Run a PDB search for a given sequence and extract mmCIF experimental data.
     """
@@ -34,7 +34,7 @@ def run_pdb_search(identity_cutoff=0.9, row_count=20):
     seq = get_sequence_from_user()
     # ---------- OUTPUT FILE ----------
     output_csv = "pdb_mmcif_extracted_data.csv"
-    ROW_COUNT = 20
+    
 
 
 #this query is to navigate the PDB database and find the proteins base on the sequences determined by X-ray diffraction ,methods
@@ -47,14 +47,14 @@ def run_pdb_search(identity_cutoff=0.9, row_count=20):
             "type": "terminal",
             "service": "sequence",
             "parameters": {
-                "evalue_cutoff": 1,
-                "identity_cutoff": 0.5,
+                "evalue_cutoff": 1e-5,
+                "identity_cutoff": 0.3,
                 "sequence_type": "protein",
                 "value": seq
             }
             },
             
-            
+           
             {
             "type": "terminal",
             "service": "text",
@@ -69,7 +69,7 @@ def run_pdb_search(identity_cutoff=0.9, row_count=20):
         "request_options": {
         "paginate": {
             "start": 0,
-            "rows": ROW_COUNT
+            "rows": 1000
         }
         },
         "return_type": "entry"
@@ -77,7 +77,7 @@ def run_pdb_search(identity_cutoff=0.9, row_count=20):
 
     # Load the query string/JSON into a PYTHON dictionary
     #query = json.loads(query)
-    query["request_options"]["paginate"]["rows"] = ROW_COUNT
+    #query["request_options"]["paginate"]["rows"] = ROW_COUNT
 
     # Post our query to the system
     result = requests.post("https://search.rcsb.org/rcsbsearch/v2/query",json=query)

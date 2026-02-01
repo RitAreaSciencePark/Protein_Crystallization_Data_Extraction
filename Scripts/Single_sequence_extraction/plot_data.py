@@ -5,13 +5,14 @@ import numpy as np
 import re
 
 # ---------- Load data ----------
-df = pd.read_csv("pdbx_details_extracted.csv")
+df = pd.read_csv("pdb_mmcif_extracted.csv")
 
 # ---------- Clean numeric ----------
 df["pH"] = pd.to_numeric(df["pH"], errors="coerce")
 df["temp"] = pd.to_numeric(df["temp"], errors="coerce")
+df["score"] = pd.to_numeric(df["score"], errors="coerce")
 
-df = df.dropna(subset=["pH", "temp", "method", "PDB_ID"])
+df = df.dropna(subset=["pH", "temp", "method", "PDB_ID", "score"])
 
 # ---------- Keep hanging / sitting ----------
 df = df[df["method"].str.contains("hanging|sitting", case=False, na=False)]
@@ -42,47 +43,65 @@ def get_marker(method):
 
 df["marker"] = df["method"].apply(get_marker)
 
-# ---------- Assign colors per PDB_ID ----------
-pdb_ids = sorted(df["PDB_ID"].unique())
-colors = plt.cm.tab20(np.linspace(0, 1, len(pdb_ids)))
-color_map = dict(zip(pdb_ids, colors))
+# ---------- Colormap for score ----------
+cmap = plt.cm.viridis
+norm = plt.Normalize(df["score"].min(), df["score"].max())
 
 # ---------- Plot ----------
-plt.figure(figsize=(10, 7))
+#plt.figure(figsize=(10, 7))
+fig, ax = plt.subplots(figsize=(10, 7))
 
 for _, row in df.iterrows():
-    plt.errorbar(
+    color = cmap(norm(row["score"]))
+
+    ax.errorbar(
         row["temp"],
         row["pH"],
         yerr=[[row["pH_err_low"]], [row["pH_err_high"]]]
         if pd.notna(row["pH_err_low"]) and pd.notna(row["pH_err_high"])
         else None,
         fmt=row["marker"],
-        color=color_map[row["PDB_ID"]],
-        ecolor=color_map[row["PDB_ID"]],
+        color=color,
+        ecolor=color,
         markersize=8,
         markeredgecolor="black",
         capsize=3,
         elinewidth=1
     )
 
+    # ---------- Method legend only ----------
+    method_legend = [
+        mlines.Line2D([], [], color='black', marker='^',
+                      linestyle='None', markersize=8, label='Hanging drop'),
+        mlines.Line2D([], [], color='black', marker='s',
+                      linestyle='None', markersize=8, label='Sitting drop')
+    ]
+
+    ax.legend(handles=method_legend, title="Method", loc="upper left")
+
+    # ---------- PDB_ID at each point ----------
+    ax.annotate(
+        row["PDB_ID"],
+        (row["temp"], row["pH"]),
+        xytext=(5, 5),
+        textcoords="offset points",
+        fontsize=7,
+        ha="left",
+        va="bottom"
+    )
+
 # ---------- Axes ----------
-plt.xlabel("Temperature (K)")
-plt.ylabel("pH")
-plt.title("pH vs Temperature (K)\nshape = method | color = PDB ID")
-plt.grid(True)
+ax.set_xlabel("Temperature (K)")
+ax.set_ylabel("pH")
+ax.set_title("pH vs Temperature (K)\nShape = Method | Color = Score")
+ax.grid(True)
 
-# ---------- X-axis: show temperature values of points ----------
+# ---------- X-axis ticks ----------
 unique_temps = sorted(df["temp"].unique())
-plt.xticks(unique_temps, [f"{t:.1f}" for t in unique_temps], rotation=45)
+ax.set_xticks(unique_temps)
+ax.set_xticklabels([f"{t:.1f}" for t in unique_temps], rotation=45)
 
-# ---------- Legends ----------
-pdb_legend = [
-    mlines.Line2D([], [], color=color_map[pdb_id], marker='o',
-                  linestyle='None', markersize=8, label=pdb_id)
-    for pdb_id in pdb_ids
-]
-
+# ---------- Method legend only ----------
 method_legend = [
     mlines.Line2D([], [], color='black', marker='^',
                   linestyle='None', markersize=8, label='Hanging drop'),
@@ -90,15 +109,17 @@ method_legend = [
                   linestyle='None', markersize=8, label='Sitting drop')
 ]
 
-legend1 = plt.legend(handles=pdb_legend, title="PDB ID (color)",
-                     bbox_to_anchor=(1.02, 1), loc="upper left")
-plt.gca().add_artist(legend1)
+plt.legend(handles=method_legend, title="Method", loc="upper left")
 
-plt.legend(handles=method_legend, title="Method (shape)",
-           bbox_to_anchor=(1.02, 0.45), loc="upper left")
+# ---------- Score colorbar ----------
+sm = plt.cm.ScalarMappable(cmap=cmap, norm=norm)
+sm.set_array([])
 
-# ---------- Save as PDF ----------
-output_pdf = "pH_vs_Temperature_K_xticks.pdf"
+cbar = fig.colorbar(sm, ax=ax, pad=0.02)
+cbar.set_label("Score", rotation=270, labelpad=15)
+
+# ---------- Save ----------
+output_pdf = "pH_vs_Temperature_score_colorbar_labeled.pdf"
 plt.tight_layout()
 plt.savefig(output_pdf)
 plt.show()
