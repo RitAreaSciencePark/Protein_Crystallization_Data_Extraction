@@ -57,9 +57,9 @@ for _, row in df.iterrows():
     ax.errorbar(
         row["temp"],
         row["pH"],
-        yerr=[[row["pH_err_low"]], [row["pH_err_high"]]]
-        if pd.notna(row["pH_err_low"]) and pd.notna(row["pH_err_high"])
-        else None,
+        #yerr=[[row["pH_err_low"]], [row["pH_err_high"]]]
+        #if pd.notna(row["pH_err_low"]) and pd.notna(row["pH_err_high"])
+        #else None,
         fmt=row["marker"],
         color=color,
         ecolor=color,
@@ -93,7 +93,7 @@ for _, row in df.iterrows():
 # ---------- Axes ----------
 ax.set_xlabel("Temperature (K)")
 ax.set_ylabel("pH")
-ax.set_title("pH vs Temperature (K)\nShape = Method | Color = Score")
+ax.set_title("pH vs Temperature (K)\nprotein = PLpro | PDB_ID = 9BRX")
 ax.grid(True)
 
 # ---------- X-axis ticks ----------
@@ -109,8 +109,14 @@ method_legend = [
                   linestyle='None', markersize=8, label='Sitting drop')
 ]
 
-plt.legend(handles=method_legend, title="Method", loc="upper left")
-
+ax.legend(
+    handles=method_legend,
+    title="Method",
+    loc="lower center",
+    ncol=2,
+    bbox_to_anchor=(0.5, -0.23),
+    frameon=False
+)
 # ---------- Score colorbar ----------
 sm = plt.cm.ScalarMappable(cmap=cmap, norm=norm)
 sm.set_array([])
