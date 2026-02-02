@@ -69,7 +69,7 @@ def run_pdb_search():
         "request_options": {
         "paginate": {
             "start": 0,
-            "rows": 1000
+            "rows": 10000
         }
         },
         "return_type": "entry"
