@@ -26,14 +26,14 @@ def get_sequence_from_user():
     return seq
 
 
-def run_pdb_search():
+def run_pdb_search(output_csv="pdb_mmcif_extracted.csv"):
     """
     Run a PDB search for a given sequence and extract mmCIF experimental data.
     """
     # Ask for sequence HERE
     seq = get_sequence_from_user()
     # ---------- OUTPUT FILE ----------
-    output_csv = "pdb_mmcif_extracted_data.csv"
+    #output_csv = "pdb_mmcif_extracted_data.csv"
     
 
 
@@ -158,10 +158,11 @@ def run_pdb_search():
 
         return info
 
+# ---------- WRITE CSV (GUARANTEED) ----------
+    abs_path = os.path.abspath(output_csv)
+    print(f"▶ Writing CSV to: {abs_path}")
 
-    output_csv = "pdb_mmcif_extracted.csv"
-
-    with open(output_csv, "w", newline="") as f:
+    with open(abs_path, "w", newline="") as f:
         writer = csv.DictWriter(
             f,
             fieldnames=["PDB_ID", "score", "Resolution", "pubmed_id", "apparatus", "atmosphere", "crystal_id ", "details", 
@@ -176,7 +177,9 @@ def run_pdb_search():
             except Exception as e:
                 print(f"Failed for {pdb_id}: {e}")
 
-    print(f"\nCSV file saved as: {os.path.abspath(output_csv)}")
+    print("✔ CSV successfully created")
+    return abs_path
+   
 
 if __name__ == "__main__":
     run_pdb_search()
