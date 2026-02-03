@@ -1,125 +1,139 @@
-#!/usr/bin/env python3
-
-import sys
-import re
 import pandas as pd
-import requests
+import re
 
 # -------------------------
-# Simple reagent vocabulary
+# Reagent classification
 # -------------------------
-
-KNOWN_REAGENTS = [
-    "glycerol", "hepes", "tris", "mes",
-    "ethylene glycol", "acetate",
-    "sodium chloride", "magnesium chloride",
-    "ammonium sulfate"
-]
-
-NAME_TO_CCD = {
-    "glycerol": ["GOL"],
-    "hepes": ["HEP"],
-    "tris": ["TRS"],
-    "mes": ["MES"],
-    "ethylene glycol": ["EDO"],
-    "sodium chloride": ["NA", "CL"],
-    "magnesium chloride": ["MG", "CL"],
-    "acetate": ["ACT"],
-    "ammonium sulfate": ["NH4", "SO4"]
+REAGENT_CLASSES = {
+    "buffer": ["hepes", "tris", "mes", "imidazole", "cacodylate", "piperazine"],
+    "peg": ["peg", "ethylene glycol", "glycerol"],
+    "salt": ["sodium", "potassium", "magnesium", "calcium", "chloride", "acetate", "ammonium", "phosphate", "na", "k", "mg", "ca", "cl"],
+    "ligand": ["atp", "bme", "nad", "fad", "cofactor"],
+    "solvent": ["water", "ethanol", "methanol", "dioxane"]
 }
 
-ION_CCDS = {"NA", "K", "MG", "CA", "CL", "ZN"}
+# -------------------------
+# Synonyms / chemical normalization
+# -------------------------
+SYNONYMS = {
+    "na": "sodium",
+    "k": "potassium",
+    "mg": "magnesium",
+    "ca": "calcium",
+    "cl": "chloride",
+    "bme": "beta-mercaptoethanol",
+    "edo": "ethylene glycol",
+    "gol": "glycerol",
+    "trizma": "tris",
+    "naoac": "sodium acetate",
+    "naac": "sodium acetate",
+    "mgact": "magnesium acetate",
+    "mgac": "magnesium acetate",
+    "po4": "phosphate"
+}
 
 # -------------------------
-# PDBeChem access
+# Common protein abbreviations
 # -------------------------
-
-def fetch_pdbechem(ccd):
-    url = f"https://www.ebi.ac.uk/pdbe/api/pdb/compound/summary/{ccd}"
-    r = requests.get(url, timeout=10)
-    if not r.ok:
-        return {}
-    data = r.json()
-    return data.get(ccd.lower(), [{}])[0]
+PROTEIN_ABBREVS = ["kaiB", "kaiC", "bsa", "lysozyme", "myoglobin"]
 
 # -------------------------
-# Text processing
+# Helper functions
 # -------------------------
+def normalize_name(name):
+    """
+    Normalize synonyms to a standard name.
+    """
+    name = name.lower().strip()
+    # Handle acetate patterns Mg(Ac)2 or NaOAc
+    name = re.sub(r'mg\s*\(?ac\)?2?', 'mgac', name, flags=re.IGNORECASE)
+    name = re.sub(r'na\s*oac', 'naoac', name, flags=re.IGNORECASE)
+    return SYNONYMS.get(name, name)
+
+def extract_proteins(text):
+    """
+    Extract protein names with concentrations.
+    Example: "6.5 mg/mL KaiB-KaiC complex, 3 mg/mL BSA"
+    """
+    proteins = []
+    pattern = re.compile(r'(\d*\.?\d+\s*(mg/ml|g/l|µg/ml))\s*([A-Za-z0-9\-]+(?: [A-Za-z0-9\-]+)*)', re.IGNORECASE)
+    matches = pattern.findall(text)
+    for conc, unit, name in matches:
+        proteins.append(f"{name.strip()} ({conc.strip()})")
+    
+    # Also check for chemical formula proteins
+    formula_matches = re.findall(r'\b([A-Z][a-z]?[A-Z]?[a-z]?\d*)\b', text)
+    for f in formula_matches:
+        if f.lower() in PROTEIN_ABBREVS and f not in proteins:
+            proteins.append(f)
+    return "; ".join(proteins)
 
 def extract_reagents(text):
-    text = str(text).lower()
-    hits = set()
-
-    for r in KNOWN_REAGENTS:
-        if r in text:
-            hits.add(r)
-
-    # PEG variants: PEG 400, PEG3350, etc.
-    peg_hits = re.findall(r"peg\s*\d*", text)
-    hits.update(peg_hits)
-
-    return list(hits)
-
-def reagent_to_ccds(reagent):
-    if reagent.startswith("peg"):
-        return ["PEG"]
-    return NAME_TO_CCD.get(reagent, [])
-
-# -------------------------
-# Classification
-# -------------------------
-
-def classify_reagent(ccd, chem):
-    name = chem.get("name", "").lower()
-    mw = chem.get("formula_weight", 0) or 0
-
-    if ccd in ION_CCDS:
-        return "ion"
-    if ccd in {"HEP", "TRS", "MES"}:
-        return "buffer"
-    if ccd in {"GOL", "EDO"}:
-        return "cryoprotectant"
-    if ccd == "PEG" or mw > 500:
-        return "precipitant"
-
-    return "additive"
+    """
+    Extract reagents with concentrations and classify into columns.
+    Handles chemical formulas and acetate variants.
+    """
+    reagents_found = {cls: [] for cls in REAGENT_CLASSES}
+    
+    # Split by commas, 'and', '+'
+    parts = re.split(r',| and | \+ ', text, flags=re.IGNORECASE)
+    
+    for part in parts:
+        # Extract concentration if exists
+        conc_match = re.search(r'(\d*\.?\d+\s*(mM|M|µM|uM|mg/ml|g/L))', part, re.IGNORECASE)
+        conc = conc_match.group(1).strip() if conc_match else ""
+        
+        # Remove concentration from name
+        name = re.sub(r'(\d*\.?\d+\s*(mM|M|µM|uM|mg/ml|g/L))', '', part, flags=re.IGNORECASE).strip()
+        name = normalize_name(name)
+        
+        # Handle chemical formulas (NaCl, Mg(Ac)2)
+        formula_match = re.findall(r'([A-Z][a-z]?[A-Z]?[a-z]?\d*)', name)
+        if formula_match:
+            name = " ".join([normalize_name(f) for f in formula_match])
+        
+        # Classify reagent
+        for cls, keywords in REAGENT_CLASSES.items():
+            if any(kw in name.lower() for kw in keywords):
+                reagents_found[cls].append(f"{name} ({conc})" if conc else name)
+    
+    return reagents_found
 
 # -------------------------
-# Main
+# Main processing
 # -------------------------
-
-def main(csv_file):
-    df = pd.read_csv(csv_file)
-
-    if not {"pdb_id", "pdbx_details"}.issubset(df.columns):
-        sys.exit("ERROR: CSV must contain pdb_id and pdbx_details columns")
-
+def process_csv(input_csv, output_csv):
+    df = pd.read_csv(input_csv)
+    
     rows = []
-
+    
     for _, row in df.iterrows():
-        pdb_id = row["pdb_id"]
-        details = row["pdbx_details"]
+        pdb_id = row["PDB_ID"]
+        details = str(row.get("pdbx_details", ""))
+        
+        protein_conc = extract_proteins(details)
+        reagents_info = extract_reagents(details)
+        
+        rows.append({
+            "PDB_ID": pdb_id,
+            "protein_concentration": protein_conc,
+            "buffer": "; ".join(reagents_info["buffer"]),
+            "peg": "; ".join(reagents_info["peg"]),
+            "salt": "; ".join(reagents_info["salt"]),
+            "ligand": "; ".join(reagents_info["ligand"]),
+            "solvent": "; ".join(reagents_info["solvent"]),
+        })
+    
+    out_df = pd.DataFrame(rows)
+    out_df.to_csv(output_csv, index=False)
+    print(f"Output CSV saved: {output_csv}")
 
-        reagents = extract_reagents(details)
-
-        for reagent in reagents:
-            ccds = reagent_to_ccds(reagent)
-
-            for ccd in ccds:
-                chem = fetch_pdbechem(ccd)
-                rows.append({
-                    "pdb_id": pdb_id,
-                    "reagent_text": reagent,
-                    "ccd": ccd,
-                    "chemical_name": chem.get("name"),
-                    "formula_weight": chem.get("formula_weight"),
-                    "class": classify_reagent(ccd, chem)
-                })
-
-    out = pd.DataFrame(rows)
-    out.to_csv(sys.stdout, index=False)
-
+# -------------------------
+# Example run
+# -------------------------
 if __name__ == "__main__":
-    if len(sys.argv) != 2:
-        sys.exit(f"Usage: {sys.argv[0]} input.csv")
-    main(sys.argv[1])
+    input_csv = "pdb_mmcif_extracted.csv"  # your input CSV
+    output_csv = "protein_reagents_parsed.csv"
+    process_csv(input_csv, output_csv)
+# ----
+
