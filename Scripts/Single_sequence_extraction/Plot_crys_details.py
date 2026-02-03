@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 import matplotlib.lines as mlines
 import numpy as np
 import re
+import os
 def run_plot(csv_file):
     # ---------- Load data ----------
     print(f"▶ Loading CSV: {csv_file}")
@@ -58,9 +59,6 @@ def run_plot(csv_file):
         ax.errorbar(
             row["temp"],
             row["pH"],
-            #yerr=[[row["pH_err_low"]], [row["pH_err_high"]]]
-            #if pd.notna(row["pH_err_low"]) and pd.notna(row["pH_err_high"])
-            #else None,
             fmt=row["marker"],
             color=color,
             ecolor=color,
@@ -126,7 +124,7 @@ def run_plot(csv_file):
     cbar.set_label("Score", rotation=270, labelpad=15)
 
     # ---------- Save ----------
-    output_pdf = "pH_vs_Temperature_score_colorbar_labeled.pdf"
+    output_pdf = os.path.join(os.path.dirname(csv_file), "pH_vs_Temperature_score_colorbar_labeled.pdf")
     plt.tight_layout()
     plt.savefig(output_pdf)
     plt.show()
