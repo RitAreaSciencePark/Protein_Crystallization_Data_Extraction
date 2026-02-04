@@ -4,7 +4,7 @@ import sys
 import csv
 
 from cleaning_and_read_fasta_file import read_and_clean_fasta_file, write_fasta_dict
-from Reading_fasta import fasta_to_pdb_csv
+from fasta_to_pdb import fasta_to_pdb_csv
 
 
 def main():
@@ -17,12 +17,6 @@ def main():
    
     # Read and clean sequences
     fasta_dict = read_and_clean_fasta_file(input_fasta)
-
-
-    # Print cleaned sequences to terminal
-    #for query_id, sequence in fasta_dict.items():
-       # print(f">{query_id}")
-       # print(sequence)
 
     # Optional: save to a new file
     cleaned_fasta = "cleaned.fasta"
