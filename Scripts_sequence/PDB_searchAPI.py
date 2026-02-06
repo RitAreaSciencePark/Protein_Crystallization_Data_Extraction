@@ -118,7 +118,39 @@ def run_pdb_search(output_csv="pdb_mmcif_extracted.csv"):
         pubmed = entry_data.get("rcsb_primary_citation", {}).get("pdbx_database_id_pub_med", "NA")
 
         return pubmed
+    
+    def get_ph_from_mmcif_or_details(block):
+        """
+        Return pH from mmCIF if present, otherwise extract from pdbx_details.
+        """
+        # Try mmCIF pH first
+        raw_ph = block.find_value("_exptl_crystal_grow.pH")
 
+        try:
+            if raw_ph not in (None, "", ".", "?", "NA"):
+                return float(raw_ph)
+        except ValueError:
+            pass
+
+        # Fallback: extract from pdbx_details
+        details = block.find_value("_exptl_crystal_grow.pdbx_details")
+
+        if not details:
+            return None
+
+        match = re.search(
+            r"\bpH\s*[:=]?\s*([0-9]+(?:\.[0-9]+)?)",
+            details,
+            re.IGNORECASE
+        )
+
+        if match:
+            try:
+                return float(match.group(1))
+            except ValueError:
+                return None
+
+        return None
 
     def extract_mmcif_info(pdb_id, score):
         pdb_id = pdb_id.upper()
@@ -144,7 +176,7 @@ def run_pdb_search(output_csv="pdb_mmcif_extracted.csv"):
             "details": block.find_value("_exptl_crystal_grow.details"),
             "method": block.find_value("_exptl_crystal_grow.method"),
             "method_ref": block.find_value("_exptl_crystal_grow.method_ref"),
-            "pH": block.find_value("_exptl_crystal_grow.pH"),
+            "pH": get_ph_from_mmcif_or_details(block),
             "pressure": block.find_value("_exptl_crystal_grow.pressure"),
             "pressure_esd": block.find_value("_exptl_crystal_grow.pressure_esd"),
             "seeding": block.find_value("_exptl_crystal_grow.seeding"),
