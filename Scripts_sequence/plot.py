@@ -115,13 +115,16 @@ def run_plot(csv_file):
     # Compute numeric pH / temp for plotting
     df["plot_pH_numeric"] = df.apply(lambda row: row["plot_pH"][0] if isinstance(row["plot_pH"], tuple) else row["plot_pH"], axis=1)
 
-    # Assign below-min pH / temp to "No pH" / "No temp" zones
-    df["pH"] = df["plot_pH_numeric"].copy()
-    df.loc[df["plot_pH_numeric"].isna() | (df["plot_pH_numeric"] < ph_min), "pH"] = no_ph_y
+    # Keep original pH and temp for table/reporting
+    df["pH"] = df["plot_pH_numeric"]  # numeric pH from CSV or NaN
+    df["temp"] = df["temp"]           # numeric temp from CSV or NaN
 
-    df["temp"] = df["temp"]
-    df.loc[df["temp"].isna() | (df["temp"] < temp_min), "temp"] = no_temp_x
+    # Plotting pH/temperature (with fallback for missing/too-low values)
+    df["pH_plot"] = df["plot_pH_numeric"].copy()
+    df.loc[df["plot_pH_numeric"].isna() | (df["plot_pH_numeric"] < ph_min), "pH_plot"] = no_ph_y
 
+    df["temp_plot"] = df["temp"].copy()
+    df.loc[df["temp"].isna() | (df["temp"] < temp_min), "temp_plot"] = no_temp_x
 
     # Round real temperature scale to 5K grid
     temp_min_tick = int(np.floor(temp_min / 5) * 5)
@@ -167,21 +170,43 @@ def run_plot(csv_file):
     cmap = plt.cm.viridis
     norm = plt.Normalize(0.5, 1)
 
-    def group_by_condition(df, max_entries=10):
+    # -------------------------
+    # Group top 10 conditions
+    # -------------------------
+    def group_for_plotting(df):
+        """
+        Group by pubmed_id, temp, plot_pH_numeric, and method.
+        All PDB_IDs with the same condition go into the same cell.
+        Missing pH/temp are left empty in the table but assigned plotting positions.
+        """
+        condition_cols = ["pubmed_id", "temp", "plot_pH_numeric", "method"]
 
-        condition_cols = ["temp", "pH", "method", "pubmed_id"]
+        def join_pdb_ids(series):
+            clean = series.dropna()
+            if clean.empty:
+                return ""
+            return ", ".join(dict.fromkeys(clean.astype(str)))  # preserve CSV order
 
         grouped = (
             df.groupby(condition_cols, dropna=False, as_index=False)
             .agg({
-                "PDB_ID": lambda x: ", ".join(x),
-                "pdbx_details": lambda x: " | ".join(x.fillna("")),
-                "score": "mean",          # ✅ ADD THIS
+                "PDB_ID": join_pdb_ids,
+                "pdbx_details": lambda x: " | ".join(x.dropna().astype(str)),
+                "score": "mean"
             })
         )
 
-        return grouped.head(max_entries)
+        # Assign plotting positions for missing or below-min values
+        grouped["temp_plot"] = grouped["temp"].copy()
+        grouped.loc[grouped["temp_plot"].isna() | (grouped["temp_plot"] < temp_min), "temp_plot"] = no_temp_x
 
+        grouped["pH_plot"] = grouped["plot_pH_numeric"].copy()
+        grouped.loc[grouped["pH_plot"].isna() | (grouped["pH_plot"] < ph_min), "pH_plot"] = no_ph_y
+
+        # Sort by mean score descending
+        grouped = grouped.sort_values("score", ascending=False)
+
+        return grouped.head(10)  # top 10 conditions
 
 
     # ========================================================
@@ -190,10 +215,8 @@ def run_plot(csv_file):
     fig, ax = plt.subplots(figsize=(14, 8))
 
     for _, row in df.iterrows():
-
-        x = row["temp"]
-        y = row["pH"]
-
+        x = row["temp_plot"] if "temp_plot" in row else row["temp"]
+        y = row["pH_plot"] if "pH_plot" in row else row["pH"]
         ax.errorbar(x, y,
                     yerr=[[row["err_low"]], [row["err_high"]]] if row["has_ph"] else None,
                     fmt=row["marker"],
@@ -270,12 +293,9 @@ def run_plot(csv_file):
     # ========================================================
     # 2️⃣ FIRST 10 + TABLE
     # ========================================================
-    first10 = df.head(10).copy()
-    first10["pdbx_details"] = first10["pdbx_details"].fillna("").astype(str)
-    first10["marker"] = first10["method"].apply(assign_marker)
     
-    first10_raw = df.head(50).copy()  # take more in case some merge reduces total
-    first10_grouped = group_by_condition(first10_raw, max_entries=10)
+    # 1️⃣ Group for plotting
+    first10_grouped = group_for_plotting(df)
 
     fig2 = plt.figure(figsize=(12, 10))
     gs = fig2.add_gridspec(2, 1, height_ratios=[1.5, 1.0], hspace=0.1)
@@ -285,8 +305,8 @@ def run_plot(csv_file):
     ax_table.axis("off")
 
     for _, row in first10_grouped.iterrows():
-        x = row["temp"]
-        y = row["pH"]
+        x = row["temp_plot"] if "temp_plot" in row else row["temp"]
+        y = row["pH_plot"] if "pH_plot" in row else row["pH"]
         marker = assign_marker(row["method"])
         c = cmap(norm(row["score"]))
 
@@ -330,11 +350,31 @@ def run_plot(csv_file):
     cbar2.set_ticklabels([f"{t:.1f}" for t in [0.5, 0.6, 0.7, 0.8, 0.9, 1.0]])
 
     # ---------- Table ----------
-    table_cols = ["PDB_ID", "score", "pubmed_id", "temp", "pH", "pdbx_details", "method"]
-    table_df = first10_grouped.reindex(columns=table_cols).fillna("")
-    table_df["pdbx_details"] = table_df["pdbx_details"].apply(wrap_text) #wrap details
-    table_df["score"] = table_df["score"].astype(float).apply(lambda x: f"{x:.3f}") #format score to 3 decimal
+    def build_table(top_groups):
+        """
+        Expand PDB_IDs into individual rows for the table.
+        Keep missing pH/temp as empty strings.
+        """
+        table_rows = []
+        for _, group in top_groups.iterrows():
+                table_rows.append({
+                    "PDB_ID": group["PDB_ID"],  # <- use group["PDB_ID"]
+                    "score": f"{group['score']:.3f}" if not pd.isna(group["score"]) else "",
+                    "pubmed_id": group["pubmed_id"] if not pd.isna(group["pubmed_id"]) else "",
+                    "temp": group["temp"] if not pd.isna(group["temp"]) else "",
+                    "pH": group["plot_pH_numeric"] if not pd.isna(group["plot_pH_numeric"]) else "",
+                    "pdbx_details": wrap_text(group["pdbx_details"]) if not pd.isna(group["pdbx_details"]) else "",
+                    "method": group["method"]
+                })
 
+        table_df = pd.DataFrame(table_rows)
+        # Sort table by score descending
+        table_df = table_df.sort_values("score", ascending=False)
+        return table_df
+
+
+    # Build the table
+    table_df = build_table(first10_grouped)
     col_widths = compute_col_widths(table_df)
 
     tbl = ax_table.table(
