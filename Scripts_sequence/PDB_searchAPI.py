@@ -4,8 +4,55 @@ import gemmi
 import csv
 import os
 import re
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
-#...get_ph_from_mmcif_or_details....., 
+# Setup cache directory for PDB files
+CACHE_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), ".pdb_cache")
+os.makedirs(CACHE_DIR, exist_ok=True)
+
+def get_cached_pubmed_id(pdb_id):
+    """Retrieve PubMed ID with caching."""
+    cache_file = os.path.join(CACHE_DIR, f"{pdb_id.lower()}_pubmed.json")
+    if os.path.exists(cache_file):
+        with open(cache_file, "r") as f:
+            return json.load(f).get("pubmed_id", "NA")
+    
+    try:
+        entry_data = requests.get(
+            f"https://data.rcsb.org/rest/v1/core/entry/{pdb_id}",
+            timeout=10
+        ).json()
+        pubmed = entry_data.get("rcsb_primary_citation", {}).get("pdbx_database_id_pub_med", "NA")
+        
+        # Cache the result
+        with open(cache_file, "w") as f:
+            json.dump({"pubmed_id": pubmed}, f)
+        return pubmed
+    except Exception as e:
+        print(f"⚠ Warning fetching PubMed ID for {pdb_id}: {e}")
+        return "NA"
+
+def get_cached_mmcif(pdb_id):
+    """Retrieve mmCIF file with caching."""
+    cache_file = os.path.join(CACHE_DIR, f"{pdb_id.lower()}.cif")
+    if os.path.exists(cache_file):
+        with open(cache_file, "r") as f:
+            return f.read()
+    
+    try:
+        url = f"https://files.rcsb.org/view/{pdb_id}.cif"
+        response = requests.get(url, timeout=10)
+        response.raise_for_status()
+        content = response.text
+        
+        # Cache the result
+        with open(cache_file, "w") as f:
+            f.write(content)
+        return content
+    except Exception as e:
+        print(f"⚠ Warning fetching mmCIF for {pdb_id}: {e}")
+        return None
+
 def get_ph_from_mmcif_or_details(block):
     raw_ph = block.find_value("_exptl_crystal_grow.pH")
     try:
@@ -38,8 +85,6 @@ def get_method_from_mmcif_or_details(block):
     return None
 
 #.....get_temperature_from_mmcif_or_details.....
-import re
-
 def get_temperature_from_mmcif_or_details(block):
    
     # ---- 1. Try mmCIF temperature fields first ----
@@ -109,19 +154,21 @@ def get_pdbx_ph_range_from_mmcif_or_details(block):
     return None
 
 
-def extract_pubmed_id(pdb_id):
-    entry_data = requests.get(f"https://data.rcsb.org/rest/v1/core/entry/{pdb_id}").json()
-    pubmed = entry_data.get("rcsb_primary_citation", {}).get("pdbx_database_id_pub_med", "NA")
-    return pubmed
-
 def extract_mmcif_info(pdb_id, score):
     pdb_id = pdb_id.upper()
-    pubmed = extract_pubmed_id(pdb_id)
-    url = f"https://files.rcsb.org/view/{pdb_id}.cif"
-    response = requests.get(url)
-    response.raise_for_status()
-    doc = gemmi.cif.read_string(response.text)
-    block = doc.sole_block()
+    pubmed = get_cached_pubmed_id(pdb_id)
+    
+    mmcif_content = get_cached_mmcif(pdb_id)
+    if not mmcif_content:
+        return None
+    
+    try:
+        doc = gemmi.cif.read_string(mmcif_content)
+        block = doc.sole_block()
+    except Exception as e:
+        print(f"⚠ Failed to parse mmCIF for {pdb_id}: {e}")
+        return None
+    
     info = {
         "PDB_ID": block.find_value("_entry.id"),
         "score": score,
@@ -164,11 +211,12 @@ def filter_experimental_conditions(input_csv, output_csv=None):
     print(f"✔ Filtered CSV saved to: {os.path.abspath(output_csv)}")
     return output_csv
 
-def run_pdb_search(sequence, output_csv="pdb_mmcif_extracted.csv", keep_all=False):
+def run_pdb_search(sequence, output_csv="pdb_mmcif_extracted.csv", keep_all=False, max_workers=6):
     """
     Run a PDB search for a given protein sequence and extract mmCIF experimental data.
     sequence: str, protein sequence
     keep_all: if True, return full CSV without filtering
+    max_workers: number of parallel workers for fetching PDB data (default: 6)
     """
 
     # Clean sequence
@@ -221,6 +269,7 @@ def run_pdb_search(sequence, output_csv="pdb_mmcif_extracted.csv", keep_all=Fals
 
     abs_path = os.path.abspath(output_csv)
     print(f"▶ Writing CSV to: {abs_path}")
+    print(f"▶ Found {len(pdb_hits)} PDB entries. Fetching data in parallel ({max_workers} workers)...")
 
     with open(abs_path, "w", newline="") as f:
         writer = csv.DictWriter(
@@ -233,12 +282,30 @@ def run_pdb_search(sequence, output_csv="pdb_mmcif_extracted.csv", keep_all=Fals
             ]
         )
         writer.writeheader()
-        for pdb_id, score in pdb_hits.items():
-            try:
-                row = extract_mmcif_info(pdb_id, score)
-                writer.writerow(row)
-            except Exception as e:
-                print(f"Failed for {pdb_id}: {e}")
+        
+        # Use ThreadPoolExecutor for parallel requests
+        with ThreadPoolExecutor(max_workers=max_workers) as executor:
+            # Submit all tasks
+            future_to_pdb = {
+                executor.submit(extract_mmcif_info, pdb_id, score): pdb_id
+                for pdb_id, score in pdb_hits.items()
+            }
+            
+            # Process results as they complete
+            completed = 0
+            for future in as_completed(future_to_pdb):
+                completed += 1
+                pdb_id = future_to_pdb[future]
+                try:
+                    row = future.result()
+                    if row:  # Only write if extraction was successful
+                        writer.writerow(row)
+                    if completed % 10 == 0:
+                        print(f"  ✓ Processed {completed}/{len(pdb_hits)}")
+                except Exception as e:
+                    print(f"  ✗ Failed for {pdb_id}: {e}")
+            
+            print(f"✔ Completed fetching all {len(pdb_hits)} entries")
 
     if keep_all:
         return abs_path  # return full CSV
