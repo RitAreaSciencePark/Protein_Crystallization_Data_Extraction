@@ -229,10 +229,6 @@ def search_pdb_by_sequence(sequence, seq_type, output_csv="pdb_mmcif_extracted.c
         "rna": "pdb_rna_sequence"
     }
 
-    if seq_type not in target_map:
-        print("Invalid sequence type. Use: protein, dna, or rna")
-        return []
-
     target = target_map[seq_type]
 
     query = {
@@ -308,9 +304,6 @@ def search_pdb_by_sequence(sequence, seq_type, output_csv="pdb_mmcif_extracted.c
         print("❌ No hits for this sequence. Stopping pipeline.")
         return None
 
-    # If hits exist, proceed to fetch mmCIF data
-    from test import extract_mmcif_info
-
     # Always write CSV with headers, even if empty
     fieldnames = [
         "PDB_ID","score","Resolution","pubmed_id","crystal_id ","details",
@@ -330,7 +323,8 @@ def search_pdb_by_sequence(sequence, seq_type, output_csv="pdb_mmcif_extracted.c
     print(f"▶ Found {len(pdb_hits)} PDB entries. Fetching mmCIF data in parallel ({max_workers} workers)...")
 
     # Parallel extraction of mmCIF info
-    from test import extract_mmcif_info  # import here to avoid circular import if needed
+    #from test import extract_mmcif_info  # import here to avoid circular import if needed
+
     with open(output_csv, "a", newline="") as f:
         writer = csv.DictWriter(f, fieldnames=fieldnames)
         with ThreadPoolExecutor(max_workers=max_workers) as executor:
