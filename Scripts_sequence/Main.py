@@ -1,44 +1,47 @@
 import os
-from PDB_searchAPI import run_pdb_search, filter_experimental_conditions
+from test import search_pdb_by_sequence, filter_experimental_conditions
 from plot import run_plot
 from chem_class_reagents import process_csv
 
 def main():
-    protein_name = input("Enter a name for this protein (for folder and filenames):\n").strip()
-    if not protein_name:
-        protein_name = "protein"
-        
-    sequence = input("Enter protein sequence (single-letter amino acid code, no FASTA header):\n").strip().upper()
-    if not sequence:
-        raise ValueError("Sequence cannot be empty")
+    sequence = input("Enter sequence: ").strip()
+    seq_type = input("Enter sequence type (protein/dna/rna): ").strip().lower()
 
-    # Create protein output folder
+    # Create output folder
     base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    protein_output_dir = os.path.join(base_dir, "output", protein_name)
-    os.makedirs(protein_output_dir, exist_ok=True)
+    output_dir = os.path.join(base_dir, "output", seq_type)
+    os.makedirs(output_dir, exist_ok=True)
 
-    # Save input sequence as FASTA
-    fasta_path = os.path.join(protein_output_dir, f"{protein_name}_sequence.fasta")
+    # Save FASTA
+    fasta_path = os.path.join(output_dir, f"{seq_type}_sequence.fasta")
     with open(fasta_path, "w") as fasta_file:
-        fasta_file.write(f">{protein_name}\n")
+        fasta_file.write(f">{seq_type}\n")
         for i in range(0, len(sequence), 60):
             fasta_file.write(sequence[i:i+60] + "\n")
     print(f"✔ Input sequence saved as FASTA: {fasta_path}")
 
-    # Run PDB search (full CSV)
-    full_csv = os.path.join(protein_output_dir, f"{protein_name}_pdb_mmcif_full.csv")
-    run_pdb_search(sequence, output_csv=full_csv, keep_all=True)
+    # Run PDB search
+    full_csv = os.path.join(output_dir, f"{seq_type}_pdb_mmcif_full.csv")
+    full_csv_result = search_pdb_by_sequence(sequence, seq_type, output_csv=full_csv, keep_all=True)
 
-    # Filter CSV
-    filtered_csv = os.path.join(protein_output_dir, f"{protein_name}_pdb_mmcif_filtered.csv")
+    if full_csv_result is None:
+        # No hits found → stop pipeline gracefully
+        print(f"⚠ No PDB entries found for this {seq_type} sequence. Pipeline stopped.")
+        return
+
+    # Filter experimental conditions
+    filtered_csv = os.path.join(output_dir, f"{seq_type}_pdb_mmcif_filtered.csv")
     filter_experimental_conditions(full_csv, filtered_csv)
 
-    # Parse and plot
-    parsed_csv = os.path.join(protein_output_dir, f"{protein_name}_protein_reagents_parsed.csv")
-    process_csv(filtered_csv, parsed_csv)
+    # Parse reagents + plot
+    parsed_csv = os.path.join(output_dir, f"{seq_type}_reagents_parsed.csv")
+    json_path = os.path.join(base_dir, "Data", "reagents.json")
+    process_csv(filtered_csv, parsed_csv, json_path)
+
     run_plot(filtered_csv)
 
-    print(f"✔ Pipeline completed successfully. All outputs saved in {protein_output_dir}")
+    print(f"\n✔ Pipeline completed successfully.")
+    print(f"✔ All outputs saved in {output_dir}")
 
 if __name__ == "__main__":
     main()

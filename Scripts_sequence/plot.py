@@ -85,16 +85,20 @@ def run_plot(csv_file):
     # Compute plotting pH
     # --------------------------------------------------------
     def compute_plot_ph(row):
-        if not pd.isna(row["pH"]):
-            return (row["pH"], 0.0, 0.0)
-        if not pd.isna(row["pH_low"]) and not pd.isna(row["pH_high"]):
-            ph = (row["pH_low"] + row["pH_high"]) / 2
-            return (ph, ph - row["pH_low"], row["pH_high"] - ph)
-        return (np.nan, 0.0, 0.0)
+    # Case 1: exact pH value present
+        if pd.notna(row.get("pH")):
+            return pd.Series([row["pH"], 0.0, 0.0])
 
-    df[["plot_pH", "err_low", "err_high"]] = df.apply(
-        compute_plot_ph, axis=1, result_type="expand"
-    )
+        # Case 2: pH range available
+        if pd.notna(row.get("pH_low")) and pd.notna(row.get("pH_high")):
+            ph_low = row["pH_low"]
+            ph_high = row["pH_high"]
+            ph_mid = (ph_low + ph_high) / 2
+            return pd.Series([ph_mid, ph_mid - ph_low, ph_high - ph_mid])
+        # Case 3: no pH info
+        return pd.Series([np.nan, 0.0, 0.0])
+        
+    df[["plot_pH", "err_low", "err_high"]] = df.apply(compute_plot_ph, axis=1, result_type="expand")
 
     df["has_ph"] = ~df["plot_pH"].isna()
     df["has_temp"] = ~df["temp"].isna()
