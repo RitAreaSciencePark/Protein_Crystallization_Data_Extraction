@@ -193,7 +193,7 @@ def extract_mmcif_info(pdb_id, score):
         "ligands": block.find_value("_pdbx_entity_instance_feature.comp_id")
     }
 
-    return extract_mmcif_info
+    return info
 
 def filter_experimental_conditions(input_csv, output_csv=None):
 
@@ -216,7 +216,7 @@ def filter_experimental_conditions(input_csv, output_csv=None):
        print(f"✔ Filtered CSV saved to: {os.path.abspath(output_csv)}")
        return output_csv
     else:
-       print(f"⚠️ DNA CSV not found: {input_csv}, skipping DNA processing.")
+       print(f"⚠️ CSV not found: {input_csv}, skipping processing.")
        sys.exit(1)
 
 def search_pdb_by_sequence(sequence, seq_type, output_csv="pdb_mmcif_extracted.csv", keep_all=False, max_workers=6):
