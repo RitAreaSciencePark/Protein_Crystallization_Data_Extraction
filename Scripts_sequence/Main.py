@@ -36,7 +36,7 @@ def main():
 
     # Parse reagents + plot
     parsed_csv = os.path.join(output_dir, f"{seq_type_name}_reagents_parsed.csv")
-    json_path = os.path.join(base_dir, "Data", "reagents.json")
+    json_path = os.path.join(base_dir, "Data", "compound_dictionary.json")
     process_csv(filtered_csv, parsed_csv, json_path)
 
     run_plot(filtered_csv)
