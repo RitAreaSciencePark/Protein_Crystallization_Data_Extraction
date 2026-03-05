@@ -402,3 +402,4 @@ def run_plot(csv_file):
     plt.close(fig2)
 
     print(f"✔ First 10 plot saved as: {first10_png}")
+    
