@@ -94,3 +94,38 @@ def extract_reagents_classified(text, lookup):
                 result[cls_name].append(reagent)
 
     return result
+
+# -------------------------------
+# Process CSV
+# -------------------------------
+def process_csv_classified(input_csv_path, output_csv_path, json_path):
+    lookup = load_json_classification(json_path)
+    df = pd.read_csv(input_csv_path)
+
+    classes = ["precipitant", "buffer", "salts", "additive"]
+    reagent_dicts = []
+
+    for _, row in df.iterrows():
+        text = row.get("pdbx_details", "")
+        reagents = extract_reagents_classified(text, lookup)
+        reagent_dicts.append(reagents)
+
+    out_df = pd.DataFrame()
+    out_df["pdb_id"] = df["PDB_ID"]
+
+    for cls in classes:
+        out_df[cls] = ["; ".join(d.get(cls, [])) for d in reagent_dicts]
+
+    os.makedirs(os.path.dirname(output_csv_path), exist_ok=True)
+    out_df.to_csv(output_csv_path, index=False)
+    print(f"✔ Parsing completed. Output saved to: {output_csv_path}")
+
+# -------------------------------
+# Run
+# -------------------------------
+if __name__ == "__main__":
+    json_path = "/home/ruth/Protein_Crystallization_Data_Extraction/Data/reagents.json"
+    input_csv_path = "/home/ruth/Protein_Crystallization_Data_Extraction/output/kaiB/kaiB_pdb_mmcif_filtered.csv"
+    output_csv_path = "/home/ruth/Protein_Crystallization_Data_Extraction/output/kaiB/kaiB_reagents_parsed.csv"
+
+    process_csv_classified(input_csv_path, output_csv_path, json_path)

@@ -182,12 +182,9 @@ def extract_mmcif_info(pdb_id, score):
         "crystal_id ": block.find_value("_exptl_crystal_grow.crystal_id"),
         "details": block.find_value("_exptl_crystal_grow.details"),
         "method": get_method_from_mmcif_or_details(block),
-        "method_ref": None,   # (you had this column but never filled it)
         "pH": get_ph_from_mmcif_or_details(block),
         "temp": get_temperature_from_mmcif_or_details(block),
-        "temp_esd": block.find_value("_exptl_crystal_grow.temp_esd"),
-        "temp_details": block.find_value("_exptl_crystal_grow.temp_details"),
-        "time": block.find_value("_exptl_crystal_grow.time"),
+        "Assembly": block.find_value("_pdbx_struct_assembly.oligomeric_details"),
         "pdbx_details": block.find_value("_exptl_crystal_grow.pdbx_details"),
         "pdbx_pH_range": get_pdbx_ph_range_from_mmcif_or_details(block),
         "ligands": block.find_value("_pdbx_entity_instance_feature.comp_id")
@@ -307,9 +304,7 @@ def search_pdb_by_sequence(sequence, seq_type, output_csv="pdb_mmcif_extracted.c
     # Always write CSV with headers, even if empty
     fieldnames = [
         "PDB_ID","score","Resolution","pubmed_id","crystal_id ","details",
-        "method","method_ref","pH","temp","temp_esd","temp_details",
-        "time","pdbx_details","pdbx_pH_range","ligands"
-    ]
+        "method","pH","temp","Assembly","pdbx_details","pdbx_pH_range","ligands"]
 
     os.makedirs(os.path.dirname(output_csv), exist_ok=True)
     with open(output_csv, "w", newline="") as f:
@@ -321,9 +316,6 @@ def search_pdb_by_sequence(sequence, seq_type, output_csv="pdb_mmcif_extracted.c
         return output_csv  # CSV exists with headers
 
     print(f"▶ Found {len(pdb_hits)} PDB entries. Fetching mmCIF data in parallel ({max_workers} workers)...")
-
-    # Parallel extraction of mmCIF info
-    #from test import extract_mmcif_info  # import here to avoid circular import if needed
 
     with open(output_csv, "a", newline="") as f:
         writer = csv.DictWriter(f, fieldnames=fieldnames)
@@ -343,17 +335,4 @@ def search_pdb_by_sequence(sequence, seq_type, output_csv="pdb_mmcif_extracted.c
                     print(f"  ✗ Failed for {pdb_id}: {e}")
 
     print(f"✔ CSV written to: {os.path.abspath(output_csv)}")
-    return output_csv
-
-def _write_empty_csv(output_csv):
-    """Helper to create empty CSV with headers if no hits found."""
-    fieldnames = [
-        "PDB_ID","score","Resolution","pubmed_id","crystal_id ","details",
-        "method","method_ref","pH","temp","temp_esd","temp_details",
-        "time","pdbx_details","pdbx_pH_range","ligands"
-    ]
-    os.makedirs(os.path.dirname(output_csv), exist_ok=True)
-    with open(output_csv, "w", newline="") as f:
-        writer = csv.DictWriter(f, fieldnames=fieldnames)
-        writer.writeheader()
     return output_csv
