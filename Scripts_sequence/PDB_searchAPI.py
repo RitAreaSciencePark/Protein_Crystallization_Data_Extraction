@@ -154,6 +154,19 @@ def get_pdbx_ph_range_from_mmcif_or_details(block):
 
     return None
 
+def check_ligands(pdb_id: str) -> str:
+    """Check if ligands exist for a given PDB ID using RCSB ligand-validation."""
+    url = f"https://www.rcsb.org/ligand-validation/{pdb_id}"
+    try:
+        response = requests.get(url, timeout=5)
+        # The page always returns 200; check for "Coerced Null value" indicating no ligands
+        if "Coerced Null value" in response.text:
+            return "none"
+        else:
+            return f"yes ({url})"
+    except requests.RequestException:
+        return "none"
+
 def extract_mmcif_info(pdb_id, score):
     pdb_id = pdb_id.upper()
 
@@ -187,7 +200,7 @@ def extract_mmcif_info(pdb_id, score):
         "Assembly": block.find_value("_pdbx_struct_assembly.oligomeric_details"),
         "pdbx_details": block.find_value("_exptl_crystal_grow.pdbx_details"),
         "pdbx_pH_range": get_pdbx_ph_range_from_mmcif_or_details(block),
-        "ligands": block.find_value("_pdbx_entity_instance_feature.comp_id")
+        "ligands": check_ligands(pdb_id)
     }
 
     return info
