@@ -2,36 +2,7 @@ import os
 import pandas as pd
 from PDB_searchAPI import search_pdb_by_sequence, filter_experimental_conditions
 from plot import run_plot
-from chem_class_reagents import load_json_classification, extract_reagents_classified  # Updated parser
-
-# -------------------------------
-# Wrapper to process CSV with updated parser
-# -------------------------------
-def process_csv(input_csv_path, output_csv_path, json_path):
-    """
-    Parse PDBx details and extract reagents with exact concentrations.
-    Saves output CSV with columns: pdb_id, precipitant, buffer, salts, additive
-    """
-    lookup = load_json_classification(json_path)
-    df = pd.read_csv(input_csv_path)
-
-    classes = ["precipitant", "buffer", "salts", "additive"]
-    reagent_dicts = []
-
-    for _, row in df.iterrows():
-        text = row.get("pdbx_details", "")
-        reagents = extract_reagents_classified(text, lookup)
-        reagent_dicts.append(reagents)
-
-    out_df = pd.DataFrame()
-    out_df["pdb_id"] = df["PDB_ID"]
-
-    for cls in classes:
-        out_df[cls] = ["; ".join(d.get(cls, [])) for d in reagent_dicts]
-
-    os.makedirs(os.path.dirname(output_csv_path), exist_ok=True)
-    out_df.to_csv(output_csv_path, index=False)
-    print(f"✔ Parsed reagents saved to {output_csv_path}")
+from extract_structures import extract_structures_with_metadata
 
 # -------------------------------
 # Main pipeline
@@ -66,10 +37,20 @@ def main():
     filtered_csv = os.path.join(output_dir, f"{seq_type_name}_pdb_mmcif_filtered.csv")
     filter_experimental_conditions(full_csv, filtered_csv)
 
-    # Parse reagents using updated parser
-    parsed_csv = os.path.join(output_dir, f"{seq_type_name}_reagents_parsed.csv")
-    json_path = os.path.join(base_dir, "Data", "reagents.json")  # Ensure your updated JSON is here
-    process_csv(filtered_csv, parsed_csv, json_path)
+    # -------------------------------
+    # Extract structures with metadata from pickle
+    # -------------------------------
+    structures_pickle_file = os.path.join(base_dir, "Structures", "structures.pkl")
+    output_structures_csv = os.path.join(output_dir, f"{seq_type_name}_reagents.csv")
+
+    extract_structures_with_metadata(structures_pickle_file, filtered_csv, output_structures_csv)
+
+    # -------------------------------
+    # Parse reagents (if needed)
+    # -------------------------------
+    # parsed_csv = os.path.join(output_dir, f"{seq_type_name}_reagents_parsed.csv")
+    # json_path = os.path.join(base_dir, "Data", "reagents.json")  # Ensure your updated JSON is here
+    # process_csv(filtered_csv, parsed_csv, json_path)
 
     # Generate plots
     run_plot(filtered_csv)
