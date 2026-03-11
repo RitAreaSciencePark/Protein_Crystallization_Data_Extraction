@@ -193,7 +193,6 @@ def extract_mmcif_info(pdb_id, score):
         "Resolution": block.find_value("_refine.ls_d_res_high"),
         "pubmed_id": pubmed,
         "crystal_id ": block.find_value("_exptl_crystal_grow.crystal_id"),
-        "details": block.find_value("_exptl_crystal_grow.details"),
         "method": get_method_from_mmcif_or_details(block),
         "pH": get_ph_from_mmcif_or_details(block),
         "temp": get_temperature_from_mmcif_or_details(block),
@@ -226,7 +225,7 @@ def filter_experimental_conditions(input_csv, output_csv=None):
        print(f"✔ Filtered CSV saved to: {os.path.abspath(output_csv)}")
        return output_csv
     else:
-       print(f"⚠️ CSV not found: {input_csv}, skipping processing.")
+       print(f" CSV not found: {input_csv}, skipping processing.")
        sys.exit(1)
 
 def search_pdb_by_sequence(sequence, seq_type, output_csv="pdb_mmcif_extracted.csv", keep_all=False, max_workers=6):
@@ -316,7 +315,7 @@ def search_pdb_by_sequence(sequence, seq_type, output_csv="pdb_mmcif_extracted.c
 
     # Always write CSV with headers, even if empty
     fieldnames = [
-        "PDB_ID","score","Resolution","pubmed_id","crystal_id ","details",
+        "PDB_ID","score","Resolution","pubmed_id","crystal_id ",
         "method","pH","temp","Assembly","pdbx_details","pdbx_pH_range","ligands"]
 
     os.makedirs(os.path.dirname(output_csv), exist_ok=True)

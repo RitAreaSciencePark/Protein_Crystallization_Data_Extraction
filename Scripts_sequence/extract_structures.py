@@ -4,10 +4,13 @@ import types
 import pickle
 import pandas as pd
 from pathlib import Path
+import ast
+import re
 
 def extract_structures_with_metadata(structures_file, filtered_csv_file, output_csv_file):
     """
     Extract PDB_ID, COMPOUNDS from pickle and merge SCORE, PH, PUBMED_ID from filtered CSV.
+    Also extracts PEG and PEG_CONS from COMPOUNDS into separate columns.
     Saves output CSV.
     """
     # -------------------------------
@@ -38,11 +41,6 @@ def extract_structures_with_metadata(structures_file, filtered_csv_file, output_
     # Load filtered CSV
     # -------------------------------
     filtered_df = pd.read_csv(filtered_csv_file, on_bad_lines="skip")
-
-    if "PDB_ID" not in filtered_df.columns:
-        raise ValueError("Filtered CSV must have a 'PDB_ID' column.")
-
-    # Correct: use .str.upper()
     filtered_df["PDB_ID"] = filtered_df["PDB_ID"].astype(str).str.strip().str.upper()
 
     # -------------------------------
@@ -59,7 +57,6 @@ def extract_structures_with_metadata(structures_file, filtered_csv_file, output_
     ph_col = find_column(filtered_df, ["ph"])
     ligand_col = find_column(filtered_df, ["ligand"])
 
-    # Build lookup dictionaries, handle missing columns
     score_dict = dict(zip(filtered_df["PDB_ID"], filtered_df[score_col])) if score_col else {}
     pubmed_dict = dict(zip(filtered_df["PDB_ID"], filtered_df[pubmed_col])) if pubmed_col else {}
     ph_dict = dict(zip(filtered_df["PDB_ID"], filtered_df[ph_col])) if ph_col else {}
@@ -70,13 +67,53 @@ def extract_structures_with_metadata(structures_file, filtered_csv_file, output_
     # -------------------------------
     first_obj = structures_list[0]
     keys = first_obj.__dict__.keys()
-
     pdb_attr = next((k for k in keys if 'pdb' in k.lower()), None)
-    if not pdb_attr:
-        raise ValueError("No attribute resembling PDB_ID found in pickle objects.")
     comp_attr = next((k for k in keys if 'compound' in k.lower()), None)
-    if not comp_attr:
-        raise ValueError("No attribute resembling COMPOUNDS found in pickle objects.")
+
+    if not pdb_attr or not comp_attr:
+        raise ValueError("Pickle objects must contain PDB_ID and COMPOUNDS attributes.")
+
+    # -------------------------------
+    # Helper: extract PEG
+    # -------------------------------
+    def extract_peg(compounds):
+        """
+        compounds: list or string representation of list
+        Returns: cleaned_compounds, peg, peg_cons
+        """
+        peg = None
+        peg_cons = None
+        cleaned_compounds = []
+
+        if not compounds:
+            return cleaned_compounds, peg, peg_cons
+
+        # If string, convert to list
+        if isinstance(compounds, str):
+            try:
+                compounds_list = ast.literal_eval(compounds)
+            except Exception:
+                compounds_list = []
+        elif isinstance(compounds, list):
+            compounds_list = compounds
+        else:
+            # Unexpected type
+            compounds_list = []
+
+        i = 0
+        while i < len(compounds_list):
+            compound = compounds_list[i]
+            conc = compounds_list[i+1] if i+1 < len(compounds_list) else None
+
+            if compound and re.search(r"\bPEG\b", str(compound), re.IGNORECASE):
+                peg = compound
+                peg_cons = conc
+            else:
+                cleaned_compounds.append(compound)
+                cleaned_compounds.append(conc)
+            i += 2
+
+        return cleaned_compounds, peg, peg_cons
 
     # -------------------------------
     # Extract and merge data
@@ -99,13 +136,18 @@ def extract_structures_with_metadata(structures_file, filtered_csv_file, output_
             except Exception:
                 score_val = None
 
+            # Extract PEG
+            cleaned_compounds, peg_val, peg_cons_val = extract_peg(comp_val)
+
             data.append({
                 "PDB_ID": pdb_val,
                 "SCORE": score_val,
                 "PUBMED_ID": pubmed_val,
                 "PH": ph_val,
                 "LIGAND": ligand_val,
-                "COMPOUNDS": comp_val
+                "COMPOUNDS": cleaned_compounds,
+                "PEGS": peg_val,
+                "PEG_CONS": peg_cons_val
             })
             found_pdb_ids.add(pdb_val)
 
