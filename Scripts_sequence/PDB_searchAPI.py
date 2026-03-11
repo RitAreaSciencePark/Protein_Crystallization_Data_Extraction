@@ -6,6 +6,7 @@ import os
 import re
 import sys
 from concurrent.futures import ThreadPoolExecutor, as_completed
+from Bio.PDB.MMCIF2Dict import MMCIF2Dict
 
 # Setup cache directory for PDB files
 CACHE_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), ".pdb_cache")
@@ -49,10 +50,13 @@ def get_cached_mmcif(pdb_id):
         # Cache the result
         with open(cache_file, "w") as f:
             f.write(content)
+
         return content
+
     except Exception as e:
         print(f"⚠ Warning fetching mmCIF for {pdb_id}: {e}")
         return None
+
 
 def get_ph_from_mmcif_or_details(block):
     raw_ph = block.find_value("_exptl_crystal_grow.pH")
@@ -154,18 +158,80 @@ def get_pdbx_ph_range_from_mmcif_or_details(block):
 
     return None
 
-def check_ligands(pdb_id: str) -> str:
-    """Check if ligands exist for a given PDB ID using RCSB ligand-validation."""
-    url = f"https://www.rcsb.org/ligand-validation/{pdb_id}"
+def fetch_ligands(pdb_id):
+    """
+    Fetch ligand IDs for a PDB entry.
+
+    1️⃣ Try RCSB GraphQL
+    2️⃣ If none found → fallback to mmCIF parsing
+    """
+
+    pdb_id = pdb_id.upper()
+
+    # ---------- GraphQL ----------
+    url = "https://data.rcsb.org/graphql"
+
+    query = """
+    query getLigands($id: String!) {
+      entry(entry_id: $id) {
+        nonpolymer_entities {
+          rcsb_nonpolymer_entity_container_identifiers {
+            nonpolymer_comp_id
+          }
+        }
+      }
+    }
+    """
+
     try:
-        response = requests.get(url, timeout=5)
-        # The page always returns 200; check for "Coerced Null value" indicating no ligands
-        if "Coerced Null value" in response.text:
-            return "none"
-        else:
-            return f"yes ({url})"
-    except requests.RequestException:
-        return "none"
+        response = requests.post(
+            url,
+            json={"query": query, "variables": {"id": pdb_id}},
+            timeout=15
+        )
+
+        response.raise_for_status()
+        data = response.json()
+
+        entry = data.get("data", {}).get("entry", {})
+        entities = entry.get("nonpolymer_entities") or []
+
+        ligands = [
+            e["rcsb_nonpolymer_entity_container_identifiers"]["nonpolymer_comp_id"]
+            for e in entities
+            if e.get("rcsb_nonpolymer_entity_container_identifiers", {}).get("nonpolymer_comp_id")
+        ]
+
+        if ligands:
+            return ", ".join(list(dict.fromkeys(ligands)))
+
+    except Exception as e:
+        print(f"⚠ GraphQL ligand error for {pdb_id}: {e}")
+
+    # ---------- mmCIF fallback ----------
+    try:
+
+        cif_path = os.path.join(CACHE_DIR, f"{pdb_id.lower()}.cif")
+
+        if not os.path.exists(cif_path):
+            mmcif_content = get_cached_mmcif(pdb_id)
+            if not mmcif_content:
+                return None
+
+        doc = gemmi.cif.read_file(cif_path)
+        block = doc.sole_block()
+
+        comp_ids = block.find_values("_pdbx_entity_instance_feature.comp_id")
+
+        comp_ids = [c for c in comp_ids if c not in ("?", ".", "", None)]
+
+        if comp_ids:
+            return ", ".join(list(dict.fromkeys(comp_ids)))
+
+    except Exception as e:
+        print(f"⚠ mmCIF ligand fallback error for {pdb_id}: {e}")
+
+    return None
 
 def extract_mmcif_info(pdb_id, score):
     pdb_id = pdb_id.upper()
@@ -178,13 +244,25 @@ def extract_mmcif_info(pdb_id, score):
     if not mmcif_content:
         return None
 
-    # 3️⃣ Parse mmCIF
+    # 3️⃣ Parse mmCIF with gemmi
     try:
         doc = gemmi.cif.read_string(mmcif_content)
         block = doc.sole_block()
     except Exception as e:
         print(f"⚠ Failed to parse mmCIF for {pdb_id}: {e}")
         return None
+
+    # ---- Extract assembly info robustly ----
+    assembly_ids = block.find_values("_pdbx_struct_assembly.id")
+    oligomeric_values = block.find_values("_pdbx_struct_assembly.oligomeric_details")
+
+    if not oligomeric_values:
+        assembly_detail = None
+    else:
+        first_detail = oligomeric_values[0]
+        if len(assembly_ids) > 1:
+            first_detail += "(*)"
+        assembly_detail = first_detail
 
     # 5️⃣ Collect info
     info = {
@@ -196,10 +274,10 @@ def extract_mmcif_info(pdb_id, score):
         "method": get_method_from_mmcif_or_details(block),
         "pH": get_ph_from_mmcif_or_details(block),
         "temp": get_temperature_from_mmcif_or_details(block),
-        "Assembly": block.find_value("_pdbx_struct_assembly.oligomeric_details"),
+        "Assembly": assembly_detail,
         "pdbx_details": block.find_value("_exptl_crystal_grow.pdbx_details"),
         "pdbx_pH_range": get_pdbx_ph_range_from_mmcif_or_details(block),
-        "ligands": check_ligands(pdb_id)
+        "ligands": fetch_ligands(pdb_id)
     }
 
     return info
@@ -228,9 +306,32 @@ def filter_experimental_conditions(input_csv, output_csv=None):
        print(f" CSV not found: {input_csv}, skipping processing.")
        sys.exit(1)
 
-def search_pdb_by_sequence(sequence, seq_type, output_csv="pdb_mmcif_extracted.csv", keep_all=False, max_workers=6):
+def detect_seq_type(sequence):
 
-    seq_type = seq_type.lower()
+    """Automatically detect whether a sequence is protein, DNA, or RNA."""
+    sequence = sequence.upper()
+    dna_letters = set("ACGT")
+    rna_letters = set("ACGU")
+    protein_letters = set("ACDEFGHIKLMNPQRSTVWY")  # standard amino acids
+
+    seq_set = set(sequence)
+
+    if seq_set <= protein_letters:
+        return "protein"
+    elif seq_set <= dna_letters:
+        return "dna"
+    elif seq_set <= rna_letters:
+        return "rna"
+    else:
+        # Mixed or unknown letters → default to protein
+        return "protein"
+
+
+def search_pdb_by_sequence(sequence, output_csv="pdb_mmcif_extracted.csv", keep_all=False, max_workers=6):
+    """Search PDB by sequence and automatically detect sequence type."""
+    
+    # Automatically detect the sequence type
+    seq_type = detect_seq_type(sequence)
 
     target_map = {
         "protein": "pdb_protein_sequence",
@@ -274,6 +375,8 @@ def search_pdb_by_sequence(sequence, seq_type, output_csv="pdb_mmcif_extracted.c
         "request_options": {"paginate": {"start": 0, "rows": 10000}},
         "return_type": "entry"
     }
+
+    # The rest of your function can remain unchanged
 
     headers = {"User-Agent": "PDB-sequence-search-script/1.0"}
 
