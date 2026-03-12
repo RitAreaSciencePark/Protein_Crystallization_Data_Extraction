@@ -1,7 +1,7 @@
 import os
 from PDB_searchAPI import search_pdb_by_sequence, filter_experimental_conditions
 from plot import run_plot
-from extract_structures import append_compound_to_filtered_csv  # COMPOUND-only function
+from extract_structures import append_compound_to_filtered_csv  # COMPOUND + Excel function
 import tempfile
 
 # -------------------------------
@@ -47,20 +47,25 @@ def main():
     # -------------------------------
     # Filter experimental conditions
     # -------------------------------
-    filtered_csv = os.path.join(output_dir, f"{seq_type_name}_pdb_mmcif_filtered.csv")
-    filter_experimental_conditions(tmp_full_csv_path, filtered_csv)
+    filtered_csv_file = os.path.join(output_dir, f"{seq_type_name}_pdb_mmcif_filtered.csv")
+    filter_experimental_conditions(tmp_full_csv_path, filtered_csv_file)
     os.remove(tmp_full_csv_path)  # Clean up temporary CSV
 
     # -------------------------------
-    # Append COMPOUND column from pickle
+    # Append COMPOUND column from pickle and save Excel
     # -------------------------------
-    structures_pickle_file = os.path.join(base_dir, "Structures", "structures.pkl")
-    append_compound_to_filtered_csv(structures_pickle_file, filtered_csv, filtered_csv)  # overwrite same file
+    structures_file = os.path.join(base_dir, "Structures", "structures.pkl")
+
+    # Output Excel path (same folder)
+    output_excel_file = os.path.join(output_dir, f"{seq_type_name}_crystallization_data.xlsx")
+
+    # This function now saves both updated CSV and Excel
+    append_compound_to_filtered_csv(structures_file, filtered_csv_file, output_excel_file)
 
     # -------------------------------
     # Generate plots using final CSV
     # -------------------------------
-    run_plot(filtered_csv)
+    run_plot(filtered_csv_file)
 
     print(f"\n✔ Pipeline completed successfully.")
     print(f"✔ All outputs saved in {output_dir}")

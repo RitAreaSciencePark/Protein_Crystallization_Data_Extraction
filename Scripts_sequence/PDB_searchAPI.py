@@ -268,14 +268,13 @@ def extract_mmcif_info(pdb_id, score):
     info = {
         "PDB_ID": block.find_value("_entry.id"),
         "score": score,
-        "Resolution": block.find_value("_refine.ls_d_res_high"),
         "pubmed_id": pubmed,
-        "crystal_id ": block.find_value("_exptl_crystal_grow.crystal_id"),
+        "Assembly": assembly_detail,
+        "Resolution": block.find_value("_refine.ls_d_res_high"),
+        "pdbx_details": block.find_value("_exptl_crystal_grow.pdbx_details"),
         "method": get_method_from_mmcif_or_details(block),
         "pH": get_ph_from_mmcif_or_details(block),
         "temp": get_temperature_from_mmcif_or_details(block),
-        "Assembly": assembly_detail,
-        "pdbx_details": block.find_value("_exptl_crystal_grow.pdbx_details"),
         "pdbx_pH_range": get_pdbx_ph_range_from_mmcif_or_details(block),
         "ligands": fetch_ligands(pdb_id)
     }
@@ -418,9 +417,8 @@ def search_pdb_by_sequence(sequence, output_csv="pdb_mmcif_extracted.csv", keep_
 
     # Always write CSV with headers, even if empty
     fieldnames = [
-        "PDB_ID","score","Resolution","pubmed_id","crystal_id ",
-        "method","pH","temp","Assembly","pdbx_details","pdbx_pH_range","ligands"]
-
+        "PDB_ID","score","Resolution","pubmed_id","Assembly","method","pH","temp","pdbx_details","pdbx_pH_range","ligands"]
+    
     os.makedirs(os.path.dirname(output_csv), exist_ok=True)
     with open(output_csv, "w", newline="") as f:
         writer = csv.DictWriter(f, fieldnames=fieldnames)
