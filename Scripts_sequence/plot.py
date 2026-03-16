@@ -295,11 +295,11 @@ def run_plot(output_csv_file):
         ])
     
 
-        # 2️⃣ Sub-header labels (used in table() for the actual cells)
+        #  Sub-header labels (used in table() for the actual cells)
     sub_headers = ["PDB_ID", "score", "pubmed_id", "Assembly",
                     "pH", "temp", "method", "ligands", "COMPOUNDS (con_unit=mM)"]
     
-        # 2️⃣ Compute column widths automatically
+        #  Compute column widths automatically
     max_chars_per_col = []
     for col_idx in range(len(sub_headers)):
         max_len = max(
@@ -318,19 +318,17 @@ def run_plot(output_csv_file):
         # Identify column indices
     comp_idx = sub_headers.index("COMPOUNDS (con_unit=mM)")
     method_idx = sub_headers.index("method")
+        
+        # Define max characters per column
+    max_chars_dict = {
+        "PDB_ID": 11,
+        "method": 16,
+        "ligands": 13,
+        "COMPOUNDS (con_unit=mM)": 60
+    }
 
-    # 2️⃣ Wrap long text in COMPOUNDS and method columns
-    max_line_length = 50  # approx. characters per line
-    for r in range(len(table_rows)):
-        for idx in [comp_idx, method_idx]:
-            text = table_rows[r][idx]
-            if len(text) > max_line_length:
-                wrapped = "\n".join([text[i:i+max_line_length] for i in range(0, len(text), max_line_length)])
-                table_rows[r][idx] = wrapped
-    
-    # Define relative widths for each column
-# PDB_ID, score, pubmed_id, Assembly, pH, temp, method, ligands, COMPOUNDS
-    col_widths = [0.08, 0.04, 0.07, 0.08, 0.04, 0.04, 0.15, 0.08, 0.25]
+     # Define relative widths for each column
+    col_widths = [0.09, 0.04, 0.07, 0.08, 0.04, 0.04, 0.10, 0.11, 0.35]
 
     tbl = ax.table(
         cellText=table_rows,
@@ -339,12 +337,29 @@ def run_plot(output_csv_file):
         cellLoc="left",
         loc="center")
 
-    # 4️⃣ Scale & font
-    tbl.auto_set_font_size(False)
-    tbl.set_fontsize(6.5)
-    tbl.scale(1, 2.5)
+    # Apply wrapping
+    for r in range(len(table_rows)):
+        for c, col_name in enumerate(sub_headers):
+            try:
+                cell = tbl[r + 1, c]  # row 0 is header
+                text_obj = cell.get_text()
+                text_obj.set_verticalalignment("top")
+                text_obj.set_horizontalalignment("left")
+                text = text_obj.get_text()
+                max_chars = max_chars_dict.get(col_name, 60)
+                if len(text) > max_chars:
+                    wrapped_text = "\n".join([text[i:i+max_chars] for i in range(0, len(text), max_chars)])
+                    text_obj.set_text(wrapped_text)
+            except KeyError:
+                # cell might not exist if matplotlib didn't create it
+                continue
 
-    # 9️⃣ Save PDF
+    #  Scale & font
+    tbl.auto_set_font_size(False)
+    tbl.set_fontsize(8.0)
+    tbl.scale(1, 3)
+
+    # Save PDF
     first10_pdf = os.path.join(os.path.dirname(output_csv_file),
                             f"{protein_name}_FIRST10_TABLE.pdf")
     fig.savefig(first10_pdf, bbox_inches="tight")
