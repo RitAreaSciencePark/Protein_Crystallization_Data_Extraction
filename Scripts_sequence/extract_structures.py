@@ -1,9 +1,10 @@
-import pickle
+
 import pandas as pd
 import types
 import sys
+import pickle
 
-def append_compound_to_filtered_csv(structures_file, filtered_csv_file, output_csv_file):
+def append_compound_to_filtered_csv(structures_file, filtered_csv_path, output_csv_file):
     """
     Append COMPOUND column from pickle to filtered CSV based on matching PDB_ID.
     Saves output to output_csv_file (can overwrite filtered_csv_file).
@@ -35,7 +36,7 @@ def append_compound_to_filtered_csv(structures_file, filtered_csv_file, output_c
     # -------------------------------
     # Load filtered CSV
     # -------------------------------
-    filtered_df = pd.read_csv(filtered_csv_file, on_bad_lines="skip")
+    filtered_df = pd.read_csv(filtered_csv_path, on_bad_lines="skip")
     filtered_df["PDB_ID"] = filtered_df["PDB_ID"].astype(str).str.strip().str.upper()
 
     # -------------------------------
@@ -65,30 +66,4 @@ def append_compound_to_filtered_csv(structures_file, filtered_csv_file, output_c
     # -------------------------------
     filtered_df.to_csv(output_csv_file, index=False)
     print(f"✔ COMPOUND column appended. CSV saved to: {output_csv_file}")
-
-    # -------------------------------
-    # Create hierarchical Excel columns
-    # -------------------------------
-    cocktail_cols = ["pH", "COMPOUNDS (con_unit=mM)", "temp", "method", "ligands"]
-
-    new_columns = []
-    for col in filtered_df.columns:
-        if col in cocktail_cols:
-            new_columns.append(("Crystallization_cocktails", col))
-        else:
-            new_columns.append((col, ""))
-
-    filtered_df.columns = pd.MultiIndex.from_tuples(new_columns)
-
-    # Optional: move grouped columns to the end
-    if "Crystallization_cocktails" in filtered_df.columns.levels[0]:
-        cocktail = filtered_df["Crystallization_cocktails"]
-        others = filtered_df.drop(columns="Crystallization_cocktails", level=0)
-        filtered_df = pd.concat([others, cocktail], axis=1)
-
-    # -------------------------------
-    # Save to Excel
-    # -------------------------------
-    filtered_df.to_excel(output_csv_file, index=False)
-    print(f"✔ Excel file successfully saved to: {output_csv_file}")
 

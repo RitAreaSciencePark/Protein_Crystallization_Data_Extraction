@@ -283,28 +283,36 @@ def extract_mmcif_info(pdb_id, score):
 
 def filter_experimental_conditions(input_csv, output_csv=None):
 
-   
     if output_csv is None:
         base, ext = os.path.splitext(input_csv)
         output_csv = f"{base}_filtered{ext}"
+
     filtered_rows = []
 
     if os.path.exists(input_csv):
-       with open(input_csv, newline="") as f:
-        reader = csv.DictReader(f)
-        for row in reader:
-            if any(row.get(field) not in (None, "", "NA") for field in ["pH", "temp", "method", "pdbx_details"]):
-                filtered_rows.append(row)
-       with open(output_csv, "w", newline="") as f:
-        writer = csv.DictWriter(f, fieldnames=reader.fieldnames)
-        writer.writeheader()
-        writer.writerows(filtered_rows)
-       print(f"✔ Filtered CSV saved to: {os.path.abspath(output_csv)}")
-       return output_csv
-    else:
-       print(f" CSV not found: {input_csv}, skipping processing.")
-       sys.exit(1)
 
+        with open(input_csv, newline="") as f:
+            reader = csv.DictReader(f)
+
+            fieldnames = reader.fieldnames  # ← store before file closes
+
+            for row in reader:
+                if any(row.get(field) not in (None, "", "NA") 
+                       for field in ["pH", "temp", "method", "pdbx_details"]):
+                    filtered_rows.append(row)
+
+        with open(output_csv, "w", newline="") as f:
+            writer = csv.DictWriter(f, fieldnames=fieldnames)
+            writer.writeheader()
+            writer.writerows(filtered_rows)
+
+        print(f"✔ Filtered CSV saved to: {os.path.abspath(output_csv)}")
+        return output_csv
+
+    else:
+        print(f"CSV not found: {input_csv}, skipping processing.")
+        sys.exit(1)
+        
 def detect_seq_type(sequence):
 
     """Automatically detect whether a sequence is protein, DNA, or RNA."""

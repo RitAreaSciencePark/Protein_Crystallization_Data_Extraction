@@ -4,9 +4,7 @@ from plot import run_plot
 from extract_structures import append_compound_to_filtered_csv  # COMPOUND + Excel function
 import tempfile
 
-# -------------------------------
-# Main pipeline
-# -------------------------------
+
 def main():
     # -------------------------------
     # Input
@@ -45,32 +43,33 @@ def main():
         return
 
     # -------------------------------
-    # Filter experimental conditions
+    # Filter experimental conditions (into temporary file)
     # -------------------------------
-    filtered_csv_file = os.path.join(output_dir, f"{seq_type_name}_pdb_mmcif_filtered.csv")
-    filter_experimental_conditions(tmp_full_csv_path, filtered_csv_file)
-    os.remove(tmp_full_csv_path)  # Clean up temporary CSV
+    with tempfile.NamedTemporaryFile(mode="w+", delete=False, suffix=".csv") as filtered_csv:
+        filtered_csv_path = filtered_csv.name
+
+    filter_experimental_conditions(tmp_full_csv_path, filtered_csv_path)
+    os.remove(tmp_full_csv_path)  # remove temporary full CSV
 
     # -------------------------------
-    # Append COMPOUND column from pickle and save Excel
+    # Append COMPOUND column and save only final CSV & Excel
     # -------------------------------
     structures_file = os.path.join(base_dir, "Structures", "structures.pkl")
 
-    # Output Excel path (same folder)
-    output_excel_file = os.path.join(output_dir, f"{seq_type_name}_crystallization_data.xlsx")
-
-    # This function now saves both updated CSV and Excel
-    append_compound_to_filtered_csv(structures_file, filtered_csv_file, output_excel_file)
+   
+    # Save COMPOUND-augmented CSV and Excel
+    output_csv_file = os.path.join(output_dir, f"{seq_type_name}_crystallization_data.csv")
+ 
+    append_compound_to_filtered_csv(structures_file, filtered_csv_path, output_csv_file)
+    os.remove(filtered_csv_path)  # Clean up temporary filtered CSV
 
     # -------------------------------
     # Generate plots using final CSV
-    # -------------------------------
-    run_plot(filtered_csv_file)
+    # ------------------------------- 
+    run_plot(output_csv_file)
 
     print(f"\n✔ Pipeline completed successfully.")
-    print(f"✔ All outputs saved in {output_dir}")
-
-
+   
 # -------------------------------
 # Run main
 # -------------------------------
