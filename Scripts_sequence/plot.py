@@ -7,38 +7,26 @@ import re
 import os
 import textwrap
 
-
-# ============================================================
-# Helper: compute adaptive column widths
-# ============================================================
-def compute_col_widths(df, min_width=0.05, max_width=0.25, first_col_scale=1.7):
-    widths = []
-    for i, col in enumerate(df.columns):
-        max_len = max(df[col].fillna("").astype(str).map(len).max(), len(col))
-        w = min(max(min_width, max_len / 120), max_width)
-        widths.append(w * first_col_scale if i == 0 else w)
+# Automatically compute approximate column widths based on max text length
+def compute_col_widths(df, scale=0.01):
+    """
+    Compute column widths for matplotlib table based on text length.
+    scale: adjust to make table wider/narrower
+    """
+    widths = {}
+    for col in df.columns:
+        max_len = max(df[col].astype(str).apply(len).max(), len(col))
+        widths[col] = max_len * scale  # simple scaling factor
     return widths
-
-
-# ============================================================
-# Helper: wrap long text
-# ============================================================
-def wrap_text(text, width=25, max_lines=2):
-    if pd.isna(text) or text == "":
-        return ""
-    lines = textwrap.wrap(str(text), width=width)
-    return "\n".join(lines[:max_lines])
-
 
 # ============================================================
 # MAIN FUNCTION
 # ============================================================
-def run_plot(csv_file):
+def run_plot(output_csv_file):
 
-    print(f"▶ Loading CSV: {csv_file}")
-    df = pd.read_csv(csv_file)
-
-    protein_name = os.path.basename(os.path.dirname(csv_file))
+    print(f"▶ Loading CSV: {output_csv_file}")
+    df = pd.read_csv(output_csv_file)
+    protein_name = os.path.basename(output_csv_file).split("_crystallization_data")[0]
 
     # --------------------------------------------------------
     # Clean method column
@@ -177,41 +165,30 @@ def run_plot(csv_file):
     # -------------------------
     # Group top 10 conditions
     # -------------------------
-    def group_for_plotting(df):
+    def first10_conditions_with_merged_pdb(df):
         """
-        Group by pubmed_id, temp, plot_pH_numeric, and method.
-        All PDB_IDs with the same condition go into the same cell.
-        Missing pH/temp are left empty in the table but assigned plotting positions.
+        Return top 10 unique conditions based on pubmed_id, method, plot_pH_numeric, and COMPOUNDS (con_unit=mM).
+        Merge PDB_IDs sharing the same condition while keeping all other columns intact.
         """
-        condition_cols = ["pubmed_id", "temp", "plot_pH_numeric", "method"]
+        cond_cols = ["pubmed_id", "method", "plot_pH_numeric", "COMPOUNDS (con_unit=mM)"]
+        df_filled = df.copy()
+        for col in cond_cols:
+            df_filled[col] = df_filled[col].fillna("").astype(str)
 
-        def join_pdb_ids(series):
-            clean = series.dropna()
-            if clean.empty:
-                return ""
-            return ", ".join(dict.fromkeys(clean.astype(str)))  # preserve CSV order
+        df_filled["_condition_key"] = df_filled[cond_cols].agg("||".join, axis=1)
 
-        grouped = (
-            df.groupby(condition_cols, dropna=False, as_index=False)
-            .agg({
-                "PDB_ID": join_pdb_ids,
-                "pdbx_details": lambda x: " | ".join(x.dropna().astype(str)),
-                "score": "mean"
-            })
-        )
+        merged_rows = []
+        for _, group in df_filled.groupby("_condition_key"):
+            merged_pdb = ", ".join(group["PDB_ID"].astype(str).tolist())
+            row = group.iloc[0].copy()  # take first row as representative
+            row["PDB_ID"] = merged_pdb
+            merged_rows.append(row)
 
-        # Assign plotting positions for missing or below-min values
-        grouped["temp_plot"] = grouped["temp"].copy()
-        grouped.loc[grouped["temp_plot"].isna() | (grouped["temp_plot"] < temp_min), "temp_plot"] = no_temp_x
-
-        grouped["pH_plot"] = grouped["plot_pH_numeric"].copy()
-        grouped.loc[grouped["pH_plot"].isna() | (grouped["pH_plot"] < ph_min), "pH_plot"] = no_ph_y
-
-        # Sort by mean score descending
-        grouped = grouped.sort_values("score", ascending=False)
-
-        return grouped.head(10)  # top 10 conditions
-
+        merged_df = pd.DataFrame(merged_rows)
+        merged_df = merged_df.sort_values("score", ascending=False)
+        top10 = merged_df.head(10).copy()
+        top10.drop(columns=["_condition_key"], inplace=True)
+        return top10
 
     # ========================================================
     # 1️⃣ FULL PLOT
@@ -286,120 +263,91 @@ def run_plot(csv_file):
     cbar.set_ticklabels([f"{t:.1f}" for t in fixed_ticks])
 
     full_png = os.path.join(
-        os.path.dirname(csv_file),
-        f"{protein_name}_FULL_PLOT.png",
-    )
+        os.path.dirname(output_csv_file),
+        f"{protein_name}_FULL_PLOT.png",)
     fig.savefig(full_png, dpi=300, bbox_inches="tight")
     plt.close(fig)
-
     print(f"✔ Full plot saved as: {full_png}")
 
     # ========================================================
     # 2️⃣ FIRST 10 + TABLE
     # ========================================================
+   
+    # Example: first10_grouped DataFrame
+    first10_grouped = first10_conditions_with_merged_pdb(df)  # your function
+
+    fig, ax = plt.subplots(figsize=(14, 6))
+    ax.axis("off")
+
+    # 1️⃣ Table body rows
+    table_rows = []
+    for _, group in first10_grouped.iterrows():
+        table_rows.append([
+            group["PDB_ID"],
+            f"{group['score']:.3f}" if not pd.isna(group["score"]) else "",
+            group["pubmed_id"] if not pd.isna(group["pubmed_id"]) else "",
+            group.get("Assembly", ""),
+            group["plot_pH_numeric"] if not pd.isna(group["plot_pH_numeric"]) else "",
+            group["temp"] if not pd.isna(group["temp"]) else "",
+            group["method"],
+            group["ligands"] if not pd.isna(group["ligands"]) else "",
+            group["COMPOUNDS (con_unit=mM)"] if not pd.isna(group["COMPOUNDS (con_unit=mM)"]) else "",
+        ])
     
-    # 1️⃣ Group for plotting
-    first10_grouped = group_for_plotting(df)
 
-    fig2 = plt.figure(figsize=(12, 10))
-    gs = fig2.add_gridspec(2, 1, height_ratios=[1.5, 1.0], hspace=0.1)
-
-    ax10 = fig2.add_subplot(gs[0])
-    ax_table = fig2.add_subplot(gs[1])
-    ax_table.axis("off")
-
-    for _, row in first10_grouped.iterrows():
-        x = row["temp_plot"] if "temp_plot" in row else row["temp"]
-        y = row["pH_plot"] if "pH_plot" in row else row["pH"]
-        marker = assign_marker(row["method"])
-        c = cmap(norm(row["score"]))
-
-        ax10.scatter( x, y, color=c, edgecolor="black", s=80, marker=marker)
-
-        # Add PDB_ID label
-        ax10.text(x, y, row["PDB_ID"], fontsize=8, path_effects=[pe.withStroke(linewidth=2, foreground="white")])
-
-
-        ax10.set_title(
-            f"First 10 PDB entries with different conditions\nProtein: {protein_name}",
-            fontsize=12,
-            fontweight="bold",
+        # 2️⃣ Sub-header labels (used in table() for the actual cells)
+    sub_headers = ["PDB_ID", "score", "pubmed_id", "Assembly",
+                    "pH", "temp", "method", "ligands", "COMPOUNDS (con_unit=mM)"]
+    
+        # 2️⃣ Compute column widths automatically
+    max_chars_per_col = []
+    for col_idx in range(len(sub_headers)):
+        max_len = max(
+            [len(str(table_rows[row][col_idx])) for row in range(len(table_rows))] +
+            [len(sub_headers[col_idx])]
         )
-    # Dashed lines for No pH / No Temp
-    ax10.axhline(no_ph_y + 0.25, linestyle="--", color="black")
-    ax10.axvline(no_temp_x + 2, linestyle="--", color="black")
+        max_chars_per_col.append(max_len)
 
-    # Get existing ticks, Remove any tick below real minimum, Add artificial no_temp position, Create labels
-    ax10.set_xlim(no_temp_x - 2, valid_temp.max() + 2)
-    xticks = [no_temp_x] + list(range(temp_min_tick, temp_max_tick + 5, 10))
-    ax10.set_xticks(xticks)
-    ax10.set_xticklabels(["No Temp"] + [str(t) for t in xticks[1:]])
+    # Normalize to total width = 1
+    total_chars = sum(max_chars_per_col)
+    col_widths = [c / total_chars for c in max_chars_per_col]
+    
+    fig, ax = plt.subplots(figsize=(14, 6))
+    ax.axis("off")
 
+        # Identify column indices
+    comp_idx = sub_headers.index("COMPOUNDS (con_unit=mM)")
+    method_idx = sub_headers.index("method")
 
-    # Get existing ticks, Remove any tick below real minimum, Add artificial no_pH position, Create labels
-    ax10.set_ylim(no_ph_y - 0.25, valid_ph.max() + 0.25)
-    yticks = [no_ph_y] + list(np.arange(ph_min_tick, ph_max_tick + 0.5, 1))
-    ax10.set_yticks(yticks)
-    ax10.set_yticklabels(["No pH"] + [f"{t:.1f}" for t in yticks[1:]])
+    # 2️⃣ Wrap long text in COMPOUNDS and method columns
+    max_line_length = 50  # approx. characters per line
+    for r in range(len(table_rows)):
+        for idx in [comp_idx, method_idx]:
+            text = table_rows[r][idx]
+            if len(text) > max_line_length:
+                wrapped = "\n".join([text[i:i+max_line_length] for i in range(0, len(text), max_line_length)])
+                table_rows[r][idx] = wrapped
+    
+    # Define relative widths for each column
+# PDB_ID, score, pubmed_id, Assembly, pH, temp, method, ligands, COMPOUNDS
+    col_widths = [0.08, 0.04, 0.07, 0.08, 0.04, 0.04, 0.15, 0.08, 0.25]
 
-    ax10.set_xlabel("Temperature (K)")
-    ax10.set_ylabel("pH")
-
-    # ---------- Colorbar ----------
-    sm2 = plt.cm.ScalarMappable(cmap=cmap, norm=norm)
-    sm2.set_array([])
-    cbar2 = fig2.colorbar(sm2, ax=ax10, pad=0.02)
-    cbar2.set_label("Score", rotation=270, labelpad=15)
-    cbar2.set_ticks([0.5, 0.6, 0.7, 0.8, 0.9, 1.0])
-    cbar2.set_ticklabels([f"{t:.1f}" for t in [0.5, 0.6, 0.7, 0.8, 0.9, 1.0]])
-
-    # ---------- Table ----------
-    def build_table(top_groups):
-        """
-        Expand PDB_IDs into individual rows for the table.
-        Keep missing pH/temp as empty strings.
-        """
-        table_rows = []
-        for _, group in top_groups.iterrows():
-                table_rows.append({
-                    "PDB_ID": group["PDB_ID"],  # <- use group["PDB_ID"]
-                    "score": f"{group['score']:.3f}" if not pd.isna(group["score"]) else "",
-                    "pubmed_id": group["pubmed_id"] if not pd.isna(group["pubmed_id"]) else "",
-                    "temp": group["temp"] if not pd.isna(group["temp"]) else "",
-                    "pH": group["plot_pH_numeric"] if not pd.isna(group["plot_pH_numeric"]) else "",
-                    "pdbx_details": wrap_text(group["pdbx_details"]) if not pd.isna(group["pdbx_details"]) else "",
-                    "method": group["method"]
-                })
-
-        table_df = pd.DataFrame(table_rows)
-        # Sort table by score descending
-        table_df = table_df.sort_values("score", ascending=False)
-        return table_df
-
-
-    # Build the table
-    table_df = build_table(first10_grouped)
-    col_widths = compute_col_widths(table_df)
-
-    tbl = ax_table.table(
-        cellText=table_df.values,
-        colLabels=table_df.columns,
+    tbl = ax.table(
+        cellText=table_rows,
+        colLabels=sub_headers,
         colWidths=col_widths,
         cellLoc="left",
-        colLoc="left",
-        loc="upper center",
-    )
+        loc="center")
 
+    # 4️⃣ Scale & font
     tbl.auto_set_font_size(False)
-    tbl.set_fontsize(8.5)
-    tbl.scale(1, 2.1)
+    tbl.set_fontsize(6.5)
+    tbl.scale(1, 2.5)
 
-    first10_png = os.path.join(
-        os.path.dirname(csv_file),
-        f"{protein_name}_FIRST10_TABLE.png",
-    )
-    fig2.savefig(first10_png, dpi=300, bbox_inches="tight")
-    plt.close(fig2)
+    # 9️⃣ Save PDF
+    first10_pdf = os.path.join(os.path.dirname(output_csv_file),
+                            f"{protein_name}_FIRST10_TABLE.pdf")
+    fig.savefig(first10_pdf, bbox_inches="tight")
+    plt.close(fig)
 
-    print(f"✔ First 10 plot saved as: {first10_png}")
-    
+    print(f"✔ Table saved as: {first10_pdf}")
