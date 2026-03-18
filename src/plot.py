@@ -272,7 +272,6 @@ def run_plot(output_csv_file):
     # ========================================================
     # 2️⃣ FIRST 10 + TABLE
     # ========================================================
-   
     # Example: first10_grouped DataFrame
     first10_grouped = first10_conditions_with_merged_pdb(df)  # your function
 
@@ -293,75 +292,88 @@ def run_plot(output_csv_file):
             group["ligands"] if not pd.isna(group["ligands"]) else "",
             group["COMPOUNDS (con_unit=mM)"] if not pd.isna(group["COMPOUNDS (con_unit=mM)"]) else "",
         ])
-    
 
-        #  Sub-header labels (used in table() for the actual cells)
-    sub_headers = ["PDB_ID", "score", "pubmed_id", "Assembly",
-                    "pH", "temp", "method", "ligands", "COMPOUNDS (con_unit=mM)"]
-    
-        #  Compute column widths automatically
-    max_chars_per_col = []
-    for col_idx in range(len(sub_headers)):
-        max_len = max(
-            [len(str(table_rows[row][col_idx])) for row in range(len(table_rows))] +
-            [len(sub_headers[col_idx])]
-        )
-        max_chars_per_col.append(max_len)
+    # 2️⃣ Headers
+    main_header = ["", "", "", "", "", "", "CRYSTALLIZATION COCKTAILS", "", ""] 
+    sub_headers = ["PDB_ID", "score", "pubmed_id", "Assembly","pH", "temp", "method", "ligands", "COMPOUNDS (con_unit=mM)"]
 
-    # Normalize to total width = 1
-    total_chars = sum(max_chars_per_col)
-    col_widths = [c / total_chars for c in max_chars_per_col]
-    
-    fig, ax = plt.subplots(figsize=(14, 6))
-    ax.axis("off")
+    # 3️⃣ Column widths
+    col_widths = [0.09, 0.04, 0.07, 0.08, 0.04, 0.04, 0.10, 0.11, 0.35]
 
-        # Identify column indices
-    comp_idx = sub_headers.index("COMPOUNDS (con_unit=mM)")
-    method_idx = sub_headers.index("method")
+    # 4️⃣ Create table
+    tbl = ax.table(
+        cellText=[main_header, sub_headers] + table_rows,
+        colWidths=col_widths,
+        cellLoc="center",
+        loc="center")
+
+    # Main header font (row 0)
+    for c in range(len(main_header)):
+        cell = tbl[0, c]
+        txt = cell.get_text()
+        txt.set_fontsize(18)    
+        txt.set_weight("bold")
         
-        # Define max characters per column
+
+    for c in range(len(sub_headers)):
+        cell = tbl[1, c]
+        txt = cell.get_text()
+        txt.set_weight("bold")
+        txt.set_fontsize(12)   
+
+    # 5️⃣ Experimental Conditions spanning pH → COMPOUNDS
+    exp_start = sub_headers.index("pH")
+    exp_end = sub_headers.index("COMPOUNDS (con_unit=mM)")
+
+    # Keep only outer borders
+    for c in range(exp_start, exp_end + 1):
+        cell = tbl[0, c]
+        if c == exp_start:
+            cell.visible_edges = "LTB"  # left, top, bottom
+        elif c == exp_end:
+            cell.visible_edges = "RTB"  # right, top, bottom
+        else:
+            cell.visible_edges = "TB"   # top & bottom only
+        cell.set_linewidth(1.2)
+
+    # 7️⃣ Wrap data rows (row 2+)
     max_chars_dict = {
         "PDB_ID": 11,
         "method": 16,
         "ligands": 13,
-        "COMPOUNDS (con_unit=mM)": 60
-    }
+        "COMPOUNDS (con_unit=mM)": 60}
 
-     # Define relative widths for each column
-    col_widths = [0.09, 0.04, 0.07, 0.08, 0.04, 0.04, 0.10, 0.11, 0.35]
 
-    tbl = ax.table(
-        cellText=table_rows,
-        colLabels=sub_headers,
-        colWidths=col_widths,
-        cellLoc="left",
-        loc="center")
-
-    # Apply wrapping
     for r in range(len(table_rows)):
         for c, col_name in enumerate(sub_headers):
-            try:
-                cell = tbl[r + 1, c]  # row 0 is header
-                text_obj = cell.get_text()
-                text_obj.set_verticalalignment("top")
-                text_obj.set_horizontalalignment("left")
-                text = text_obj.get_text()
-                max_chars = max_chars_dict.get(col_name, 60)
-                if len(text) > max_chars:
-                    wrapped_text = "\n".join([text[i:i+max_chars] for i in range(0, len(text), max_chars)])
-                    text_obj.set_text(wrapped_text)
-            except KeyError:
-                # cell might not exist if matplotlib didn't create it
-                continue
 
-    #  Scale & font
+            cell = tbl[r + 2, c]
+            text_obj = cell.get_text()
+
+            # Wrap text
+            text = text_obj.get_text()
+            max_chars = max_chars_dict.get(col_name, 60)
+            if len(text) > max_chars:
+                wrapped_text = "\n".join(textwrap.wrap(text, width=max_chars))
+                text_obj.set_text(wrapped_text)
+                # Centered cells
+                x, y = 0.5, 0.5
+                text_obj.set_position((x, y))
+                text_obj.set_ha("center")
+                text_obj.set_va("center")
+                cell._loc = None
+
+
+    # 8️⃣ Scale & font
     tbl.auto_set_font_size(False)
-    tbl.set_fontsize(8.0)
-    tbl.scale(1, 3)
+    tbl.set_fontsize(8.5)
+    tbl.scale(1, 3.5)
 
-    # Save PDF
-    first10_pdf = os.path.join(os.path.dirname(output_csv_file),
-                            f"{protein_name}_FIRST10_TABLE.pdf")
+    # 9️⃣ Save PDF
+    first10_pdf = os.path.join(
+        os.path.dirname(output_csv_file),
+        f"{protein_name}_FIRST10_TABLE.pdf")
+
     fig.savefig(first10_pdf, bbox_inches="tight")
     plt.close(fig)
 
