@@ -349,8 +349,8 @@ def search_pdb_by_sequence(sequence, output_csv="pdb_mmcif_extracted.csv", keep_
                     "parameters": {
                         "target": target,
                         "value": sequence,
-                        "identity_cutoff": 0.3,
-                        "evalue_cutoff": 1e-3
+                        "identity_cutoff": 0.5,
+                        "evalue_cutoff": 1e-5
                     }
                 },
 
