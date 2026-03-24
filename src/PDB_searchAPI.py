@@ -7,6 +7,7 @@ import re
 import sys
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from Bio.PDB.MMCIF2Dict import MMCIF2Dict
+import pandas as pd
 
 # Setup cache directory for PDB files
 CACHE_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), ".pdb_cache")
@@ -287,31 +288,18 @@ def filter_experimental_conditions(input_csv, output_csv=None):
         base, ext = os.path.splitext(input_csv)
         output_csv = f"{base}_filtered{ext}"
 
-    filtered_rows = []
+    df = pd.read_csv(input_csv)
 
-    if os.path.exists(input_csv):
+    filtered_df = df[
+        df[["pH", "temp", "method", "pdbx_details"]]
+        .notna()
+        .any(axis=1)
+    ]
 
-        with open(input_csv, newline="") as f:
-            reader = csv.DictReader(f)
+    filtered_df.to_csv(output_csv, index=False)
 
-            fieldnames = reader.fieldnames  # ← store before file closes
-
-            for row in reader:
-                if any(row.get(field) not in (None, "", "NA") 
-                       for field in ["pH", "temp", "method", "pdbx_details"]):
-                    filtered_rows.append(row)
-
-        with open(output_csv, "w", newline="") as f:
-            writer = csv.DictWriter(f, fieldnames=fieldnames)
-            writer.writeheader()
-            writer.writerows(filtered_rows)
-
-        print(f"✔ Filtered CSV saved to: {os.path.abspath(output_csv)}")
-        return output_csv
-
-    else:
-        print(f"CSV not found: {input_csv}, skipping processing.")
-        sys.exit(1)
+    print(f"✔ Filtered CSV saved to: {os.path.abspath(output_csv)}")
+    return output_csv
         
 def detect_seq_type(sequence):
 

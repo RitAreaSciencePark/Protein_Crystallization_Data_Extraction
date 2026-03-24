@@ -56,9 +56,12 @@ def run_plot(output_csv_file):
     def parse_ph_range(ph_range):
         if pd.isna(ph_range):
             return (np.nan, np.nan)
-        m = re.search(r"([0-9.]+)\s*-\s*([0-9.]+)", str(ph_range))
+        
+        # Match numbers with optional decimals
+        m = re.search(r"(\d+(?:\.\d+)?)\s*[-–]\s*(\d+(?:\.\d+)?)", str(ph_range))
         if m:
             return (float(m.group(1)), float(m.group(2)))
+        
         return (np.nan, np.nan)
 
     if "pdbx_pH_range" in df.columns:
@@ -164,13 +167,15 @@ def run_plot(output_csv_file):
 
     # -------------------------
     # Group top 10 conditions
-    # -------------------------
-    def first10_conditions_with_merged_pdb(df):
+    # 
+    def all_conditions_with_merged_pdb(df):
         """
-        Return top 10 unique conditions based on pubmed_id, method, plot_pH_numeric, and COMPOUNDS (con_unit=mM).
+        Return ALL unique conditions based on pubmed_id, method, plot_pH_numeric, 
+        and COMPOUNDS (con_unit=mM).
         Merge PDB_IDs sharing the same condition while keeping all other columns intact.
         """
         cond_cols = ["pubmed_id", "method", "plot_pH_numeric", "COMPOUNDS (con_unit=mM)"]
+        
         df_filled = df.copy()
         for col in cond_cols:
             df_filled[col] = df_filled[col].fillna("").astype(str)
@@ -180,16 +185,16 @@ def run_plot(output_csv_file):
         merged_rows = []
         for _, group in df_filled.groupby("_condition_key"):
             merged_pdb = ", ".join(group["PDB_ID"].astype(str).tolist())
-            row = group.iloc[0].copy()  # take first row as representative
+            row = group.iloc[0].copy()  # representative row
             row["PDB_ID"] = merged_pdb
             merged_rows.append(row)
 
         merged_df = pd.DataFrame(merged_rows)
         merged_df = merged_df.sort_values("score", ascending=False)
-        top10 = merged_df.head(10).copy()
-        top10.drop(columns=["_condition_key"], inplace=True)
-        return top10
 
+        # return everything instead of top 10
+        merged_df.drop(columns=["_condition_key"], inplace=True)
+        return merged_df
     # ========================================================
     # 1️⃣ FULL PLOT
     # ========================================================
@@ -273,12 +278,12 @@ def run_plot(output_csv_file):
     # 2️⃣ FIRST 10 + TABLE
     # ========================================================
     # Example: first10_grouped DataFrame
-    first10_grouped = first10_conditions_with_merged_pdb(df)  # your function
+    first10_grouped = all_conditions_with_merged_pdb(df)  # your function
 
-    fig, ax = plt.subplots(figsize=(14, 6))
+    fig, ax = plt.subplots(figsize=(16, 10))
     ax.axis("off")
 
-    # 1️⃣ Table body rows
+    # Table body rows
     table_rows = []
     for _, group in first10_grouped.iterrows():
         table_rows.append([
@@ -286,21 +291,21 @@ def run_plot(output_csv_file):
             f"{group['score']:.3f}" if not pd.isna(group["score"]) else "",
             group["pubmed_id"] if not pd.isna(group["pubmed_id"]) else "",
             group.get("Assembly", ""),
-            group["plot_pH_numeric"] if not pd.isna(group["plot_pH_numeric"]) else "",
-            group["temp"] if not pd.isna(group["temp"]) else "",
             group["method"],
             group["ligands"] if not pd.isna(group["ligands"]) else "",
+            group["plot_pH_numeric"] if not pd.isna(group["plot_pH_numeric"]) else "",
+            group["temp"] if not pd.isna(group["temp"]) else "",
             group["COMPOUNDS (con_unit=mM)"] if not pd.isna(group["COMPOUNDS (con_unit=mM)"]) else "",
         ])
 
     # 2️⃣ Headers
-    main_header = ["", "", "", "", "", "", "CRYSTALLIZATION COCKTAILS", "", ""] 
-    sub_headers = ["PDB_ID", "score", "pubmed_id", "Assembly","pH", "temp", "method", "ligands", "COMPOUNDS (con_unit=mM)"]
+    main_header = ["", "", "", "", "", "", "", "", "CRYSTALLIZATION COCKTAILS"] 
+    sub_headers = ["PDB_ID", "score", "pubmed_id", "Assembly","method", "ligands","pH", "temp", "COMPOUNDS (con_unit=mM)"]
 
     # 3️⃣ Column widths
-    col_widths = [0.09, 0.04, 0.07, 0.08, 0.04, 0.04, 0.10, 0.11, 0.35]
+    col_widths = [0.16, 0.05, 0.08, 0.09, 0.11, 0.10, 0.04, 0.04, 0.35]
 
-    # 4️⃣ Create table
+    # Create table
     tbl = ax.table(
         cellText=[main_header, sub_headers] + table_rows,
         colWidths=col_widths,
@@ -321,7 +326,7 @@ def run_plot(output_csv_file):
         txt.set_weight("bold")
         txt.set_fontsize(12)   
 
-    # 5️⃣ Experimental Conditions spanning pH → COMPOUNDS
+    # Experimental Conditions spanning pH → COMPOUNDS
     exp_start = sub_headers.index("pH")
     exp_end = sub_headers.index("COMPOUNDS (con_unit=mM)")
 
@@ -336,40 +341,75 @@ def run_plot(output_csv_file):
             cell.visible_edges = "TB"   # top & bottom only
         cell.set_linewidth(1.2)
 
-    # 7️⃣ Wrap data rows (row 2+)
-    max_chars_dict = {
-        "PDB_ID": 11,
-        "method": 16,
-        "ligands": 13,
-        "COMPOUNDS (con_unit=mM)": 60}
+    # Remove all vertical separators from PDB_IDs → ligands
 
+    pdb_start = sub_headers.index("PDB_ID")
+    pdb_end = sub_headers.index("ligands")
 
-    for r in range(len(table_rows)):
-        for c, col_name in enumerate(sub_headers):
+    for c in range(pdb_start, pdb_end + 1):
+        cell = tbl[0, c]
+        if c == pdb_end:
+            cell.visible_edges = "RB"  # right, bottom
+        else:
+            cell.visible_edges = "B"   #  bottom only (no verticals)
+        cell.set_linewidth(1.2)
 
-            cell = tbl[r + 2, c]
-            text_obj = cell.get_text()
+    # Wrap text consistently per column (stable layout)
+    wrap_widths = {
+        "PDB_ID": 18,
+        "score": 6,
+        "pubmed_id": 10,
+        "Assembly": 14,
+        "method": 18,
+        "ligands": 15,
+        "pH": 6,
+        "temp": 6,
+        "COMPOUNDS (con_unit=mM)": 55,}
 
-            # Wrap text
-            text = text_obj.get_text()
-            max_chars = max_chars_dict.get(col_name, 60)
-            if len(text) > max_chars:
-                wrapped_text = "\n".join(textwrap.wrap(text, width=max_chars))
-                text_obj.set_text(wrapped_text)
-                # Centered cells
-                x, y = 0.5, 0.5
-                text_obj.set_position((x, y))
-                text_obj.set_ha("center")
-                text_obj.set_va("center")
-                cell._loc = None
+    for (row, col), cell in tbl.get_celld().items():
 
+        if row < 2:   #  skip main_header (0) and sub_headers (1)
+            continue
+        text_obj = cell.get_text()
+        text = text_obj.get_text()
 
-    # 8️⃣ Scale & font
+        col_name = sub_headers[col] if col < len(sub_headers) else None
+        max_chars = wrap_widths.get(col_name, 20)
+
+        if text:
+            wrapped = "\n".join(textwrap.wrap(text, width=max_chars))
+            text_obj.set_text(wrapped)
+            text_obj.set_ha("center")
+            text_obj.set_va("center")
+
+    # 🔹 Minimum row height in axes fraction
+    min_row_height = 0.06  # adjust as needed (0.03 = ~3% of axes height)
+    fig.canvas.draw()
+    renderer = fig.canvas.get_renderer()
+
+    row_heights = {}
+
+    for (row, col), cell in tbl.get_celld().items():
+        text_obj = cell.get_text()
+        bbox = text_obj.get_window_extent(renderer=renderer)
+
+        bbox_axes = bbox.transformed(ax.transAxes.inverted())
+        height = bbox_axes.height * 1.7 # padding
+
+        height = max(height, min_row_height)
+
+        row_heights[row] = max(row_heights.get(row, 0), height)
+
+           # Scale & font
+    for (row, col), cell in tbl.get_celld().items():
+        cell.set_height(row_heights[row])
+        cell.get_text().set_fontfamily("DejaVu Sans")
+    
     tbl.auto_set_font_size(False)
-    tbl.set_fontsize(8.5)
-    tbl.scale(1, 3.5)
+    tbl.set_fontsize(11)
+    tbl.scale(1, 1)
 
-    # 9️⃣ Save PDF
+    # Save PDF
     first10_pdf = os.path.join(
         os.path.dirname(output_csv_file),
         f"{protein_name}_FIRST10_TABLE.pdf")
