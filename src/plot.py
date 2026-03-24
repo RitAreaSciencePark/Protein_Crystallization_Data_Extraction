@@ -326,19 +326,48 @@ def run_plot(output_csv_file):
         txt.set_weight("bold")
         txt.set_fontsize(12)   
 
+    # 🎨 Define a color per column
+    col_colors = {
+        "PDB_ID": "#98ACBA",
+        "score": "#B7EFBC",
+        "pubmed_id": "#D8BC8E",
+        "Assembly": "#CA94D2",
+        "method": "#9AD7DF",
+        "ligands": "#E9A6BC",
+        "pH": "#818FD8",
+        "temp": "#CBC8B1",
+        "COMPOUNDS (con_unit=mM)": "#A7F054",
+    }
+
+    # Apply colors to columns (from sub_header row down)
+    for col, col_name in enumerate(sub_headers):
+        color = col_colors.get(col_name, "white")
+
+        for row in range(1, len(table_rows) + 2):  # row 1 = sub_header, rest = data
+            cell = tbl[row, col]
+            cell.set_facecolor(color)
+
     # Experimental Conditions spanning pH → COMPOUNDS
     exp_start = sub_headers.index("pH")
     exp_end = sub_headers.index("COMPOUNDS (con_unit=mM)")
 
     # Keep only outer borders
+    group_color = "#F2EEED"  # soft green (change as you like)
+
     for c in range(exp_start, exp_end + 1):
         cell = tbl[0, c]
+
+        # 🔹 Apply DIFFERENT color for grouped header
+        cell.set_facecolor(group_color)
+
+        # 🔹 Keep your border logic
         if c == exp_start:
-            cell.visible_edges = "LTB"  # left, top, bottom
+            cell.visible_edges = "LTB"
         elif c == exp_end:
-            cell.visible_edges = "RTB"  # right, top, bottom
+            cell.visible_edges = "RTB"
         else:
-            cell.visible_edges = "TB"   # top & bottom only
+            cell.visible_edges = "TB"
+
         cell.set_linewidth(1.2)
 
     # Remove all vertical separators from PDB_IDs → ligands
