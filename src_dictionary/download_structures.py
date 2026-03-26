@@ -1,5 +1,4 @@
 import pickle, json, os, sys, traceback
-# import xml.etree.ElementTree as etree
 from pathlib import Path
 from pdb_crystal_database import loadStructures, writeStructures, getStructure, Structure
 from misc_functions import loadJson, writeJson
@@ -26,40 +25,17 @@ STRUCTURES_FILE = STRUCTURE_DIR / "structures.pkl" # The database file. Must be 
 structureList = []
 pdbsWithoutDetails = []
 
-# The number of pdb objects to download in one request. Kept at ~1000 to avoid going over the 8 KB request limit
-# The script also saves structure info to disk every chunk
 CHUNK_SIZE = 1000
 
-# Will divide the list of all pdb ids into downloadable chunks
 def chunks(lst, n):
     """Yield successive n-sized chunks from lst."""
     for i in range(0, len(lst), n):
         yield lst[i:i + n]
 
-# Legacy XML code
-# def loadPdb(pdbid): # ElementTree root
-#     """Loads a pdbid as an xml file and returns the <root> branch"""
-#     try:
-#         response = requests.get("http://www.rcsb.org/pdb/rest/customReport.xml?pdbids="+pdbid+
-#         "&customReportColumns=crystallizationMethod,crystallizationTempK,pdbxDetails,phValue,pmc,sequence,resolution&service=wsfile", timeout=10)
-#     except (requests.Timeout, requests.exceptions.ConnectionError):
-#         print("Request timeout on PDB: {}".format(pdbid))
-#         return None
-#     root = etree.fromstring(response.content)
-#     if (root.find("record") != None):
-#         return root
-#     else:
-#         print("\n-------------------- ERROR --------------------\nNo entry found with PDB ID "
-#         + str(pdbid)+"\n-----------------------------------------------\n")
-#         return None
-
 def loadPdbs(pdbids):
     """ Loads pdbs as a dictionary object (from a JSON HTTP response) 
         pdbids: a list of PDB ID strings - ex. ["1STP", "2JEF", "1CDG"]  
     """
-
-    # If you want to download more information, change this query
-    # See https://data.rcsb.org/#gql-api
     # TODO Add sequences
     query = """
     {
@@ -220,55 +196,6 @@ def fetchStructures(pdbList, structureFile=STRUCTURES_FILE, onlyDetails=True, ig
         writeJson(pdbsWithoutDetails, WITHOUT_DETAILS_FILE)
         print('Saved')
 
-    # Legacy XML
-    # for pdbid in pdbList:
-    #     sleep(0.05) # Add delay to avoid sending too many requests
-    #     if count == 1:
-    #         print("Downloading {} structure objects from the pdb".format(len(pdbList)))
-    #     if count % 100 == 0:
-    #         print("Loading pdb {} of {}...".format(count, len(pdbList)))
-    #     root = loadPdb(pdbid)
-    #     count += 1
-    #     if (root != None):
-    #         details = root.find("record/dimStructure.pdbxDetails").text
-    #         if details == "null":
-    #             details = None
-    #             pdbsWithoutDetails.append(pdbid)
-    #         if details != None or not onlyDetails:
-    #             pmcid = root.find("record/dimStructure.pmc").text
-    #             if (pmcid != "null"):
-    #                 pmcid = pmcid[3:]
-    #             else:
-    #                 pmcid = None
-    #             try:
-    #                 pH = float(root.find("record/dimStructure.phValue").text)
-    #             except ValueError:
-    #                 pH = None
-    #             try:
-    #                 temperature = float(root.find("record/dimStructure.crystallizationTempK").text)
-    #             except ValueError:
-    #                 temperature = None
-    #             method = root.find("record/dimStructure.crystallizationMethod").text
-    #             if method == "null":
-    #                 method = None
-    #             sequences = []
-    #             for tag in root.findall("record/dimEntity.sequence"):
-    #                 sequences.append(tag.text)
-    #             try:
-    #                 resolution = float(root.find("record/dimStructure.resolution").text)
-    #             except ValueError:
-    #                 resolution = None
-    #             structure = Structure(pdbid, pmcid, details, [], pH, temperature, method, sequences, resolution)
-    #             # If the pdb already has a structure in the list, update it
-    #             structureAlreadyInList = getStructure(structureList, structure.pdbid)
-    #             if structureAlreadyInList != None:
-    #                 structureList.remove(structureAlreadyInList)
-    #             structureList.append(structure)
-    #             if count % saveFrequency == 0:
-    #                 # Save structures
-    #                 writeStructures(structureList, structureFile)
-    #                 writeJson(pdbsWithoutDetails, WITHOUT_DETAILS_FILE)
-
     writeStructures(structureList, structureFile)
     writeJson(pdbsWithoutDetails, WITHOUT_DETAILS_FILE)
     print("Done fetching Structures")
@@ -278,12 +205,6 @@ def getAllPdbs(filename=""): # list
     """Returns a list of every pdbid in the PDB
     # filename = an optional argument to also export the list as a json file"""
     print("Getting a list of all pdbs...")
-
-
-    # Legacy XML
-    # response = requests.get("https://www.rcsb.org/pdb/json/getCurrent").text
-    # dictionary = json.loads(response)
-    # allPdbs = dictionary["idList"]
 
     response = requests.get("https://data.rcsb.org/rest/v1/holdings/current/entry_ids")
 
@@ -307,7 +228,3 @@ if __name__ == "__main__":
         writeStructures(structureList, STRUCTURES_FILE)
         writeJson(pdbsWithoutDetails, WITHOUT_DETAILS_FILE)
         print("Done")
-
-    # result = loadPdbs(allPdbs[::1000])
-    
-    # writeJson(result, 'test.json', indent=4)

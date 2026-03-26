@@ -268,16 +268,16 @@ def extract_mmcif_info(pdb_id, score):
     # 5️⃣ Collect info
     info = {
         "PDB_ID": block.find_value("_entry.id"),
-        "score": score,
-        "pubmed_id": pubmed,
+        "Score": score,
+        "Pubmed_id": pubmed,
         "Assembly": assembly_detail,
         "Resolution": block.find_value("_refine.ls_d_res_high"),
         "pdbx_details": block.find_value("_exptl_crystal_grow.pdbx_details"),
-        "method": get_method_from_mmcif_or_details(block),
+        "Method": get_method_from_mmcif_or_details(block),
         "pH": get_ph_from_mmcif_or_details(block),
-        "temp": get_temperature_from_mmcif_or_details(block),
+        "Temp": get_temperature_from_mmcif_or_details(block),
         "pdbx_pH_range": get_pdbx_ph_range_from_mmcif_or_details(block),
-        "ligands": fetch_ligands(pdb_id)
+        "Ligands": fetch_ligands(pdb_id)
     }
 
     return info
@@ -291,7 +291,7 @@ def filter_experimental_conditions(input_csv, output_csv=None):
     df = pd.read_csv(input_csv)
 
     filtered_df = df[
-        df[["pH", "temp", "method", "pdbx_details"]]
+        df[["pH", "Temp", "Method", "pdbx_details"]]
         .notna()
         .any(axis=1)
     ]
@@ -413,7 +413,7 @@ def search_pdb_by_sequence(sequence, output_csv="pdb_mmcif_extracted.csv", keep_
 
     # Always write CSV with headers, even if empty
     fieldnames = [
-        "PDB_ID","score","Resolution","pubmed_id","Assembly","method","pH","temp","pdbx_details","pdbx_pH_range","ligands"]
+        "PDB_ID","Score","Resolution","Pubmed_id","Assembly","Method","pH","Temp","pdbx_details","pdbx_pH_range","Ligands"]
     
     os.makedirs(os.path.dirname(output_csv), exist_ok=True)
     with open(output_csv, "w", newline="") as f:

@@ -1,8 +1,30 @@
-
 import pandas as pd
 import types
 import sys
 import pickle
+
+def format_compounds(compound_list):
+    """
+    Convert ['A', '1', 'B', '2'] -> "A (1), B (2)"
+    Handles edge cases safely.
+    """
+    if not compound_list or not isinstance(compound_list, (list, tuple)):
+        return ""
+
+    formatted = []
+
+    # Iterate in pairs
+    for i in range(0, len(compound_list), 2):
+        try:
+            compound = str(compound_list[i]).strip()
+            concentration = str(compound_list[i + 1]).strip()
+            formatted.append(f"{compound} ({concentration})")
+        except IndexError:
+            # In case of uneven list length
+            formatted.append(str(compound_list[i]).strip())
+
+    return ", ".join(formatted)
+
 
 def append_compound_to_filtered_csv(structures_file, filtered_csv_path, output_csv_file):
     """
@@ -52,18 +74,21 @@ def append_compound_to_filtered_csv(structures_file, filtered_csv_path, output_c
         print("⚠ Pickle does not contain PDB_ID or COMPOUND attributes. Skipping append.")
         return
 
-    # Build lookup dictionary: PDB_ID -> COMPOUND
+    # -------------------------------
+    # Build lookup dictionary with formatting applied
+    # -------------------------------
     compound_dict = {
-        str(getattr(obj, pdb_attr, "")).strip().upper(): getattr(obj, comp_attr, "")
+        str(getattr(obj, pdb_attr, "")).strip().upper(): format_compounds(
+            getattr(obj, comp_attr, "")
+        )
         for obj in structures_list
     }
 
     # Map COMPOUND values to filtered CSV
-    filtered_df["COMPOUNDS (con_unit=mM)"] = filtered_df["PDB_ID"].map(compound_dict).fillna("")
+    filtered_df["Compounds(con_unit=mM)"] = filtered_df["PDB_ID"].map(compound_dict).fillna("")
 
     # -------------------------------
     # Save CSV
     # -------------------------------
     filtered_df.to_csv(output_csv_file, index=False)
-    print(f"✔ COMPOUND column appended. CSV saved to: {output_csv_file}")
-
+    print(f"✔ Compounds column appended. CSV saved to: {output_csv_file}")
