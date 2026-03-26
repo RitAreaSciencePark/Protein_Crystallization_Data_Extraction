@@ -238,9 +238,4 @@ def generateDictionary(compoundList, autoSave=True, autoAdd=True): # dictionary
 
 if __name__ == "__main__":
     structureList = loadStructures(STRUCTURES_FILE)
-    # getCompressedDictionary(compoundDictionary, COMPRESSED_DICTIONARY_FILE)
-    # parseAllDetails(structureList)
-    # writeStructures(structureList, STRUCTURES_FILE)
-    # compoundList = getCompoundList(structureList, useGetKey=False)
-    # generateDictionary(compoundList)
-    # printRecognizedCompounds(compoundList)
+   

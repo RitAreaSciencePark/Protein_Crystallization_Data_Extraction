@@ -31,8 +31,8 @@ def run_plot(output_csv_file):
     # --------------------------------------------------------
     # Clean method column
     # --------------------------------------------------------
-    df["method"] = (
-        df["method"]
+    df["Method"] = (
+        df["Method"]
         .fillna("unspecified")
         .astype(str)
         .str.lower()
@@ -40,15 +40,15 @@ def run_plot(output_csv_file):
         .str.replace(r"\s+", " ", regex=True)
         .str.strip()
     )
-    df.loc[df["method"] == "", "method"] = "unspecified"
+    df.loc[df["Method"] == "", "Method"] = "unspecified"
 
     # --------------------------------------------------------
     # Numeric conversion
     # --------------------------------------------------------
     df["pH"] = pd.to_numeric(df["pH"], errors="coerce")
-    df["temp"] = pd.to_numeric(df["temp"], errors="coerce")
-    df["score"] = pd.to_numeric(df["score"], errors="coerce")
-    df["score"] = df["score"].clip(0.5, 1)
+    df["Temp"] = pd.to_numeric(df["Temp"], errors="coerce")
+    df["Score"] = pd.to_numeric(df["Score"], errors="coerce")
+    df["Score"] = df["Score"].clip(0.5, 1)
 
     # --------------------------------------------------------
     # Parse pH range
@@ -92,10 +92,10 @@ def run_plot(output_csv_file):
     df[["plot_pH", "err_low", "err_high"]] = df.apply(compute_plot_ph, axis=1, result_type="expand")
 
     df["has_ph"] = ~df["plot_pH"].isna()
-    df["has_temp"] = ~df["temp"].isna()
+    df["has_temp"] = ~df["Temp"].isna()
 
     valid_ph = df["plot_pH"].dropna()
-    valid_temp = df["temp"].dropna()
+    valid_temp = df["Temp"].dropna()
 
     ph_min = 4.5
     ph_max = valid_ph.max()
@@ -112,14 +112,14 @@ def run_plot(output_csv_file):
 
     # Keep original pH and temp for table/reporting
     df["pH"] = df["plot_pH_numeric"]  # numeric pH from CSV or NaN
-    df["temp"] = df["temp"]           # numeric temp from CSV or NaN
+    df["Temp"] = df["Temp"]           # numeric temp from CSV or NaN
 
     # Plotting pH/temperature (with fallback for missing/too-low values)
     df["pH_plot"] = df["plot_pH_numeric"].copy()
     df.loc[df["plot_pH_numeric"].isna() | (df["plot_pH_numeric"] < ph_min), "pH_plot"] = no_ph_y
 
-    df["temp_plot"] = df["temp"].copy()
-    df.loc[df["temp"].isna() | (df["temp"] < temp_min), "temp_plot"] = no_temp_x
+    df["temp_plot"] = df["Temp"].copy()
+    df.loc[df["Temp"].isna() | (df["Temp"] < temp_min), "temp_plot"] = no_temp_x
 
     # Round real temperature scale to 5K grid
     temp_min_tick = int(np.floor(temp_min / 5) * 5)
@@ -150,17 +150,17 @@ def run_plot(output_csv_file):
     fallback_markers = ["D", "v", "P", "*", "<", ">"]
     used_fallback = {}  # track used methods
 
-    def assign_marker(method):
-        method = str(method).lower().strip()
-        if method in method_marker_map:
-            return method_marker_map[method]
-        if method not in used_fallback:
-            used_fallback[method] = len(used_fallback) % len(fallback_markers)
-        index = used_fallback[method]
+    def assign_marker(Method):
+        Method = str(Method).lower().strip()
+        if Method in method_marker_map:
+            return method_marker_map[Method]
+        if Method not in used_fallback:
+            used_fallback[Method] = len(used_fallback) % len(fallback_markers)
+        index = used_fallback[Method]
         return fallback_markers[index]
 
     # Apply to dataframe
-    df["marker"] = df["method"].apply(assign_marker)
+    df["marker"] = df["Method"].apply(assign_marker)
 
     cmap = plt.cm.viridis
     norm = plt.Normalize(0.5, 1)
@@ -174,7 +174,7 @@ def run_plot(output_csv_file):
         and COMPOUNDS (con_unit=mM).
         Merge PDB_IDs sharing the same condition while keeping all other columns intact.
         """
-        cond_cols = ["pubmed_id", "method", "plot_pH_numeric", "COMPOUNDS (con_unit=mM)"]
+        cond_cols = ["Pubmed_id", "Method", "plot_pH_numeric", "Compounds(con_unit=mM)"]
         
         df_filled = df.copy()
         for col in cond_cols:
@@ -190,7 +190,7 @@ def run_plot(output_csv_file):
             merged_rows.append(row)
 
         merged_df = pd.DataFrame(merged_rows)
-        merged_df = merged_df.sort_values("score", ascending=False)
+        merged_df = merged_df.sort_values("Score", ascending=False)
 
         # return everything instead of top 10
         merged_df.drop(columns=["_condition_key"], inplace=True)
@@ -201,13 +201,13 @@ def run_plot(output_csv_file):
     fig, ax = plt.subplots(figsize=(14, 8))
 
     for _, row in df.iterrows():
-        x = row["temp_plot"] if "temp_plot" in row else row["temp"]
+        x = row["temp_plot"] if "temp_plot" in row else row["Temp"]
         y = row["pH_plot"] if "pH_plot" in row else row["pH"]
         ax.errorbar(x, y,
                     yerr=[[row["err_low"]], [row["err_high"]]] if row["has_ph"] else None,
                     fmt=row["marker"],
-                    color=cmap(norm(row["score"])),
-                    ecolor=cmap(norm(row["score"])),
+                    color=cmap(norm(row["Score"])),
+                    ecolor=cmap(norm(row["Score"])),
                     markeredgecolor="black",
                     markersize=9,
                     capsize=3)
@@ -238,15 +238,15 @@ def run_plot(output_csv_file):
     )
     
 
-    unique_methods = df["method"].unique()
+    unique_methods = df["Method"].unique()
     legend_items = []
     used_markers = {}
-    for method in unique_methods:
-        marker = assign_marker(method)
+    for Method in unique_methods:
+        marker = assign_marker(Method)
         if marker not in used_markers:
             legend_items.append(
                 mlines.Line2D([], [], color="black", marker=marker, linestyle="None",
-                            markersize=8, label=method.title())
+                            markersize=8, label=Method.title())
             )
             used_markers[marker] = True
 
@@ -288,22 +288,22 @@ def run_plot(output_csv_file):
     for _, group in first10_grouped.iterrows():
         table_rows.append([
             group["PDB_ID"],
-            f"{group['score']:.3f}" if not pd.isna(group["score"]) else "",
-            group["pubmed_id"] if not pd.isna(group["pubmed_id"]) else "",
+            f"{group['Score']:.3f}" if not pd.isna(group["Score"]) else "",
+            group["Pubmed_id"] if not pd.isna(group["Pubmed_id"]) else "",
             group.get("Assembly", ""),
-            group["method"],
-            group["ligands"] if not pd.isna(group["ligands"]) else "",
+            group["Method"],
+            group["Ligands"] if not pd.isna(group["Ligands"]) else "",
             group["plot_pH_numeric"] if not pd.isna(group["plot_pH_numeric"]) else "",
-            group["temp"] if not pd.isna(group["temp"]) else "",
-            group["COMPOUNDS (con_unit=mM)"] if not pd.isna(group["COMPOUNDS (con_unit=mM)"]) else "",
+            group["Temp"] if not pd.isna(group["Temp"]) else "",
+            group["Compounds(con_unit=mM)"] if not pd.isna(group["Compounds(con_unit=mM)"]) else "",
         ])
 
     # 2️⃣ Headers
     main_header = ["", "", "", "", "", "", "", "", "CRYSTALLIZATION COCKTAILS"] 
-    sub_headers = ["PDB_ID", "score", "pubmed_id", "Assembly","method", "ligands","pH", "temp", "COMPOUNDS (con_unit=mM)"]
+    sub_headers = ["PDB_ID", "Score", "Pubmed_id", "Assembly","Method", "Ligands","pH", "Temp", "Compounds(con_unit=mM)"]
 
     # 3️⃣ Column widths
-    col_widths = [0.16, 0.05, 0.08, 0.09, 0.11, 0.10, 0.04, 0.04, 0.35]
+    col_widths = [0.16, 0.05, 0.08, 0.09, 0.11, 0.10, 0.04, 0.04, 0.36]
 
     # Create table
     tbl = ax.table(
@@ -329,14 +329,14 @@ def run_plot(output_csv_file):
     # 🎨 Define a color per column
     col_colors = {
         "PDB_ID": "#98ACBA",
-        "score": "#B7EFBC",
-        "pubmed_id": "#D8BC8E",
+        "Score": "#B7EFBC",
+        "Pubmed_id": "#D8BC8E",
         "Assembly": "#CA94D2",
-        "method": "#9AD7DF",
-        "ligands": "#E9A6BC",
+        "Method": "#9AD7DF",
+        "Ligands": "#E9A6BC",
         "pH": "#818FD8",
-        "temp": "#CBC8B1",
-        "COMPOUNDS (con_unit=mM)": "#A7F054",
+        "Temp": "#CBC8B1",
+        "Compounds(con_unit=mM)": "#A7F054",
     }
 
     # Apply colors to columns (from sub_header row down)
@@ -349,7 +349,7 @@ def run_plot(output_csv_file):
 
     # Experimental Conditions spanning pH → COMPOUNDS
     exp_start = sub_headers.index("pH")
-    exp_end = sub_headers.index("COMPOUNDS (con_unit=mM)")
+    exp_end = sub_headers.index("Compounds(con_unit=mM)")
 
     # Keep only outer borders
     group_color = "#F2EEED"  # soft green (change as you like)
@@ -373,7 +373,7 @@ def run_plot(output_csv_file):
     # Remove all vertical separators from PDB_IDs → ligands
 
     pdb_start = sub_headers.index("PDB_ID")
-    pdb_end = sub_headers.index("ligands")
+    pdb_end = sub_headers.index("Ligands")
 
     for c in range(pdb_start, pdb_end + 1):
         cell = tbl[0, c]
@@ -386,14 +386,14 @@ def run_plot(output_csv_file):
     # Wrap text consistently per column (stable layout)
     wrap_widths = {
         "PDB_ID": 18,
-        "score": 6,
-        "pubmed_id": 10,
+        "Score": 6,
+        "Pubmed_id": 10,
         "Assembly": 14,
-        "method": 18,
-        "ligands": 15,
+        "Method": 18,
+        "Ligands": 15,
         "pH": 6,
-        "temp": 6,
-        "COMPOUNDS (con_unit=mM)": 55,}
+        "Temp": 6,
+        "Compounds(con_unit=mM)": 57,}
 
     for (row, col), cell in tbl.get_celld().items():
 
