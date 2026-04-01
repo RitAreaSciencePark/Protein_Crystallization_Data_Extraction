@@ -4,10 +4,10 @@ import gemmi
 import csv
 import os
 import re
-import sys
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from Bio.PDB.MMCIF2Dict import MMCIF2Dict
 import pandas as pd
+from Bio.Align import PairwiseAligner
 
 # Setup cache directory for PDB files
 CACHE_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), ".pdb_cache")
@@ -18,7 +18,8 @@ def get_cached_pubmed_id(pdb_id):
     cache_file = os.path.join(CACHE_DIR, f"{pdb_id.lower()}_pubmed.json")
     if os.path.exists(cache_file):
         with open(cache_file, "r") as f:
-            return json.load(f).get("pubmed_id", "NA")
+            pubmed = json.load(f).get("pubmed_id", "NA")
+            return str(pubmed) if pubmed is not None else "NA"
     
     try:
         entry_data = requests.get(
@@ -26,11 +27,12 @@ def get_cached_pubmed_id(pdb_id):
             timeout=10
         ).json()
         pubmed = entry_data.get("rcsb_primary_citation", {}).get("pdbx_database_id_pub_med", "NA")
-        
+
         # Cache the result
         with open(cache_file, "w") as f:
             json.dump({"pubmed_id": pubmed}, f)
-        return pubmed
+        
+        return str(pubmed) if pubmed is not None else "NA"
     except Exception as e:
         print(f"⚠ Warning fetching PubMed ID for {pdb_id}: {e}")
         return "NA"
@@ -321,19 +323,58 @@ def detect_seq_type(sequence):
         # Mixed or unknown letters → default to protein
         return "protein"
 
+def compute_identity(seq1, seq2):
+    """Compute sequence identity using global alignment with PairwiseAligner"""
+    aligner = PairwiseAligner()
+    aligner.mode = "global"  # global alignment
+    aligner.match_score = 1
+    aligner.mismatch_score = 0
+    aligner.open_gap_score = 0
+    aligner.extend_gap_score = 0
+
+    score = aligner.score(seq1, seq2)  # counts matches only
+    alignment_length = max(len(seq1), len(seq2))
+    identity = (score / alignment_length) 
+    return identity
+
+def fetch_pdb_sequences(pdb_id, seq_type="protein"):
+    """Fetch sequences of all chains from PDB mmCIF"""
+    pdb_id = pdb_id.upper()
+    mmcif_content = get_cached_mmcif(pdb_id)
+    if not mmcif_content:
+        return []
+
+    try:
+        doc = gemmi.cif.read_string(mmcif_content)
+        block = doc.sole_block()
+    except Exception as e:
+        print(f"⚠ Failed to parse mmCIF for sequences {pdb_id}: {e}")
+        return []
+
+    sequences = []
+    if seq_type == "protein":
+        seq_category = "_entity_poly.pdbx_seq_one_letter_code_can"
+    elif seq_type in ("dna", "rna"):
+        seq_category = "_entity_poly.pdbx_seq_one_letter_code"
+    else:
+        return []
+
+    seqs = block.find_values(seq_category)
+    for s in seqs:
+        if s and s not in ("?", ".", ""):
+            sequences.append(s.replace("\n", "").replace(" ", ""))
+    return sequences
+
 
 def search_pdb_by_sequence(sequence, output_csv="pdb_mmcif_extracted.csv", keep_all=False, max_workers=6):
-    """Search PDB by sequence and automatically detect sequence type."""
+    """Search PDB by sequence and compute sequence identity for each hit"""
     
-    # Automatically detect the sequence type
     seq_type = detect_seq_type(sequence)
-
     target_map = {
         "protein": "pdb_protein_sequence",
         "dna": "pdb_dna_sequence",
         "rna": "pdb_rna_sequence"
     }
-
     target = target_map[seq_type]
 
     query = {
@@ -341,8 +382,6 @@ def search_pdb_by_sequence(sequence, output_csv="pdb_mmcif_extracted.csv", keep_
             "type": "group",
             "logical_operator": "and",
             "nodes": [
-
-                # Sequence similarity search
                 {
                     "type": "terminal",
                     "service": "sequence",
@@ -353,8 +392,6 @@ def search_pdb_by_sequence(sequence, output_csv="pdb_mmcif_extracted.csv", keep_
                         "evalue_cutoff": 1e-5
                     }
                 },
-
-                # Filter: only X-ray diffraction structures
                 {
                     "type": "terminal",
                     "service": "text",
@@ -364,17 +401,13 @@ def search_pdb_by_sequence(sequence, output_csv="pdb_mmcif_extracted.csv", keep_
                         "value": "X-RAY DIFFRACTION"
                     }
                 }
-
             ]
         },
         "request_options": {"paginate": {"start": 0, "rows": 10000}},
         "return_type": "entry"
     }
 
-    # The rest of your function can remain unchanged
-
     headers = {"User-Agent": "PDB-sequence-search-script/1.0"}
-
     try:
         result = requests.post(
             "https://search.rcsb.org/rcsbsearch/v2/query",
@@ -387,12 +420,6 @@ def search_pdb_by_sequence(sequence, output_csv="pdb_mmcif_extracted.csv", keep_
         print(f"⚠ PDB search request failed: {e}")
         return []
 
-    # Check for empty response
-    if not result.text.strip():
-        print("⚠ PDB API returned empty response")
-        return []
-
-    # Parse JSON safely
     try:
         search_data = result.json()
     except ValueError:
@@ -400,36 +427,43 @@ def search_pdb_by_sequence(sequence, output_csv="pdb_mmcif_extracted.csv", keep_
         print(result.text[:500])
         return []
 
-    # Safe check for results
     if search_data.get("total_count", 0) == 0:
         print("⚠ No matching PDB entries found")
         return []
 
+    # Initial PDB hit IDs (score placeholder)
     pdb_hits = {hit["identifier"]: hit.get("score") for hit in search_data.get("result_set", [])}
-
     if not pdb_hits:
         print("❌ No hits for this sequence. Stopping pipeline.")
         return None
 
-    # Always write CSV with headers, even if empty
+    # Compute sequence identity
+    for pdb_id in list(pdb_hits.keys()):
+        pdb_seqs = fetch_pdb_sequences(pdb_id, seq_type=seq_type)
+        if pdb_seqs:
+            max_identity = max(compute_identity(sequence.upper(), pdb_seq.upper()) for pdb_seq in pdb_seqs)
+            pdb_hits[pdb_id] = max_identity
+        else:
+            pdb_hits[pdb_id] = 0.0
+
+
+    sorted_pdb_hits = dict(sorted(pdb_hits.items(), key=lambda item: item[1], reverse=True))
+
+    # Write CSV headers
     fieldnames = [
-        "PDB_ID","Score","Resolution","Pubmed_id","Assembly","Method","pH","Temp","pdbx_details","pdbx_pH_range","Ligands"]
-    
+        "PDB_ID","Score","Resolution","Pubmed_id","Assembly","Method","pH","Temp","pdbx_details","pdbx_pH_range","Ligands"
+    ]
     os.makedirs(os.path.dirname(output_csv), exist_ok=True)
     with open(output_csv, "w", newline="") as f:
         writer = csv.DictWriter(f, fieldnames=fieldnames)
         writer.writeheader()
-
-    if not pdb_hits:
-        print("⚠ No PDB entries found. Empty CSV created.")
-        return output_csv  # CSV exists with headers
 
     print(f"▶ Found {len(pdb_hits)} PDB entries. Fetching mmCIF data in parallel ({max_workers} workers)...")
 
     with open(output_csv, "a", newline="") as f:
         writer = csv.DictWriter(f, fieldnames=fieldnames)
         with ThreadPoolExecutor(max_workers=max_workers) as executor:
-            future_to_pdb = {executor.submit(extract_mmcif_info, pdb_id, score): pdb_id for pdb_id, score in pdb_hits.items()}
+            future_to_pdb = {executor.submit(extract_mmcif_info, pdb_id, score): pdb_id for pdb_id, score in sorted_pdb_hits.items()}
             completed = 0
             for future in as_completed(future_to_pdb):
                 completed += 1
@@ -442,6 +476,6 @@ def search_pdb_by_sequence(sequence, output_csv="pdb_mmcif_extracted.csv", keep_
                         print(f"  ✓ Processed {completed}/{len(pdb_hits)}")
                 except Exception as e:
                     print(f"  ✗ Failed for {pdb_id}: {e}")
-
     print(f"✔ CSV written to: {os.path.abspath(output_csv)}")
     return output_csv
+    

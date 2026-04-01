@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Protein Crystallization Pipeline</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        .file-section {
+            margin-top: 30px;
+        }
+        .file-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        .file-card {
+            border: 1px solid #ccc;
+            padding: 10px;
+            width: 45%;
+            box-sizing: border-box;
+        }
+        .file-card img, .file-card iframe {
+            max-width: 100%;
+        }
+        h3 {
+            margin-bottom: 10px;
+        }
+        h4 {
+            margin-bottom: 5px;
+            font-size: 14px;
+            word-break: break-all;
+        }
+    </style>
+</head>
+<body>
+
+<h2>Run Protein Crystallization Pipeline</h2>
+
+{% if error %}
+    <p style="color:red">{{ error }}</p>
+{% endif %}
+
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Run Pipeline</button>
+</form>
+
+{% if csv_file %}
+    <div class="file-section">
+        <h3>Result Files</h3>
+        <p>CSV: <a href="{{ MEDIA_URL }}{{ csv_file }}" target="_blank">{{ csv_file }}</a></p>
+        <p>FASTA: <a href="{{ MEDIA_URL }}{{ fasta_file }}" target="_blank">{{ fasta_file }}</a></p>
+    </div>
+
+    {% if png_files %}
+    <div class="file-section">
+        <h3>Plots (PNG)</h3>
+        <div class="file-row">
+            {% for png in png_files %}
+            <div class="file-card">
+                <h4>{{ png|slice:"0:50" }}</h4>
+                <img src="{{ MEDIA_URL }}{{ png }}" alt="Plot">
+                <p><a href="{{ MEDIA_URL }}{{ png }}" target="_blank">Download PNG</a></p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    {% if pdf_files %}
+    <div class="file-section">
+        <h3>PDF Tables</h3>
+        <div class="file-row">
+            {% for pdf in pdf_files %}
+            <div class="file-card">
+                <h4>{{ pdf|slice:"0:50" }}</h4>
+                <iframe src="{{ MEDIA_URL }}{{ pdf }}" height="400px"></iframe>
+                <p><a href="{{ MEDIA_URL }}{{ pdf }}" target="_blank">Download PDF</a></p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+{% endif %}
+
+</body>
+</html>
