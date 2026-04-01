@@ -4,7 +4,6 @@ from plot import run_plot
 from extract_structures import append_compound_to_filtered_csv  # COMPOUND + Excel function
 import tempfile
 
-
 def main():
     # -------------------------------
     # Input
@@ -57,7 +56,7 @@ def main():
     structures_file = os.path.join(base_dir, "Structures", "structures.pkl")
 
    
-    # Save COMPOUND-augmented CSV and Excel
+    # Save COMPOUND-augmented CSV 
     output_csv_file = os.path.join(output_dir, f"{seq_type_name}_crystallization_data.csv")
  
     append_compound_to_filtered_csv(structures_file, filtered_csv_path, output_csv_file)
