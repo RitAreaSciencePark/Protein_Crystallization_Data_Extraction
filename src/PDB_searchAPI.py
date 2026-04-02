@@ -236,18 +236,130 @@ def fetch_ligands(pdb_id):
 
     return None
 
-def extract_mmcif_info(pdb_id, score):
+def detect_seq_type(sequence):
+
+    """Automatically detect whether a sequence is protein, DNA, or RNA."""
+    sequence = sequence.upper()
+    dna_letters = set("ACGT")
+    rna_letters = set("ACGU")
+    protein_letters = set("ACDEFGHIKLMNPQRSTVWY")  # standard amino acids
+
+    seq_set = set(sequence)
+
+    if seq_set <= protein_letters:
+        return "protein"
+    elif seq_set <= dna_letters:
+        return "dna"
+    elif seq_set <= rna_letters:
+        return "rna"
+    else:
+        # Mixed or unknown letters → default to protein
+        return "protein"
+    
+def fetch_sequence_from_entity(entity_id):
+    """
+    Fetch sequence for a single polymer entity using RCSB API.
+    entity_id: str, e.g., "5JWO_1"
+    """
+    pdb_id, entity_num = entity_id.split("_")
+    url = f"https://data.rcsb.org/rest/v1/core/polymer_entity/{pdb_id}/{entity_num}"
+
+    try:
+        r = requests.get(url, timeout=10)
+        r.raise_for_status()
+        data = r.json()
+        seq = data.get("entity_poly", {}).get("pdbx_seq_one_letter_code", "")
+        return seq.replace("\n", "")
+    except Exception as e:
+        print(f"⚠ Failed to fetch sequence for {entity_id}: {e}")
+        return None
+
+def fetch_pdb_sequences(pdb_id):
+    """
+    Fetch sequences of all polymer entities (chains) for a PDB entry
+    directly from the RCSB API.
+    Returns a dictionary {entity_id: sequence}.
+    """
+    pdb_id = pdb_id.upper()
+    url = f"https://data.rcsb.org/rest/v1/core/entry/{pdb_id}"
+
+    sequences = {}
+
+    try:
+        r = requests.get(url, timeout=10)
+        r.raise_for_status()
+        data = r.json()
+
+        # Get all polymer entities in this PDB entry
+        polymer_entities = data.get("rcsb_entry_container_identifiers", {}).get("polymer_entity_ids", [])
+        for entity_num in polymer_entities:
+            entity_id = f"{pdb_id}_{entity_num}"
+            seq = fetch_sequence_from_entity(entity_id)
+            if seq:
+                sequences[entity_id] = seq
+
+    except Exception as e:
+        print(f"⚠ Failed to fetch polymer entities for {pdb_id}: {e}")
+
+    return sequences
+
+def compute_identity(seq1, seq2):
+    """Compute sequence identity using global alignment with PairwiseAligner"""
+    aligner = PairwiseAligner()
+    aligner.mode = "global"  # global alignment
+    aligner.match_score = 1
+    aligner.mismatch_score = 0
+    aligner.open_gap_score = 0
+    aligner.extend_gap_score = 0
+
+    score = aligner.score(seq1, seq2)  # counts matches only
+    alignment_length = max(len(seq1), len(seq2))
+    identity = (score / alignment_length) 
+    return identity
+
+def get_polymer_type_from_mmcif(block):
+    """
+    Determine if the structure is single-polymer or complex.
+
+    Returns:
+        "uni_pol"  -> only one polymer entity
+        "complex"  -> multiple polymer entities
+    """
+
+    try:
+        # Get entity types (polymer, non-polymer, etc.)
+        entity_types = block.find_values("_entity.type")
+
+        # Count only polymer entities
+        polymer_count = sum(1 for t in entity_types if str(t).lower() == "polymer")
+
+        if polymer_count == 1:
+            return "uni_pol"
+        elif polymer_count > 1:
+            return "complex"
+        else:
+            return None  # no polymer found (rare case)
+
+    except Exception as e:
+        print(f"⚠ Failed to determine polymer type: {e}")
+        return None
+
+def extract_mmcif_info(pdb_id, query_sequence, rcsb_score=0):
+    """
+    Extract mmCIF info for a PDB entry and compute sequence identity
+    with the provided query sequence.
+    """
     pdb_id = pdb_id.upper()
 
-    # 1️⃣ PubMed
+    # PubMed
     pubmed = get_cached_pubmed_id(pdb_id)
 
-    # 2️⃣ Download mmCIF
+    # Download mmCIF
     mmcif_content = get_cached_mmcif(pdb_id)
     if not mmcif_content:
         return None
 
-    # 3️⃣ Parse mmCIF with gemmi
+    # Parse mmCIF with gemmi
     try:
         doc = gemmi.cif.read_string(mmcif_content)
         block = doc.sole_block()
@@ -258,26 +370,38 @@ def extract_mmcif_info(pdb_id, score):
     # ---- Extract assembly info robustly ----
     assembly_ids = block.find_values("_pdbx_struct_assembly.id")
     oligomeric_values = block.find_values("_pdbx_struct_assembly.oligomeric_details")
-
-    if not oligomeric_values:
-        assembly_detail = None
-    else:
+    assembly_detail = None
+    if oligomeric_values:
         first_detail = oligomeric_values[0]
         if len(assembly_ids) > 1:
             first_detail += "(*)"
         assembly_detail = first_detail
 
+    # Determine polymer type (uni_pol vs complex)
+    polymer_type = get_polymer_type_from_mmcif(block) or "NA"
+
+    # Fetch sequences and compute identity
+    pdb_sequences = fetch_pdb_sequences(pdb_id)
+
+    max_identity = 0.0
+    for entity_id, pdb_seq in pdb_sequences.items():
+        identity = compute_identity(query_sequence.upper(), pdb_seq.upper())
+        if identity > max_identity:
+            max_identity = identity
+
     # 5️⃣ Collect info
     info = {
-        "PDB_ID": block.find_value("_entry.id"),
-        "Score": score,
-        "Pubmed_id": pubmed,
-        "Assembly": assembly_detail,
+        "PDB_ID": pdb_id,
+        "Score": rcsb_score,
+        "Seq_id": max_identity,  
         "Resolution": block.find_value("_refine.ls_d_res_high"),
-        "pdbx_details": block.find_value("_exptl_crystal_grow.pdbx_details"),
+        "Pubmed_id": pubmed,
+        "Polymer": polymer_type, 
+        "Assembly": assembly_detail,
         "Method": get_method_from_mmcif_or_details(block),
         "pH": get_ph_from_mmcif_or_details(block),
         "Temp": get_temperature_from_mmcif_or_details(block),
+        "pdbx_details": block.find_value("_exptl_crystal_grow.pdbx_details"),
         "pdbx_pH_range": get_pdbx_ph_range_from_mmcif_or_details(block),
         "Ligands": fetch_ligands(pdb_id)
     }
@@ -302,81 +426,77 @@ def filter_experimental_conditions(input_csv, output_csv=None):
 
     print(f"✔ Filtered CSV saved to: {os.path.abspath(output_csv)}")
     return output_csv
-        
-def detect_seq_type(sequence):
 
-    """Automatically detect whether a sequence is protein, DNA, or RNA."""
-    sequence = sequence.upper()
-    dna_letters = set("ACGT")
-    rna_letters = set("ACGU")
-    protein_letters = set("ACDEFGHIKLMNPQRSTVWY")  # standard amino acids
-
-    seq_set = set(sequence)
-
-    if seq_set <= protein_letters:
-        return "protein"
-    elif seq_set <= dna_letters:
-        return "dna"
-    elif seq_set <= rna_letters:
-        return "rna"
-    else:
-        # Mixed or unknown letters → default to protein
-        return "protein"
-
-def compute_identity(seq1, seq2):
-    """Compute sequence identity using global alignment with PairwiseAligner"""
-    aligner = PairwiseAligner()
-    aligner.mode = "global"  # global alignment
-    aligner.match_score = 1
-    aligner.mismatch_score = 0
-    aligner.open_gap_score = 0
-    aligner.extend_gap_score = 0
-
-    score = aligner.score(seq1, seq2)  # counts matches only
-    alignment_length = max(len(seq1), len(seq2))
-    identity = (score / alignment_length) 
-    return identity
-
-def fetch_pdb_sequences(pdb_id, seq_type="protein"):
-    """Fetch sequences of all chains from PDB mmCIF"""
-    pdb_id = pdb_id.upper()
-    mmcif_content = get_cached_mmcif(pdb_id)
-    if not mmcif_content:
-        return []
-
-    try:
-        doc = gemmi.cif.read_string(mmcif_content)
-        block = doc.sole_block()
-    except Exception as e:
-        print(f"⚠ Failed to parse mmCIF for sequences {pdb_id}: {e}")
-        return []
-
-    sequences = []
-    if seq_type == "protein":
-        seq_category = "_entity_poly.pdbx_seq_one_letter_code_can"
-    elif seq_type in ("dna", "rna"):
-        seq_category = "_entity_poly.pdbx_seq_one_letter_code"
-    else:
-        return []
-
-    seqs = block.find_values(seq_category)
-    for s in seqs:
-        if s and s not in ("?", ".", ""):
-            sequences.append(s.replace("\n", "").replace(" ", ""))
-    return sequences
-
-
-def search_pdb_by_sequence(sequence, output_csv="pdb_mmcif_extracted.csv", keep_all=False, max_workers=6):
-    """Search PDB by sequence and compute sequence identity for each hit"""
-    
-    seq_type = detect_seq_type(sequence)
+# --------------------------------------------------
+# ✅ Get TRUE sequence scores (polymer_entity level)
+# --------------------------------------------------
+def get_entity_scores(sequence, seq_type):
     target_map = {
         "protein": "pdb_protein_sequence",
         "dna": "pdb_dna_sequence",
         "rna": "pdb_rna_sequence"
     }
+
+    url = "https://search.rcsb.org/rcsbsearch/v2/query"
+
+    payload = {
+        "query": {
+            "type": "terminal",
+            "service": "sequence",
+            "parameters": {
+                "target": target_map[seq_type],
+                "value": sequence,
+                "identity_cutoff": 0.5,
+                "evalue_cutoff": 1e-5
+            }
+        },
+        "return_type": "polymer_entity",
+        "request_options": {
+            "paginate": {"start": 0, "rows": 10000}
+        }
+    }
+
+    try:
+        r = requests.post(url, json=payload, timeout=30)
+        r.raise_for_status()
+        result_set = r.json().get("result_set", [])
+
+        entity_scores = {}
+
+        for res in result_set:
+            entity_id = res["identifier"]  # e.g. 4KSO_1
+            score = res.get("score", 0)
+
+            pdb_id = entity_id.split("_")[0]
+
+            # keep best score per PDB
+            if pdb_id not in entity_scores or score > entity_scores[pdb_id]:
+                entity_scores[pdb_id] = score
+
+        return entity_scores
+
+    except Exception as e:
+        print(f"⚠ Entity score fetch failed: {e}")
+        return {}
+
+# --------------------------------------------------
+# ✅ MAIN SEARCH FUNCTION (FIXED)
+# --------------------------------------------------
+def search_pdb_by_sequence(sequence, output_csv="pdb_mmcif_extracted.csv", keep_all=False, max_workers=6):
+
+    seq_type = detect_seq_type(sequence)
+
+    target_map = {
+        "protein": "pdb_protein_sequence",
+        "dna": "pdb_dna_sequence",
+        "rna": "pdb_rna_sequence"
+    }
+
     target = target_map[seq_type]
 
+    # -------------------------------
+    # 1️⃣ ENTRY SEARCH (your query)
+    # -------------------------------
     query = {
         "query": {
             "type": "group",
@@ -408,74 +528,101 @@ def search_pdb_by_sequence(sequence, output_csv="pdb_mmcif_extracted.csv", keep_
     }
 
     headers = {"User-Agent": "PDB-sequence-search-script/1.0"}
+
     try:
-        result = requests.post(
+        r = requests.post(
             "https://search.rcsb.org/rcsbsearch/v2/query",
             json=query,
             headers=headers,
             timeout=30
         )
-        result.raise_for_status()
-    except requests.exceptions.RequestException as e:
-        print(f"⚠ PDB search request failed: {e}")
+        r.raise_for_status()
+    except Exception as e:
+        print(f"⚠ PDB search failed: {e}")
         return []
 
-    try:
-        search_data = result.json()
-    except ValueError:
-        print("⚠ PDB API returned invalid JSON. Raw response snippet:")
-        print(result.text[:500])
-        return []
+    search_data = r.json()
 
     if search_data.get("total_count", 0) == 0:
-        print("⚠ No matching PDB entries found")
+        print("⚠ No matches found")
         return []
 
-    # Initial PDB hit IDs (score placeholder)
-    pdb_hits = {hit["identifier"]: hit.get("score") for hit in search_data.get("result_set", [])}
-    if not pdb_hits:
-        print("❌ No hits for this sequence. Stopping pipeline.")
-        return None
+    # -------------------------------
+    # 2️⃣ GET CORRECT SCORES
+    # -------------------------------
+    entity_scores = get_entity_scores(sequence, seq_type)
 
-    # Compute sequence identity
-    for pdb_id in list(pdb_hits.keys()):
-        pdb_seqs = fetch_pdb_sequences(pdb_id, seq_type=seq_type)
-        if pdb_seqs:
-            max_identity = max(compute_identity(sequence.upper(), pdb_seq.upper()) for pdb_seq in pdb_seqs)
-            pdb_hits[pdb_id] = max_identity
-        else:
-            pdb_hits[pdb_id] = 0.0
+    # -------------------------------
+    # 3️⃣ BUILD HIT LIST
+    # -------------------------------
+    pdb_hits = {}
 
+    for hit in search_data.get("result_set", []):
+        pdb_id = hit["identifier"]
 
-    sorted_pdb_hits = dict(sorted(pdb_hits.items(), key=lambda item: item[1], reverse=True))
+        pdb_hits[pdb_id] = {
+            "rcsb_score": entity_scores.get(pdb_id, 0),  # ✅ FIXED
+            "identity": 0.0
+        }
 
-    # Write CSV headers
-    fieldnames = [
-        "PDB_ID","Score","Resolution","Pubmed_id","Assembly","Method","pH","Temp","pdbx_details","pdbx_pH_range","Ligands"
-    ]
-    os.makedirs(os.path.dirname(output_csv), exist_ok=True)
+    # Sort by TRUE score
+    sorted_items = sorted(
+        pdb_hits.items(),
+        key=lambda x: x[1]["rcsb_score"],
+        reverse=True
+    )
+
+    print(f"▶ Found {len(sorted_items)} PDB entries")
+
+    # -------------------------------
+    # 4️⃣ PARALLEL PROCESSING
+    # -------------------------------
+    rows = []
+
+    with ThreadPoolExecutor(max_workers=max_workers) as executor:
+        future_to_pdb = {
+            executor.submit(fetch_pdb_sequences, pdb_id): (pdb_id, data)
+            for pdb_id, data in sorted_items
+        }
+
+        for future in as_completed(future_to_pdb):
+            pdb_id, data = future_to_pdb[future]
+
+            try:
+                pdb_sequences = future.result()
+
+                # compute identity
+                if pdb_sequences:
+                    max_identity = max(
+                        compute_identity(sequence.upper(), seq.upper())
+                        for seq in pdb_sequences.values()
+                    )
+                else:
+                    max_identity = 0.0
+
+                # extract mmCIF info
+                info = extract_mmcif_info(pdb_id, sequence)
+
+                if info:
+                    info["Score"] = data["rcsb_score"]   # ✅ correct score
+                    info["Seq_id"] = max_identity
+                    rows.append(info)
+
+            except Exception as e:
+                print(f"✗ Failed {pdb_id}: {e}")
+
+    # -------------------------------
+    # 5️⃣ SAVE CSV
+    # -------------------------------
+    fieldnames = ["PDB_ID", "Score", "Seq_id", "Resolution", "Pubmed_id", "Polymer", "Assembly", "Method", "pH", "Temp", "pdbx_details", "pdbx_pH_range", "Ligands"]
+
+    os.makedirs(os.path.dirname(output_csv) or ".", exist_ok=True)
+
     with open(output_csv, "w", newline="") as f:
         writer = csv.DictWriter(f, fieldnames=fieldnames)
         writer.writeheader()
+        writer.writerows(rows)
 
-    print(f"▶ Found {len(pdb_hits)} PDB entries. Fetching mmCIF data in parallel ({max_workers} workers)...")
-
-    with open(output_csv, "a", newline="") as f:
-        writer = csv.DictWriter(f, fieldnames=fieldnames)
-        with ThreadPoolExecutor(max_workers=max_workers) as executor:
-            future_to_pdb = {executor.submit(extract_mmcif_info, pdb_id, score): pdb_id for pdb_id, score in sorted_pdb_hits.items()}
-            completed = 0
-            for future in as_completed(future_to_pdb):
-                completed += 1
-                pdb_id = future_to_pdb[future]
-                try:
-                    row = future.result()
-                    if row:
-                        writer.writerow(row)
-                    if completed % 10 == 0:
-                        print(f"  ✓ Processed {completed}/{len(pdb_hits)}")
-                except Exception as e:
-                    print(f"  ✗ Failed for {pdb_id}: {e}")
     print(f"✔ CSV written to: {os.path.abspath(output_csv)}")
+
     return output_csv
-    
