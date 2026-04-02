@@ -288,22 +288,19 @@ def run_plot(output_csv_file):
     for _, group in first10_grouped.iterrows():
         table_rows.append([
             group["PDB_ID"],
-            f"{group['Score']:.3f}" if not pd.isna(group["Score"]) else "",
-            group["Pubmed_id"] if not pd.isna(group["Pubmed_id"]) else "",
-            group.get("Assembly", ""),
-            group["Method"],
-            group["Ligands"] if not pd.isna(group["Ligands"]) else "",
-            group["plot_pH_numeric"] if not pd.isna(group["plot_pH_numeric"]) else "",
-            group["Temp"] if not pd.isna(group["Temp"]) else "",
-            group["Compounds(con_unit=mM)"] if not pd.isna(group["Compounds(con_unit=mM)"]) else "",
-        ])
+            f"{group['Score']:.3f}" if not pd.isna(group["Score"]) else "",  
+            f"{group['Seq_id']:.3f}" if not pd.isna(group["Seq_id"]) else "", 
+            group["Pubmed_id"] if not pd.isna(group["Pubmed_id"]) else "",  
+            group.get("Polymer", ""), group.get("Assembly", ""), group["Method"], group["Ligands"] if not pd.isna(group["Ligands"]) else "",
+            group["plot_pH_numeric"] if not pd.isna(group["plot_pH_numeric"]) else "", group["Temp"] if not pd.isna(group["Temp"]) else "",
+            group["Compounds(con_unit=mM)"] if not pd.isna(group["Compounds(con_unit=mM)"]) else "",])
 
     # 2️⃣ Headers
-    main_header = ["", "", "", "", "", "", "", "", "CRYSTALLIZATION COCKTAILS"] 
-    sub_headers = ["PDB_ID", "Score", "Pubmed_id", "Assembly","Method", "Ligands","pH", "Temp", "Compounds(con_unit=mM)"]
+    main_header = ["", "", "", "", "", "", "", "", "", "", "CRYSTALLIZATION COCKTAILS"] 
+    sub_headers = ["PDB_ID", "Score", "Seq_id", "Pubmed_id", "Polymer", "Assembly","Method", "Ligands","pH", "Temp", "Compounds(con_unit=mM)"]
 
     # 3️⃣ Column widths
-    col_widths = [0.16, 0.05, 0.08, 0.09, 0.11, 0.10, 0.04, 0.04, 0.36]
+    col_widths = [0.16, 0.05, 0.05, 0.08, 0.07, 0.09, 0.11, 0.10, 0.04, 0.04, 0.36]
 
     # Create table
     tbl = ax.table(
@@ -387,7 +384,9 @@ def run_plot(output_csv_file):
     wrap_widths = {
         "PDB_ID": 18,
         "Score": 6,
+        "Seq_id": 6,
         "Pubmed_id": 10,
+        "Polymer": 10,
         "Assembly": 14,
         "Method": 18,
         "Ligands": 15,
