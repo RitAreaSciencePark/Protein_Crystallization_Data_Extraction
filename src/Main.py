@@ -34,7 +34,7 @@ def main():
     with tempfile.NamedTemporaryFile(mode="w+", delete=False, suffix=".csv") as tmp_full_csv:
         tmp_full_csv_path = tmp_full_csv.name
 
-    full_csv_result = search_pdb_by_sequence(sequence, output_csv=tmp_full_csv_path, keep_all=True)
+    full_csv_result = search_pdb_by_sequence(sequence, output_csv=tmp_full_csv_path, max_workers=6)
 
     if full_csv_result is None:
         print(f"⚠ No PDB entries found for this {seq_type_name} sequence. Pipeline stopped.")

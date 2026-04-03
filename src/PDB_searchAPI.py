@@ -343,6 +343,7 @@ def get_polymer_type_from_mmcif(block):
     except Exception as e:
         print(f"⚠ Failed to determine polymer type: {e}")
         return None
+import re
 
 def extract_mmcif_info(pdb_id, query_sequence, rcsb_score=0):
     """
@@ -482,8 +483,7 @@ def get_entity_scores(sequence, seq_type):
 # --------------------------------------------------
 # ✅ MAIN SEARCH FUNCTION (FIXED)
 # --------------------------------------------------
-def search_pdb_by_sequence(sequence, output_csv="pdb_mmcif_extracted.csv", keep_all=False, max_workers=6):
-
+def search_pdb_by_sequence(sequence, output_csv="pdb_mmcif_extracted.csv", keep_all=False, max_workers=6, score_cutoff=0.5):
     seq_type = detect_seq_type(sequence)
 
     target_map = {
@@ -495,7 +495,7 @@ def search_pdb_by_sequence(sequence, output_csv="pdb_mmcif_extracted.csv", keep_
     target = target_map[seq_type]
 
     # -------------------------------
-    # 1️⃣ ENTRY SEARCH (your query)
+    # 1️⃣ ENTRY SEARCH
     # -------------------------------
     query = {
         "query": {
@@ -548,22 +548,23 @@ def search_pdb_by_sequence(sequence, output_csv="pdb_mmcif_extracted.csv", keep_
         return []
 
     # -------------------------------
-    # 2️⃣ GET CORRECT SCORES
+    # 2️⃣ GET TRUE SCORES
     # -------------------------------
     entity_scores = get_entity_scores(sequence, seq_type)
 
     # -------------------------------
-    # 3️⃣ BUILD HIT LIST
+    # 3️⃣ BUILD HIT LIST (filter score ≥ 0.5)
     # -------------------------------
     pdb_hits = {}
-
     for hit in search_data.get("result_set", []):
         pdb_id = hit["identifier"]
+        score = entity_scores.get(pdb_id, 0)
 
-        pdb_hits[pdb_id] = {
-            "rcsb_score": entity_scores.get(pdb_id, 0),  # ✅ FIXED
-            "identity": 0.0
-        }
+        if score >= score_cutoff:  # ✅ only keep score >= 0.5
+            pdb_hits[pdb_id] = {
+                "rcsb_score": score,
+                "identity": 0.0
+            }
 
     # Sort by TRUE score
     sorted_items = sorted(
@@ -572,7 +573,7 @@ def search_pdb_by_sequence(sequence, output_csv="pdb_mmcif_extracted.csv", keep_
         reverse=True
     )
 
-    print(f"▶ Found {len(sorted_items)} PDB entries")
+    print(f"▶ Found {len(sorted_items)} PDB entries (score ≥ {score_cutoff})")
 
     # -------------------------------
     # 4️⃣ PARALLEL PROCESSING
@@ -607,14 +608,16 @@ def search_pdb_by_sequence(sequence, output_csv="pdb_mmcif_extracted.csv", keep_
                     info["Score"] = data["rcsb_score"]   # ✅ correct score
                     info["Seq_id"] = max_identity
                     rows.append(info)
-
+                    rows.sort(key=lambda x: x["Score"], reverse=True)
             except Exception as e:
                 print(f"✗ Failed {pdb_id}: {e}")
 
     # -------------------------------
     # 5️⃣ SAVE CSV
     # -------------------------------
-    fieldnames = ["PDB_ID", "Score", "Seq_id", "Resolution", "Pubmed_id", "Polymer", "Assembly", "Method", "pH", "Temp", "pdbx_details", "pdbx_pH_range", "Ligands"]
+    fieldnames = ["PDB_ID", "Score", "Seq_id", "Resolution", "Pubmed_id",
+                  "Polymer", "Assembly", "Method", "pH", "Temp",
+                  "pdbx_details", "pdbx_pH_range", "Ligands"]
 
     os.makedirs(os.path.dirname(output_csv) or ".", exist_ok=True)
 
