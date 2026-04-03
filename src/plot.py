@@ -263,7 +263,7 @@ def run_plot(output_csv_file):
     sm.set_array([])
     cbar = fig.colorbar(sm, ax=ax, pad=0.02)
     cbar.set_label("Score", rotation=270, labelpad=15)
-    fixed_ticks = [0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
+    fixed_ticks = [0.0, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
     cbar.set_ticks(fixed_ticks)
     cbar.set_ticklabels([f"{t:.1f}" for t in fixed_ticks])
 
