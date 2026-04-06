@@ -579,15 +579,15 @@ def search_pdb_by_sequence(sequence, output_csv="pdb_mmcif_extracted.csv", keep_
     # 4️⃣ PARALLEL PROCESSING
     # -------------------------------
     rows = []
-
+   
     with ThreadPoolExecutor(max_workers=max_workers) as executor:
-        future_to_pdb = {
-            executor.submit(fetch_pdb_sequences, pdb_id): (pdb_id, data)
-            for pdb_id, data in sorted_items
-        }
+        future_to_pdb = {executor.submit(fetch_pdb_sequences, pdb_id): pdb_id for pdb_id in pdb_hits}
+        completed = 0
 
         for future in as_completed(future_to_pdb):
-            pdb_id, data = future_to_pdb[future]
+            completed += 1
+            pdb_id = future_to_pdb[future]
+            data = pdb_hits[pdb_id]  # get associated score / info
 
             try:
                 pdb_sequences = future.result()
@@ -596,8 +596,7 @@ def search_pdb_by_sequence(sequence, output_csv="pdb_mmcif_extracted.csv", keep_
                 if pdb_sequences:
                     max_identity = max(
                         compute_identity(sequence.upper(), seq.upper())
-                        for seq in pdb_sequences.values()
-                    )
+                        for seq in pdb_sequences.values())
                 else:
                     max_identity = 0.0
 
@@ -605,12 +604,17 @@ def search_pdb_by_sequence(sequence, output_csv="pdb_mmcif_extracted.csv", keep_
                 info = extract_mmcif_info(pdb_id, sequence)
 
                 if info:
-                    info["Score"] = data["rcsb_score"]   # ✅ correct score
+                    info["Score"] = data["rcsb_score"]   # correct score
                     info["Seq_id"] = max_identity
                     rows.append(info)
                     rows.sort(key=lambda x: x["Score"], reverse=True)
+
+                # print progress every 10 entries
+                if completed % 10 == 0:
+                    print(f"  ✓ Processed {completed}/{len(pdb_hits)}")
+
             except Exception as e:
-                print(f"✗ Failed {pdb_id}: {e}")
+                print(f"  ✗ Failed for {pdb_id}: {e}")
 
     # -------------------------------
     # 5️⃣ SAVE CSV
@@ -624,7 +628,7 @@ def search_pdb_by_sequence(sequence, output_csv="pdb_mmcif_extracted.csv", keep_
     with open(output_csv, "w", newline="") as f:
         writer = csv.DictWriter(f, fieldnames=fieldnames)
         writer.writeheader()
-        writer.writerows(rows)
+        writer.writerows(rows) 
 
     print(f"✔ CSV written to: {os.path.abspath(output_csv)}")
 
