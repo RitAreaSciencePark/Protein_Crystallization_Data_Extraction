@@ -131,7 +131,6 @@ def run_plot(output_csv_file):
     ph_min_tick = np.floor(ph_min * 2) / 2     # round down to nearest 0.5
     ph_max_tick = np.ceil(ph_max * 2) / 2      # round up to nearest 0.5
 
-
     # --------------------------------------------------------
     # Marker assignment
     # --------------------------------------------------------
@@ -145,8 +144,7 @@ def run_plot(output_csv_file):
         "Sitting Drop Vapor Diffusion": "^",
         "vapor diffusion": "o",               # circle
         "unspecified": "X",
-        "": "X",
-    }
+        "": "X",}
 
     # Fallback markers for other methods
     fallback_markers = ["D", "v", "P", "*", "<", ">"]
@@ -197,40 +195,31 @@ def run_plot(output_csv_file):
         # return everything instead of top 10
         merged_df.drop(columns=["_condition_key"], inplace=True)
         return merged_df
-    
-    # ========================================================
-    # 1️⃣ FULL PLOT pH (Peg_con)
-    # ========================================================
-    fig, axes = plt.subplots(1, 2, figsize=(20, 8))  # 1 row, 2 columns
-    ax_temp, ax_peg = axes  # unpack axes
-
-    # 3 columns: left plot | colorbar space | right plot
-    gs = gridspec.GridSpec(1, 3, width_ratios=[1, 0.08, 1])
-
-    # (Optional but safer: disable any style-based grid globally)
-    plt.rcParams['axes.grid'] = False
 
     def parse_peg_con(x):
         if pd.isna(x):
             return np.nan
-        # If it's a string with ";"
         if isinstance(x, str):
-            return float(x.split(";")[0])
-        # If it's already a number
+            try:
+                return float(x.split(";")[0])
+            except:
+                return np.nan
         if isinstance(x, (int, float)):
             return float(x)
         return np.nan
 
-    # Apply safely
+    # Create column ONCE
     df["PEG_con_plot"] = df["PEG_con"].apply(parse_peg_con)
+        
+    # ========================================================
+    # 1️⃣ FULL PLOT pH vs Temp (with Score coloring)
+    # ========================================================
+    fig, ax_temp = plt.subplots(figsize=(10, 6))
 
-
-    # ------------------------
-    # Subplot 1: Temperature vs pH
-    # ------------------------
     for _, row in df.iterrows():
         x = row["temp_plot"] if "temp_plot" in row else row["Temp"]
         y = row["pH_plot"] if "pH_plot" in row else row["pH"]
+
         ax_temp.errorbar(
             x, y,
             yerr=[[row["err_low"]], [row["err_high"]]] if row["has_ph"] else None,
@@ -239,36 +228,81 @@ def run_plot(output_csv_file):
             ecolor=cmap(norm(row["Score"])),
             markeredgecolor="black",
             markersize=9,
-            capsize=3
-        )
-        ax_temp.text(
-            x, y, row["PDB_ID"],
-            fontsize=8,
-            path_effects=[pe.withStroke(linewidth=2, foreground="white")]
-        )
+            capsize=3 )
 
-    # Dashed lines & ticks for Temp subplot
+        ax_temp.text(x, y, row["PDB_ID"], fontsize=8, path_effects=[pe.withStroke(linewidth=2, foreground="white")])
+
+    # Formatting
     ax_temp.axhline(no_ph_y + 0.25, linestyle="--", color="black")
     ax_temp.axvline(no_temp_x + 2, linestyle="--", color="black")
+
     ax_temp.set_xlim(no_temp_x - 2, valid_temp.max() + 5)
     xticks = [no_temp_x] + list(range(temp_min_tick, temp_max_tick + 5, 10))
     ax_temp.set_xticks(xticks)
     ax_temp.set_xticklabels(["No Temp"] + [str(t) for t in xticks[1:]])
+
     ax_temp.set_ylim(no_ph_y - 0.25, valid_ph.max() + 0.25)
     yticks = [no_ph_y] + list(np.arange(ph_min_tick, ph_max_tick + 0.5, 1))
     ax_temp.set_yticks(yticks)
     ax_temp.set_yticklabels(["No pH"] + [f"{t:.1f}" for t in yticks[1:]])
+
     ax_temp.set_xlabel("Temperature (K)")
     ax_temp.set_ylabel("pH")
     ax_temp.set_title(f"pH vs Temperature (K)\nProtein: {protein_name}", fontsize=14, fontweight="bold")
 
-    # ------------------------
-    # Subplot 2: PEG concentration vs pH
-    # ------------------------
+    unique_methods = df["Method"].unique()
+    legend_items = []
+    used_markers = {}
+    for Method in unique_methods:
+        marker = assign_marker(Method)
+        if marker not in used_markers:
+            legend_items.append(
+                mlines.Line2D([], [], color="black", marker=marker, linestyle="None", markersize=8, label=Method.title()))
+            used_markers[marker] = True
+
+    # Place legend **just above the x-axis label**
+    ax_temp.legend(handles=legend_items,
+            title="Method",
+            loc='lower center',        # relative to axes
+            bbox_to_anchor=(0.5, -0.25),  # slightly below x-axis (adjust as needed)
+            ncol=3,
+            frameon=False)
+
+    # Colorbar
+    sm = plt.cm.ScalarMappable(cmap=cmap, norm=norm)
+    sm.set_array([])
+    cbar = fig.colorbar(sm, ax=ax_temp, pad=0.02)
+    cbar.set_label("Score", rotation=270, labelpad=15)
+    fixed_ticks = [0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
+    cbar.set_ticks(fixed_ticks)
+    cbar.set_ticklabels([f"{t:.1f}" for t in fixed_ticks])
+
+
+    # Save
+    temp_png = os.path.join(os.path.dirname(output_csv_file),
+                            f"{protein_name}_TEMP.png")
+    fig.savefig(temp_png, dpi=300, bbox_inches="tight")
+    plt.close(fig)
+
+     # ========================================================
+    # 2️⃣ FULL PLOT pH vs Peg_con (with Score coloring)
+    # ========================================================
+    fig, ax_peg = plt.subplots(figsize=(10, 6))
+
     no_peg_x = -5
     valid_peg = df["PEG_con_plot"].dropna()
-    peg_min_tick = int(np.floor(valid_peg.min() / 5) * 5) if not valid_peg.empty else 0
-    peg_max_tick = int(np.ceil(valid_peg.max() / 5) * 5) if not valid_peg.empty else 10
+
+    if valid_peg.empty:
+        peg_min_tick, peg_max_tick = 0, 10
+        peg_max = 10
+    else:
+        peg_min_tick = int(np.floor(valid_peg.min() / 5) * 5)
+        peg_max_tick = int(np.ceil(valid_peg.max() / 5) * 5)
+        peg_max = valid_peg.max()
+    ax_peg.set_xlim(no_peg_x - 2, peg_max + 5)
+    xticks = [no_peg_x] + list(range(peg_min_tick, peg_max_tick + 5, 10))
+    ax_peg.set_xticks(xticks)
+    ax_peg.set_xticklabels(["No PEG"] + [str(t) for t in xticks[1:]])
 
     for _, row in df.iterrows():
         x = row["PEG_con_plot"] if not pd.isna(row["PEG_con_plot"]) else no_peg_x
@@ -282,32 +316,26 @@ def run_plot(output_csv_file):
             ecolor=cmap(norm(row["Score"])),
             markeredgecolor="black",
             markersize=9,
-            capsize=3
-        )
-        ax_peg.text(
-            x, y, row["PDB_ID"],
-            fontsize=8,
-            path_effects=[pe.withStroke(linewidth=2, foreground="white")]
-        )
+            capsize=3)
 
-    # Dashed lines & ticks for PEG subplot
+        ax_peg.text(x, y, row["PDB_ID"], fontsize=8, path_effects=[pe.withStroke(linewidth=2, foreground="white")])
+
+    # Formatting
     ax_peg.axhline(no_ph_y + 0.25, linestyle="--", color="black")
     ax_peg.axvline(no_peg_x + 2, linestyle="--", color="black")
-    ax_peg.set_xlim(no_peg_x - 2, valid_peg.max() + 5)
-    xticks = [no_peg_x] + list(range(int(peg_min_tick), int(peg_max_tick) + 5, 10))
+    ax_peg.set_xlim(no_peg_x - 2, peg_max + 5)
     ax_peg.set_xticks(xticks)
     ax_peg.set_xticklabels(["No PEG"] + [str(t) for t in xticks[1:]])
+
     ax_peg.set_ylim(no_ph_y - 0.25, valid_ph.max() + 0.25)
     yticks = [no_ph_y] + list(np.arange(ph_min_tick, ph_max_tick + 0.5, 1))
     ax_peg.set_yticks(yticks)
     ax_peg.set_yticklabels(["No pH"] + [f"{t:.1f}" for t in yticks[1:]])
+
     ax_peg.set_xlabel("PEG concentration (%)")
     ax_peg.set_ylabel("pH")
     ax_peg.set_title(f"pH vs PEG concentration (%)\nProtein: {protein_name}", fontsize=14, fontweight="bold")
 
-    # ------------------------
-    # Shared legend
-    # ------------------------
     unique_methods = df["Method"].unique()
     legend_items = []
     used_markers = {}
@@ -315,47 +343,37 @@ def run_plot(output_csv_file):
         marker = assign_marker(Method)
         if marker not in used_markers:
             legend_items.append(
-                mlines.Line2D([], [], color="black", marker=marker, linestyle="None",
-                            markersize=8, label=Method.title())
-            )
+                mlines.Line2D([], [], color="black", marker=marker, linestyle="None", markersize=8, label=Method.title()))
             used_markers[marker] = True
 
-    fig.legend(handles=legend_items, title="Method",
-            loc='lower center', bbox_to_anchor=(0.5, -0.05), ncol=3, frameon=False)
+    # Place legend **just above the x-axis label**
+    ax_peg.legend(handles=legend_items,
+            title="Method",
+            loc='lower center',        # relative to axes
+            bbox_to_anchor=(0.5, -0.25),  # slightly below x-axis (adjust as needed)
+            ncol=3,
+            frameon=False)
 
-    # ------------------------
-    # Shared colorbar in between subplots
-    # -----------------------
-    ax_cbar = fig.add_subplot(gs[1])
+    # Colorbar
     sm = plt.cm.ScalarMappable(cmap=cmap, norm=norm)
     sm.set_array([])
-    cbar = fig.colorbar(sm, cax=ax_cbar)
+    cbar = fig.colorbar(sm, ax=ax_peg, pad=0.02)
     cbar.set_label("Score", rotation=270, labelpad=15)
     fixed_ticks = [0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
     cbar.set_ticks(fixed_ticks)
     cbar.set_ticklabels([f"{t:.1f}" for t in fixed_ticks])
 
-    # Optionally, shift the colorbar vertically (make it shorter in height)
-    pos = ax_cbar.get_position()
-    ax_cbar.set_position([pos.x0 - 0.015, pos.y0, pos.width - 0.01 , pos.height])  # x0, y0, width, height
-
-    # ------------------------
-    # Save figure
-    # ------------------------
-    full_png = os.path.join(os.path.dirname(output_csv_file), f"{protein_name}_FULL_PLOTS.png")
-    fig.tight_layout()
-    fig.savefig(full_png, dpi=300, bbox_inches="tight")
+    # Save
+    peg_png = os.path.join(os.path.dirname(output_csv_file), f"{protein_name}_PEG.png")
+    fig.savefig(peg_png, dpi=300, bbox_inches="tight")
     plt.close(fig)
-    print(f"✔ Full plot with Temperature & PEG saved as: {full_png}")
 
     # ========================================================
-    # 2️⃣ FIRST 10 + TABLE
+    #  Coloured PDF TABLE
     # ========================================================
-
-    # Example: first10_grouped DataFrame
     first10_grouped = all_conditions_with_merged_pdb(df)  # your function
 
-    fig, ax = plt.subplots(figsize=(16, 10))
+    fig, ax = plt.subplots(figsize=(18, 10))
     ax.axis("off")
 
     # Table body rows
@@ -402,7 +420,9 @@ def run_plot(output_csv_file):
     col_colors = {
         "PDB_ID": "#98ACBA",
         "Score": "#B7EFBC",
+        "Seq_id": "#F17DFB",
         "Pubmed_id": "#D8BC8E",
+        "Polymer": "#4DAEC8",
         "Assembly": "#CA94D2",
         "Method": "#9AD7DF",
         "Ligands": "#E9A6BC",
