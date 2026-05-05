@@ -2,6 +2,7 @@ import pandas as pd
 import types
 import sys
 import pickle
+import re
 
 def format_compounds(compound_list):
     """
@@ -24,6 +25,31 @@ def format_compounds(compound_list):
             formatted.append(str(compound_list[i]).strip())
 
     return ", ".join(formatted)
+
+def extract_peg_info(compound_str):
+    if not isinstance(compound_str, str) or compound_str.strip() == "":
+        return "", ""
+
+    peg_ids = []
+    peg_cons = []
+
+    for part in compound_str.split(","):
+        part = part.strip()
+
+        if "PEG" in part.upper():
+            # Extract PEG ID
+            id_match = re.search(r"PEG[\s\-]*([0-9]+)", part, re.IGNORECASE)
+
+            # Extract ONLY numeric concentration (no %, no unit)
+            con_match = re.search(r"\(\s*([0-9]*\.?[0-9]+)", part)
+
+            if id_match:
+                peg_ids.append(id_match.group(1))
+
+            if con_match:
+                peg_cons.append(con_match.group(1))
+
+    return ";".join(peg_ids), ";".join(peg_cons)
 
 
 def append_compound_to_filtered_csv(structures_file, filtered_csv_path, output_csv_file):
@@ -86,6 +112,7 @@ def append_compound_to_filtered_csv(structures_file, filtered_csv_path, output_c
 
     # Map COMPOUND values to filtered CSV
     filtered_df["Compounds(con_unit=mM)"] = filtered_df["PDB_ID"].map(compound_dict).fillna("")
+    filtered_df[["PEG_Id", "PEG_con"]] = (filtered_df["Compounds(con_unit=mM)"].apply(lambda x: pd.Series(extract_peg_info(x))))
 
     # -------------------------------
     # Save CSV

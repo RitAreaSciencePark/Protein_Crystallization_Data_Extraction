@@ -2,10 +2,12 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib.lines as mlines
 import matplotlib.patheffects as pe
+import matplotlib.gridspec as gridspec
 import numpy as np
 import re
 import os
 import textwrap
+
 
 # Automatically compute approximate column widths based on max text length
 def compute_col_widths(df, scale=0.01):
@@ -22,11 +24,11 @@ def compute_col_widths(df, scale=0.01):
 # ============================================================
 # MAIN FUNCTION
 # ============================================================
-def run_plot(output_csv_file):
+def run_plot(output_csv_file, seq_type_name):
 
     print(f"▶ Loading CSV: {output_csv_file}")
     df = pd.read_csv(output_csv_file)
-    protein_name = os.path.basename(output_csv_file).split("_crystallization_data")[0]
+    protein_name = seq_type_name
 
     # --------------------------------------------------------
     # Clean method column
@@ -76,20 +78,25 @@ def run_plot(output_csv_file):
     # Compute plotting pH
     # --------------------------------------------------------
     def compute_plot_ph(row):
-    # Case 1: exact pH value present
-        if pd.notna(row.get("pH")):
-            return pd.Series([row["pH"], 0.0, 0.0])
+        pH = row["pH"] if "pH" in row and pd.notna(row["pH"]) else None
+        ph_low = row["pH_low"] if "pH_low" in row and pd.notna(row["pH_low"]) else None
+        ph_high = row["pH_high"] if "pH_high" in row and pd.notna(row["pH_high"]) else None
 
-        # Case 2: pH range available
-        if pd.notna(row.get("pH_low")) and pd.notna(row.get("pH_high")):
-            ph_low = row["pH_low"]
-            ph_high = row["pH_high"]
+        if pH is not None:
+            return (float(pH), 0.0, 0.0)
+
+        if ph_low is not None and ph_high is not None:
+            ph_low = float(ph_low)
+            ph_high = float(ph_high)
             ph_mid = (ph_low + ph_high) / 2
-            return pd.Series([ph_mid, ph_mid - ph_low, ph_high - ph_mid])
-        # Case 3: no pH info
-        return pd.Series([np.nan, 0.0, 0.0])
-        
-    df[["plot_pH", "err_low", "err_high"]] = df.apply(compute_plot_ph, axis=1, result_type="expand")
+            return (ph_mid, ph_mid - ph_low, ph_high - ph_mid)
+
+        return (np.nan, 0.0, 0.0)
+            
+    result = df.apply(compute_plot_ph, axis=1)
+    result = pd.DataFrame(result.tolist(), columns=["plot_pH", "err_low", "err_high"])
+
+    df = pd.concat([df, result], axis=1)
 
     df["has_ph"] = ~df["plot_pH"].isna()
     df["has_temp"] = ~df["Temp"].isna()
@@ -123,12 +130,14 @@ def run_plot(output_csv_file):
 
     # Round real temperature scale to 5K grid
     temp_min_tick = int(np.floor(temp_min / 5) * 5)
-    temp_max_tick = int(np.ceil(temp_max / 5) * 5)
+    if pd.isna(temp_max):
+        temp_max_tick = 0  # or a fallback value
+    else:
+        temp_max_tick = int(np.ceil(temp_max / 5) * 5)
 
     # Round bounds nicely
     ph_min_tick = np.floor(ph_min * 2) / 2     # round down to nearest 0.5
     ph_max_tick = np.ceil(ph_max * 2) / 2      # round up to nearest 0.5
-
 
     # --------------------------------------------------------
     # Marker assignment
@@ -143,8 +152,7 @@ def run_plot(output_csv_file):
         "Sitting Drop Vapor Diffusion": "^",
         "vapor diffusion": "o",               # circle
         "unspecified": "X",
-        "": "X",
-    }
+        "": "X",}
 
     # Fallback markers for other methods
     fallback_markers = ["D", "v", "P", "*", "<", ">"]
@@ -195,48 +203,73 @@ def run_plot(output_csv_file):
         # return everything instead of top 10
         merged_df.drop(columns=["_condition_key"], inplace=True)
         return merged_df
+
+    def parse_peg_con(x):
+        if pd.isna(x):
+            return np.nan
+        if isinstance(x, str):
+            try:
+                return float(x.split(";")[0])
+            except:
+                return np.nan
+        if isinstance(x, (int, float)):
+            return float(x)
+        return np.nan
+    
+    # Create column ONCE
+    df["PEG_con_plot"] = df["PEG_con"].apply(parse_peg_con)
+
     # ========================================================
-    # 1️⃣ FULL PLOT
+    #  FULL PLOT pH vs Peg_con (with Score coloring)
     # ========================================================
-    fig, ax = plt.subplots(figsize=(14, 8))
+    fig, ax_peg = plt.subplots(figsize=(10, 6))
+
+    no_peg_x = -5
+    valid_peg = df["PEG_con_plot"].dropna()
+
+    if valid_peg.empty:
+        peg_min_tick, peg_max_tick = 0, 10
+        peg_max = 10
+    else:
+        peg_min_tick = int(np.floor(valid_peg.min() / 5) * 5)
+        peg_max_tick = int(np.ceil(valid_peg.max() / 5) * 5)
+        peg_max = valid_peg.max()
+    ax_peg.set_xlim(no_peg_x - 2, peg_max + 5)
+    xticks = [no_peg_x] + list(range(peg_min_tick, peg_max_tick + 5, 10))
+    ax_peg.set_xticks(xticks)
+    ax_peg.set_xticklabels(["No PEG"] + [str(t) for t in xticks[1:]])
 
     for _, row in df.iterrows():
-        x = row["temp_plot"] if "temp_plot" in row else row["Temp"]
+        x = row["PEG_con_plot"] if not pd.isna(row["PEG_con_plot"]) else no_peg_x
         y = row["pH_plot"] if "pH_plot" in row else row["pH"]
-        ax.errorbar(x, y,
-                    yerr=[[row["err_low"]], [row["err_high"]]] if row["has_ph"] else None,
-                    fmt=row["marker"],
-                    color=cmap(norm(row["Score"])),
-                    ecolor=cmap(norm(row["Score"])),
-                    markeredgecolor="black",
-                    markersize=9,
-                    capsize=3)
 
-        ax.text( x, y, row["PDB_ID"], fontsize=8, path_effects=[pe.withStroke(linewidth=2, foreground="white")],)
+        ax_peg.errorbar(
+            x, y,
+            yerr=[[row["err_low"]], [row["err_high"]]] if row["has_ph"] else None,
+            fmt=row["marker"],
+            color=cmap(norm(row["Score"])),
+            ecolor=cmap(norm(row["Score"])),
+            markeredgecolor="black",
+            markersize=9,
+            capsize=3)
 
-    ax.axhline(no_ph_y + 0.25, linestyle="--", color="black")
-    ax.axvline(no_temp_x + 2, linestyle="--", color="black")
+        ax_peg.text(x, y, row["PDB_ID"], fontsize=8, path_effects=[pe.withStroke(linewidth=2, foreground="white")])
 
-    # Get existing ticks, Remove any tick below real minimum, Add artificial no_temp position, Create labels Build consistent 2K temperature scale
-    ax.set_xlim(no_temp_x - 2, valid_temp.max() + 5)
-    xticks = [no_temp_x] + list(range(temp_min_tick, temp_max_tick + 5, 10))
-    ax.set_xticks(xticks)
-    ax.set_xticklabels(["No Temp"] + [str(t) for t in xticks[1:]])
-   
-    # Get existing ticks, Remove any tick below real minimum, Add artificial no_pH position, Create labels
-    ax.set_ylim(no_ph_y - 0.25, valid_ph.max() + 0.25)
+    # Formatting
+    ax_peg.axhline(no_ph_y + 0.25, linestyle="--", color="black")
+    ax_peg.axvline(no_peg_x + 2, linestyle="--", color="black")
+    ax_peg.set_xlim(no_peg_x - 2, peg_max + 5)
+    ax_peg.set_xticks(xticks)
+    ax_peg.set_xticklabels(["No PEG"] + [str(t) for t in xticks[1:]])
+
+    ax_peg.set_ylim(no_ph_y - 0.25, valid_ph.max() + 0.25)
     yticks = [no_ph_y] + list(np.arange(ph_min_tick, ph_max_tick + 0.5, 1))
-    ax.set_yticks(yticks)
-    ax.set_yticklabels(["No pH"] + [f"{t:.1f}" for t in yticks[1:]])
+    ax_peg.set_yticks(yticks)
+    ax_peg.set_yticklabels(["No pH"] + [f"{t:.1f}" for t in yticks[1:]])
 
-    ax.set_xlabel("Temperature (K)")
-    ax.set_ylabel("pH")
-    ax.set_title(
-        f"pH vs Temperature (K)\nProtein: {protein_name}",
-        fontsize=14,
-        fontweight="bold",
-    )
-    
+    ax_peg.set_xlabel("PEG concentration (%)")
+    ax_peg.set_ylabel("pH")
+    ax_peg.set_title(f"pH vs PEG concentration (%)\n {protein_name}", fontsize=18, fontweight="bold")
 
     unique_methods = df["Method"].unique()
     legend_items = []
@@ -245,42 +278,37 @@ def run_plot(output_csv_file):
         marker = assign_marker(Method)
         if marker not in used_markers:
             legend_items.append(
-                mlines.Line2D([], [], color="black", marker=marker, linestyle="None",
-                            markersize=8, label=Method.title())
-            )
+                mlines.Line2D([], [], color="black", marker=marker, linestyle="None", markersize=10, label=Method.title()))
             used_markers[marker] = True
 
     # Place legend **just above the x-axis label**
-    ax.legend(handles=legend_items,
+    ax_peg.legend(handles=legend_items,
             title="Method",
             loc='lower center',        # relative to axes
             bbox_to_anchor=(0.5, -0.25),  # slightly below x-axis (adjust as needed)
             ncol=3,
             frameon=False)
 
-    # Fixed colorbar
+    # Colorbar
     sm = plt.cm.ScalarMappable(cmap=cmap, norm=norm)
     sm.set_array([])
-    cbar = fig.colorbar(sm, ax=ax, pad=0.02)
+    cbar = fig.colorbar(sm, ax=ax_peg, pad=0.02)
     cbar.set_label("Score", rotation=270, labelpad=15)
     fixed_ticks = [0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
     cbar.set_ticks(fixed_ticks)
     cbar.set_ticklabels([f"{t:.1f}" for t in fixed_ticks])
 
-    full_png = os.path.join(
-        os.path.dirname(output_csv_file),
-        f"{protein_name}_FULL_PLOT.png",)
-    fig.savefig(full_png, dpi=300, bbox_inches="tight")
+    # Save
+    peg_png = os.path.join(os.path.dirname(output_csv_file), f"{protein_name}_PEG.png")
+    fig.savefig(peg_png, dpi=300, bbox_inches="tight")
     plt.close(fig)
-    print(f"✔ Full plot saved as: {full_png}")
 
     # ========================================================
-    # 2️⃣ FIRST 10 + TABLE
+    #  Coloured PDF TABLE
     # ========================================================
-    # Example: first10_grouped DataFrame
     first10_grouped = all_conditions_with_merged_pdb(df)  # your function
 
-    fig, ax = plt.subplots(figsize=(16, 10))
+    fig, ax = plt.subplots(figsize=(18, 10))
     ax.axis("off")
 
     # Table body rows
@@ -288,22 +316,19 @@ def run_plot(output_csv_file):
     for _, group in first10_grouped.iterrows():
         table_rows.append([
             group["PDB_ID"],
-            f"{group['Score']:.3f}" if not pd.isna(group["Score"]) else "",
-            group["Pubmed_id"] if not pd.isna(group["Pubmed_id"]) else "",
-            group.get("Assembly", ""),
-            group["Method"],
-            group["Ligands"] if not pd.isna(group["Ligands"]) else "",
-            group["plot_pH_numeric"] if not pd.isna(group["plot_pH_numeric"]) else "",
-            group["Temp"] if not pd.isna(group["Temp"]) else "",
-            group["Compounds(con_unit=mM)"] if not pd.isna(group["Compounds(con_unit=mM)"]) else "",
-        ])
+            f"{group['Score']:.3f}" if not pd.isna(group["Score"]) else "",  
+            f"{group['Seq_id']:.3f}" if not pd.isna(group["Seq_id"]) else "", 
+            group["Pubmed_id"] if not pd.isna(group["Pubmed_id"]) else "",  
+            group.get("Polymer", ""), group.get("Assembly", ""), group["Method"], group["Ligands"] if not pd.isna(group["Ligands"]) else "",
+            group["plot_pH_numeric"] if not pd.isna(group["plot_pH_numeric"]) else "", group["Temp"] if not pd.isna(group["Temp"]) else "",
+            group["Compounds(con_unit=mM)"] if not pd.isna(group["Compounds(con_unit=mM)"]) else "",])
 
     # 2️⃣ Headers
-    main_header = ["", "", "", "", "", "", "", "", "CRYSTALLIZATION COCKTAILS"] 
-    sub_headers = ["PDB_ID", "Score", "Pubmed_id", "Assembly","Method", "Ligands","pH", "Temp", "Compounds(con_unit=mM)"]
+    main_header = ["", "", "", "", "", "", "", "", "", "", "CRYSTALLIZATION COCKTAILS"] 
+    sub_headers = ["PDB_ID", "Score", "Seq_id", "Pubmed_id", "Polymer", "Assembly","Method", "Ligands","pH", "Temp", "Compounds(con_unit=mM)"]
 
     # 3️⃣ Column widths
-    col_widths = [0.16, 0.05, 0.08, 0.09, 0.11, 0.10, 0.04, 0.04, 0.36]
+    col_widths = [0.16, 0.05, 0.05, 0.08, 0.07, 0.09, 0.11, 0.10, 0.04, 0.04, 0.36]
 
     # Create table
     tbl = ax.table(
@@ -330,7 +355,9 @@ def run_plot(output_csv_file):
     col_colors = {
         "PDB_ID": "#98ACBA",
         "Score": "#B7EFBC",
+        "Seq_id": "#F17DFB",
         "Pubmed_id": "#D8BC8E",
+        "Polymer": "#4DAEC8",
         "Assembly": "#CA94D2",
         "Method": "#9AD7DF",
         "Ligands": "#E9A6BC",
@@ -387,7 +414,9 @@ def run_plot(output_csv_file):
     wrap_widths = {
         "PDB_ID": 18,
         "Score": 6,
+        "Seq_id": 6,
         "Pubmed_id": 10,
+        "Polymer": 10,
         "Assembly": 14,
         "Method": 18,
         "Ligands": 15,
@@ -438,12 +467,16 @@ def run_plot(output_csv_file):
     tbl.set_fontsize(11)
     tbl.scale(1, 1)
 
-    # Save PDF
+    # Save PNG and PDF
     Cryst_cocktail = os.path.join(
+        os.path.dirname(output_csv_file),
+        f"{protein_name}_Cryst_cocktail_Table.png")
+    Cryst_cocktail_pdf = os.path.join(
         os.path.dirname(output_csv_file),
         f"{protein_name}_Cryst_cocktail_Table.pdf")
 
     fig.savefig(Cryst_cocktail, bbox_inches="tight")
+    fig.savefig(Cryst_cocktail_pdf, bbox_inches="tight")
     plt.close(fig)
 
     print(f"✔ Table saved as: {Cryst_cocktail}")

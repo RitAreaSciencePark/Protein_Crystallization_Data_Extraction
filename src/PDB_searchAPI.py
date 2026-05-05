@@ -7,7 +7,6 @@ import re
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from Bio.PDB.MMCIF2Dict import MMCIF2Dict
 import pandas as pd
-from Bio.Align import PairwiseAligner
 
 # Setup cache directory for PDB files
 CACHE_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), ".pdb_cache")
@@ -255,67 +254,6 @@ def detect_seq_type(sequence):
     else:
         # Mixed or unknown letters → default to protein
         return "protein"
-    
-def fetch_sequence_from_entity(entity_id):
-    """
-    Fetch sequence for a single polymer entity using RCSB API.
-    entity_id: str, e.g., "5JWO_1"
-    """
-    pdb_id, entity_num = entity_id.split("_")
-    url = f"https://data.rcsb.org/rest/v1/core/polymer_entity/{pdb_id}/{entity_num}"
-
-    try:
-        r = requests.get(url, timeout=10)
-        r.raise_for_status()
-        data = r.json()
-        seq = data.get("entity_poly", {}).get("pdbx_seq_one_letter_code", "")
-        return seq.replace("\n", "")
-    except Exception as e:
-        print(f"⚠ Failed to fetch sequence for {entity_id}: {e}")
-        return None
-
-def fetch_pdb_sequences(pdb_id):
-    """
-    Fetch sequences of all polymer entities (chains) for a PDB entry
-    directly from the RCSB API.
-    Returns a dictionary {entity_id: sequence}.
-    """
-    pdb_id = pdb_id.upper()
-    url = f"https://data.rcsb.org/rest/v1/core/entry/{pdb_id}"
-
-    sequences = {}
-
-    try:
-        r = requests.get(url, timeout=10)
-        r.raise_for_status()
-        data = r.json()
-
-        # Get all polymer entities in this PDB entry
-        polymer_entities = data.get("rcsb_entry_container_identifiers", {}).get("polymer_entity_ids", [])
-        for entity_num in polymer_entities:
-            entity_id = f"{pdb_id}_{entity_num}"
-            seq = fetch_sequence_from_entity(entity_id)
-            if seq:
-                sequences[entity_id] = seq
-
-    except Exception as e:
-        print(f"⚠ Failed to fetch polymer entities for {pdb_id}: {e}")
-
-    return sequences
-
-def compute_identity(seq1, seq2):
-    """Compute sequence identity using global alignment with PairwiseAligner"""
-    aligner = PairwiseAligner()
-    aligner.mode = "global"  # global alignment
-    aligner.match_score = 1
-    aligner.mismatch_score = 0
-    aligner.open_gap_score = 0
-    aligner.extend_gap_score = 0
-
-    score = aligner.score(seq1, seq2)  # counts matches only
-    alignment_length = max(len(seq1), len(seq2))
-    identity = (score / alignment_length) 
-    return identity
 
 def get_polymer_type_from_mmcif(block):
     """
@@ -381,20 +319,10 @@ def extract_mmcif_info(pdb_id, query_sequence, rcsb_score=0):
     # Determine polymer type (uni_pol vs complex)
     polymer_type = get_polymer_type_from_mmcif(block) or "NA"
 
-    # Fetch sequences and compute identity
-    pdb_sequences = fetch_pdb_sequences(pdb_id)
-
-    max_identity = 0.0
-    for entity_id, pdb_seq in pdb_sequences.items():
-        identity = compute_identity(query_sequence.upper(), pdb_seq.upper())
-        if identity > max_identity:
-            max_identity = identity
 
     # 5️⃣ Collect info
     info = {
-        "PDB_ID": pdb_id,
-        "Score": rcsb_score,
-        "Seq_id": max_identity,  
+        "PDB_ID": pdb_id, 
         "Resolution": block.find_value("_refine.ls_d_res_high"),
         "Pubmed_id": pubmed,
         "Polymer": polymer_type, 
@@ -429,61 +357,12 @@ def filter_experimental_conditions(input_csv, output_csv=None):
     return output_csv
 
 # --------------------------------------------------
-# ✅ Get TRUE sequence scores (polymer_entity level)
-# --------------------------------------------------
-def get_entity_scores(sequence, seq_type):
-    target_map = {
-        "protein": "pdb_protein_sequence",
-        "dna": "pdb_dna_sequence",
-        "rna": "pdb_rna_sequence"
-    }
-
-    url = "https://search.rcsb.org/rcsbsearch/v2/query"
-
-    payload = {
-        "query": {
-            "type": "terminal",
-            "service": "sequence",
-            "parameters": {
-                "target": target_map[seq_type],
-                "value": sequence,
-                "identity_cutoff": 0.5,
-                "evalue_cutoff": 1e-5
-            }
-        },
-        "return_type": "polymer_entity",
-        "request_options": {
-            "paginate": {"start": 0, "rows": 10000}
-        }
-    }
-
-    try:
-        r = requests.post(url, json=payload, timeout=30)
-        r.raise_for_status()
-        result_set = r.json().get("result_set", [])
-
-        entity_scores = {}
-
-        for res in result_set:
-            entity_id = res["identifier"]  # e.g. 4KSO_1
-            score = res.get("score", 0)
-
-            pdb_id = entity_id.split("_")[0]
-
-            # keep best score per PDB
-            if pdb_id not in entity_scores or score > entity_scores[pdb_id]:
-                entity_scores[pdb_id] = score
-
-        return entity_scores
-
-    except Exception as e:
-        print(f"⚠ Entity score fetch failed: {e}")
-        return {}
-
-# --------------------------------------------------
 # ✅ MAIN SEARCH FUNCTION (FIXED)
 # --------------------------------------------------
 def search_pdb_by_sequence(sequence, output_csv="pdb_mmcif_extracted.csv", keep_all=False, max_workers=6, score_cutoff=0.5):
+
+    RCSB_SEARCH_URL = "https://search.rcsb.org/rcsbsearch/v2/query"
+    
     seq_type = detect_seq_type(sequence)
 
     target_map = {
@@ -495,7 +374,7 @@ def search_pdb_by_sequence(sequence, output_csv="pdb_mmcif_extracted.csv", keep_
     target = target_map[seq_type]
 
     # -------------------------------
-    # 1️⃣ ENTRY SEARCH
+    # 1️⃣ SEARCH (sequence + X-ray)
     # -------------------------------
     query = {
         "query": {
@@ -523,113 +402,91 @@ def search_pdb_by_sequence(sequence, output_csv="pdb_mmcif_extracted.csv", keep_
                 }
             ]
         },
-        "request_options": {"paginate": {"start": 0, "rows": 10000}},
+        "request_options": {
+            "scoring_strategy": "sequence",
+            "results_verbosity": "verbose",
+            "paginate": {"start": 0, "rows": 10000}
+        },
         "return_type": "entry"
     }
 
-    headers = {"User-Agent": "PDB-sequence-search-script/1.0"}
-
     try:
-        r = requests.post(
-            "https://search.rcsb.org/rcsbsearch/v2/query",
-            json=query,
-            headers=headers,
-            timeout=30
-        )
+        r = requests.post(RCSB_SEARCH_URL, json=query, timeout=30)
         r.raise_for_status()
     except Exception as e:
         print(f"⚠ PDB search failed: {e}")
-        return []
+        return None
 
-    search_data = r.json()
+    data = r.json()
 
-    if search_data.get("total_count", 0) == 0:
+    if data.get("total_count", 0) == 0:
         print("⚠ No matches found")
-        return []
+        return None
 
     # -------------------------------
-    # 2️⃣ GET TRUE SCORES
+    # 2️⃣ COLLECT HITS (with score)
     # -------------------------------
-    entity_scores = get_entity_scores(sequence, seq_type)
+    pdb_hits = []
 
-    # -------------------------------
-    # 3️⃣ BUILD HIT LIST (filter score ≥ 0.5)
-    # -------------------------------
-    pdb_hits = {}
-    for hit in search_data.get("result_set", []):
-        pdb_id = hit["identifier"]
-        score = entity_scores.get(pdb_id, 0)
+    for hit in data.get("result_set", []):
+        pdb_id = hit.get("identifier")
+        score = hit.get("score", 0)
 
-        if score >= score_cutoff:  # ✅ only keep score >= 0.5
-            pdb_hits[pdb_id] = {
-                "rcsb_score": score,
-                "identity": 0.0
-            }
+        if score is None:
+            continue
 
-    # Sort by TRUE score
-    sorted_items = sorted(
-        pdb_hits.items(),
-        key=lambda x: x[1]["rcsb_score"],
-        reverse=True
-    )
+        if not keep_all and score < score_cutoff:
+            continue
 
-    print(f"▶ Found {len(sorted_items)} PDB entries (score ≥ {score_cutoff})")
+        pdb_hits.append({
+            "pdb_id": pdb_id,
+            "score": score
+        })
+
+    print(f"✔ {len(pdb_hits)} hits after filtering")
 
     # -------------------------------
-    # 4️⃣ PARALLEL PROCESSING
+    # 3️⃣ PARALLEL EXTRACTION
     # -------------------------------
     rows = []
-   
+
+    def process_hit(hit):
+        pdb_id = hit["pdb_id"]
+        score = hit["score"]
+
+        info = extract_mmcif_info(pdb_id, sequence, score)
+
+        if info:
+            info["Score"] = score
+            return info
+        return None
+
     with ThreadPoolExecutor(max_workers=max_workers) as executor:
-        future_to_pdb = {executor.submit(fetch_pdb_sequences, pdb_id): pdb_id for pdb_id in pdb_hits}
-        completed = 0
+        futures = [executor.submit(process_hit, h) for h in pdb_hits]
 
-        for future in as_completed(future_to_pdb):
-            completed += 1
-            pdb_id = future_to_pdb[future]
-            data = pdb_hits[pdb_id]  # get associated score / info
-
+        for i, future in enumerate(as_completed(futures), 1):
             try:
-                pdb_sequences = future.result()
+                result = future.result()
+                if result:
+                    rows.append(result)
 
-                # compute identity
-                if pdb_sequences:
-                    max_identity = max(
-                        compute_identity(sequence.upper(), seq.upper())
-                        for seq in pdb_sequences.values())
-                else:
-                    max_identity = 0.0
-
-                # extract mmCIF info
-                info = extract_mmcif_info(pdb_id, sequence)
-
-                if info:
-                    info["Score"] = data["rcsb_score"]   # correct score
-                    info["Seq_id"] = max_identity
-                    rows.append(info)
-                    rows.sort(key=lambda x: x["Score"], reverse=True)
-
-                # print progress every 10 entries
-                if completed % 10 == 0:
-                    print(f"  ✓ Processed {completed}/{len(pdb_hits)}")
+                if i % 10 == 0:
+                    print(f"  ✓ Processed {i}/{len(pdb_hits)}")
 
             except Exception as e:
-                print(f"  ✗ Failed for {pdb_id}: {e}")
+                print(f"  ✗ Error: {e}")
 
     # -------------------------------
-    # 5️⃣ SAVE CSV
+    # 4️⃣ SAVE CSV
     # -------------------------------
-    fieldnames = ["PDB_ID", "Score", "Seq_id", "Resolution", "Pubmed_id",
-                  "Polymer", "Assembly", "Method", "pH", "Temp",
-                  "pdbx_details", "pdbx_pH_range", "Ligands"]
+    if not rows:
+        print("⚠ No data extracted")
+        return None
 
-    os.makedirs(os.path.dirname(output_csv) or ".", exist_ok=True)
+    df = pd.DataFrame(rows)
 
-    with open(output_csv, "w", newline="") as f:
-        writer = csv.DictWriter(f, fieldnames=fieldnames)
-        writer.writeheader()
-        writer.writerows(rows) 
+    df.to_csv(output_csv, index=False)
 
-    print(f"✔ CSV written to: {os.path.abspath(output_csv)}")
+    print(f"✔ CSV written: {output_csv}")
 
     return output_csv

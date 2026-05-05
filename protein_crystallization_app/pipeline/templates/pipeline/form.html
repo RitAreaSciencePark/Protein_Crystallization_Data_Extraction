@@ -1,90 +1,574 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Protein Crystallization Pipeline</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-        }
-        .file-section {
-            margin-top: 30px;
-        }
-        .file-row {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 20px;
-        }
-        .file-card {
-            border: 1px solid #ccc;
-            padding: 10px;
-            width: 45%;
-            box-sizing: border-box;
-        }
-        .file-card img, .file-card iframe {
-            max-width: 100%;
-        }
-        h3 {
-            margin-bottom: 10px;
-        }
-        h4 {
-            margin-bottom: 5px;
-            font-size: 14px;
-            word-break: break-all;
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CrystAL — Crystallization Pipeline</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&family=Fraunces:ital,opsz,wght@0,9..144,200;0,9..144,600;1,9..144,300&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:      #020f17;
+    --surface: #141617;
+    --border:  #1e2428;
+    --border2: #2a3038;
+    --text:    #e8eaec;
+    --text2:   #7a8894;
+    --text3:   #3d4a55;
+    --accent:  #3de8a0;
+    --accent2: #1ab870;
+    --warn:    #f0a050;
+    --danger:  #e05060;
+    --blue:    #4ab0e8;
+    --glow:    rgba(61,232,160,0.10);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    font-size: 14px;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(var(--border) 1px, transparent 1px),
+      linear-gradient(90deg, var(--border) 1px, transparent 1px);
+    background-size: 40px 40px;
+    opacity: 0.35;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .wrap {
+    position: relative;
+    z-index: 1;
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 2rem 2rem 4rem;
+  }
+
+  /* ── HEADER ── */
+  .header {
+    margin-bottom: 2rem;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--border2);
+    padding-bottom: 1.25rem;
+  }
+  .logo {
+    font-family: 'Fraunces', serif;
+    font-size: 2.2rem;
+    font-weight: 200;
+    letter-spacing: -0.03em;
+    line-height: 1;
+  }
+  .logo em { color: var(--accent); font-style: normal; }
+  .logo-sub {
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--text3);
+    margin-top: 4px;
+  }
+  .header-tag {
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--text3);
+    border: 1px solid var(--border2);
+    padding: 4px 10px;
+    border-radius: 2px;
+  }
+
+  /* ── SECTIONS ── */
+  .section {
+    background: var(--surface);
+    border: 1px solid var(--border2);
+    border-radius: 4px;
+    padding: 1.25rem 1.5rem;
+    margin-bottom: 1rem;
+  }
+  .section-label {
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .section-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border2);
+  }
+
+  /* ── FORM ── */
+  .field { margin-bottom: 1rem; }
+  .field label {
+    display: block;
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    color: var(--text2);
+    margin-bottom: 5px;
+  }
+  .field input,
+  .field textarea {
+    width: 100%;
+    background: var(--bg);
+    border: 1px solid var(--border2);
+    border-radius: 3px;
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    padding: 9px 12px;
+    outline: none;
+    transition: border-color 0.2s;
+    resize: vertical;
+  }
+  .field input:focus,
+  .field textarea:focus {
+    border-color: var(--accent2);
+    box-shadow: 0 0 0 2px var(--glow);
+  }
+  .field textarea { min-height: 100px; line-height: 1.6; }
+  .field .hint { font-size: 10px; color: var(--text3); margin-top: 4px; }
+
+  .btn-run {
+    background: var(--accent);
+    color: var(--bg);
+    border: none;
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    padding: 10px 24px;
+    border-radius: 3px;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.1s;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .btn-run:hover  { background: var(--accent2); }
+  .btn-run:active { transform: scale(0.98); }
+  .btn-run:disabled { background: var(--text3); cursor: not-allowed; opacity: 0.6; }
+
+  /* ── MASTER BAR ── */
+  .master-bar-wrap { margin-bottom: 1.25rem; }
+  .master-bar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 6px;
+  }
+  .master-bar-label { font-size: 10px; letter-spacing: 0.1em; color: var(--text2); }
+  #master-pct {
+    font-size: 20px;
+    font-family: 'Fraunces', serif;
+    font-weight: 600;
+    color: var(--accent);
+    letter-spacing: -0.02em;
+    transition: all 0.3s;
+  }
+  .master-bar-bg {
+    height: 4px;
+    background: var(--border2);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .master-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent2), var(--accent));
+    border-radius: 2px;
+    width: 0%;
+    transition: width 0.5s ease;
+  }
+
+  /* ── STAGE LIST ── */
+  .stage-list { display: flex; flex-direction: column; }
+  .stage-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+    transition: all 0.3s;
+  }
+  .stage-item:last-child { border-bottom: none; }
+  .stage-dot {
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    border: 2px solid var(--border2);
+    background: var(--bg);
+    flex-shrink: 0;
+    margin-top: 1px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 9px;
+    transition: all 0.3s;
+  }
+  .stage-item.done   .stage-dot { border-color: var(--accent);  background: var(--accent);  color: var(--bg); }
+  .stage-item.active .stage-dot { border-color: var(--accent);  background: transparent; animation: pulse-dot 1.2s ease-in-out infinite; }
+  .stage-item.failed .stage-dot { border-color: var(--danger);  background: var(--danger);  color: #fff; }
+  @keyframes pulse-dot {
+    0%,100% { box-shadow: 0 0 0 0   rgba(61,232,160,0.5); }
+    50%     { box-shadow: 0 0 0 5px rgba(61,232,160,0);   }
+  }
+  .stage-info { flex: 1; }
+  .stage-name { font-size: 12px; color: var(--text2); transition: color 0.3s; }
+  .stage-item.active .stage-name { color: var(--accent); }
+  .stage-item.done   .stage-name { color: var(--text); }
+  .stage-desc  { font-size: 10px; color: var(--text3); margin-top: 2px; font-style: italic; }
+  .stage-range { font-size: 10px; color: var(--text3); min-width: 40px; text-align: right; }
+  .stage-item.active .stage-range { color: var(--accent); }
+  .stage-item.done   .stage-range { color: var(--accent2); }
+
+  /* ── LOG ── */
+  .log-wrap {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: 8px 12px;
+    max-height: 80px;
+    overflow-y: auto;
+    margin-top: 1rem;
+  }
+  .log-line { font-size: 10px; color: var(--text3); line-height: 1.9; display: flex; gap: 10px; }
+  .log-line.live  { color: var(--accent); }
+  .log-line.error { color: var(--danger); }
+  .log-ts { flex-shrink: 0; }
+
+  /* ── STATUS BADGE ── */
+  .status-badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 9px; letter-spacing: 0.12em; text-transform: uppercase;
+    padding: 3px 8px; border-radius: 2px; border: 1px solid; margin-left: auto;
+  }
+  .status-badge.running  { color: var(--accent); border-color: var(--accent2); background: rgba(61,232,160,0.07); }
+  .status-badge.finished { color: var(--blue);   border-color: var(--blue);    background: rgba(74,176,232,0.07); }
+  .status-badge.failed   { color: var(--danger); border-color: var(--danger);  background: rgba(224,80,96,0.07);  }
+  .badge-dot { width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
+  .status-badge.running .badge-dot { animation: blink 1s ease-in-out infinite; }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.25} }
+
+  /* ── FILE CARDS ── */
+  .result-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+  }
+  .result-card {
+    background: var(--bg);
+    border: 1px solid var(--border2);
+    border-radius: 3px;
+    padding: 0.5rem 0.7rem;
+    display: flex; align-items: center; gap: 8px;
+    text-decoration: none; color: var(--text);
+    transition: border-color 0.2s, background 0.2s;
+    min-width: 0;
+  }
+  .result-card:hover { border-color: var(--accent2); background: var(--glow); }
+  .result-icon {
+    width: 28px; height: 28px; border-radius: 3px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; flex-shrink: 0;
+  }
+  .result-icon.csv { background: rgba(61,232,160,0.1); }
+  .result-icon.pdf { background: rgba(224,80,96,0.1);  }
+  .result-icon.fa  { background: rgba(240,160,80,0.1); }
+  .result-meta { min-width: 0; }
+  .result-type { font-size: 9px; letter-spacing: 0.1em; color: var(--text3); text-transform: uppercase; }
+  .result-name { font-size: 10px; color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+  /* ── PLOTS — THE KEY FIX ──────────────────────────────────────
+     Two columns, fixed image height of 200px, object-fit:contain
+     so the full plot is always visible with no horizontal scroll.
+  ── */
+  .sub-label {
+    font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase;
+    color: var(--accent); margin: 1rem 0 0.6rem;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .sub-label::after { content: ''; flex: 1; height: 1px; background: var(--border2); }
+
+  .plots-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;   /* 2 equal columns — fills page width */
+    gap: 0.6rem;
+  }
+
+  .plot-thumb {
+    border: 1px solid var(--border2);
+    border-radius: 4px;
+    overflow: hidden;
+    background: var(--surface);
+    display: flex;
+    flex-direction: column;
+    transition: border-color 0.2s, transform 0.15s;
+    cursor: pointer;
+  }
+  .plot-thumb:hover { border-color: var(--accent2); transform: scale(1.005); }
+
+  .plot-thumb img {
+    width: 100%;
+    height: 200px;          /* compact fixed height — no overflow */
+    object-fit: contain;    /* show full plot, no cropping */
+    background: #091520;
+    display: block;
+  }
+
+  .plot-thumb-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 5px 8px;
+    border-top: 1px solid var(--border);
+    background: var(--surface);
+  }
+  .plot-thumb-label {
+    font-size: 10px; letter-spacing: 0.06em;
+    color: var(--text3);
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    flex: 1;
+  }
+  .plot-thumb-actions { display: flex; gap: 6px; flex-shrink: 0; }
+  .plot-thumb-actions a {
+    font-size: 9px; letter-spacing: 0.08em;
+    color: var(--text3); text-decoration: none;
+    border: 1px solid var(--border2);
+    padding: 2px 6px; border-radius: 2px;
+    transition: border-color 0.15s, color 0.15s;
+  }
+  .plot-thumb-actions a:hover { border-color: var(--accent2); color: var(--accent); }
+
+  /* ── PDF LIST ── */
+  .pdf-list { display: flex; flex-direction: column; gap: 0.4rem; margin-top: 0.6rem; }
+  .pdf-row {
+    display: flex; align-items: center; gap: 10px;
+    background: var(--bg); border: 1px solid var(--border2);
+    border-radius: 3px; padding: 0.45rem 0.7rem;
+  }
+  .pdf-icon { font-size: 14px; flex-shrink: 0; }
+  .pdf-name { flex: 1; font-size: 11px; color: var(--text2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .pdf-links { display: flex; gap: 6px; flex-shrink: 0; }
+  .pdf-links a {
+    font-size: 9px; letter-spacing: 0.08em; color: var(--accent2);
+    text-decoration: none; border: 1px solid var(--border2);
+    padding: 2px 7px; border-radius: 2px;
+    transition: border-color 0.15s, color 0.15s;
+  }
+  .pdf-links a:hover { border-color: var(--accent2); color: var(--accent); }
+
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+</style>
 </head>
 <body>
+<div class="wrap">
 
-<h2>Run Protein Crystallization Pipeline</h2>
+  <!-- HEADER -->
+  <header class="header">
+    <div>
+      <div class="logo">Crystallization <em>CockTaiL</em></div>
+      <div class="logo-sub">Automated Crystallization Pipeline</div>
+    </div>
+    <div class="header-tag">SSE · Live progress</div>
+  </header>
 
-{% if error %}
-    <p style="color:red">{{ error }}</p>
-{% endif %}
+  <!-- ══ FORM ══ -->
+  <div class="section" id="form-section">
+    <div class="section-label">01 · Input</div>
+    <form id="pipeline-form" method="post">
+      {% csrf_token %}
+      <div class="field">
+        <label>Sequence name</label>
+        <input type="text" name="seq_type_name"
+               placeholder="e.g. KaiB_Synechocystis" required>
+      </div>
+      <div class="field">
+        <label>Protein sequence</label>
+        <textarea name="sequence"
+                  placeholder="MSPRKTYILKLYVAGNTPNSVRALKTLK..." required></textarea>
+        <div class="hint">Plain amino acid string — FASTA header optional</div>
+      </div>
+      <button type="submit" class="btn-run" id="submit-btn">
+        <span>▶</span> Run pipeline
+      </button>
+    </form>
+  </div>
 
-<form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Run Pipeline</button>
-</form>
-
-{% if csv_file %}
-    <div class="file-section">
-        <h3>Result Files</h3>
-        <p>CSV: <a href="{{ MEDIA_URL }}{{ csv_file }}" target="_blank">{{ csv_file }}</a></p>
-        <p>FASTA: <a href="{{ MEDIA_URL }}{{ fasta_file }}" target="_blank">{{ fasta_file }}</a></p>
+  <!-- ══ PROGRESS ══ -->
+  <div class="section" id="progress-section" style="display:none;">
+    <div class="section-label">
+      02 · Progress
+      <span class="status-badge running" id="status-badge">
+        <span class="badge-dot"></span>
+        <span id="status-text">running</span>
+      </span>
     </div>
 
+    <div class="master-bar-wrap">
+      <div class="master-bar-header">
+        <span class="master-bar-label">Overall completion</span>
+        <span id="master-pct">0%</span>
+      </div>
+      <div class="master-bar-bg">
+        <div class="master-bar-fill" id="master-bar"></div>
+      </div>
+    </div>
+
+    <div class="stage-list">
+      <div class="stage-item" data-min="0"   data-max="9">
+        <div class="stage-dot">—</div>
+        <div class="stage-info">
+          <div class="stage-name">Writing FASTA file</div>
+          <div class="stage-desc">Saving sequence to disk</div>
+        </div>
+        <div class="stage-range">5%</div>
+      </div>
+      <div class="stage-item" data-min="10" data-max="34">
+        <div class="stage-dot">—</div>
+        <div class="stage-info">
+          <div class="stage-name">RCSB sequence search</div>
+          <div class="stage-desc">run_and_save() · MMseqs2 · X-ray filter</div>
+        </div>
+        <div class="stage-range">10–30%</div>
+      </div>
+      <div class="stage-item" data-min="35" data-max="59">
+        <div class="stage-dot">—</div>
+        <div class="stage-info">
+          <div class="stage-name">Crystallization conditions search</div>
+          <div class="stage-desc">search_pdb_by_sequence() · filter · append_compound()</div>
+        </div>
+        <div class="stage-range">35–58%</div>
+      </div>
+      <div class="stage-item" data-min="60" data-max="74">
+        <div class="stage-dot">—</div>
+        <div class="stage-info">
+          <div class="stage-name">Merging results</div>
+          <div class="stage-desc">pd.merge(cryst_df, rcsb_df) · save CSV</div>
+        </div>
+        <div class="stage-range">60–70%</div>
+      </div>
+      <div class="stage-item" data-min="75" data-max="99">
+        <div class="stage-dot">—</div>
+        <div class="stage-info">
+          <div class="stage-name">Generating plots & PDF table</div>
+          <div class="stage-desc">run_plot() · pH/Temp · pH/PEG · Cryst_cocktail_Table.pdf</div>
+        </div>
+        <div class="stage-range">75–100%</div>
+      </div>
+      <div class="stage-item" data-min="100" data-max="100">
+        <div class="stage-dot">—</div>
+        <div class="stage-info">
+          <div class="stage-name">Complete</div>
+          <div class="stage-desc">All output files saved</div>
+        </div>
+        <div class="stage-range">100%</div>
+      </div>
+    </div>
+
+    <div class="log-wrap" id="log-wrap"></div>
+  </div>
+
+
+  <!-- ══ RESULTS (Django template fallback) ══ -->
+  {% if csv_file or fasta_file or png_files or pdf_files %}
+<div class="section">
+  <div class="section-label">03 · Outputs</div>
+
+  <div class="scroll-box">
+
+    <!-- FILES -->
+    <div class="result-grid">
+
+      {% if csv_file %}
+      <a class="result-card" href="{{ MEDIA_URL }}{{ csv_file }}" download>
+        <div class="result-icon csv">📊</div>
+        <div>
+          <div class="result-type">CSV</div>
+          <div class="result-name">Merged results</div>
+        </div>
+      </a>
+      {% endif %}
+
+      {% if fasta_file %}
+      <a class="result-card" href="{{ MEDIA_URL }}{{ fasta_file }}" download>
+        <div class="result-icon fa">🧬</div>
+        <div>
+          <div class="result-type">FASTA</div>
+          <div class="result-name">Sequence</div>
+        </div>
+      </a>
+      {% endif %}
+
+    </div>
+
+    <!-- PNG PLOTS -->
     {% if png_files %}
-    <div class="file-section">
-        <h3>Plots (PNG)</h3>
-        <div class="file-row">
-            {% for png in png_files %}
-            <div class="file-card">
-                <h4>{{ png|slice:"0:50" }}</h4>
-                <img src="{{ MEDIA_URL }}{{ png }}" alt="Plot">
-                <p><a href="{{ MEDIA_URL }}{{ png }}" target="_blank">Download PNG</a></p>
-            </div>
-            {% endfor %}
+    <div class="sub-label">Plots</div>
+
+    <div class="plots-grid">
+      {% for png in png_files %}
+
+        {% if "Cryst_cocktail_Table" not in png %}
+        <div class="plot-thumb">
+          <img src="{{ MEDIA_URL }}{{ png }}" alt="{{ png }}">
+
+          <div class="plot-thumb-label">
+            {{ png|cut:"outputs/"|truncatechars:40 }}
+          </div>
         </div>
+        {% endif %}
+
+      {% endfor %}
     </div>
     {% endif %}
 
+    <!-- PDF SECTION (AND SPECIAL PNG) -->
     {% if pdf_files %}
-    <div class="file-section">
-        <h3>PDF Tables</h3>
-        <div class="file-row">
-            {% for pdf in pdf_files %}
-            <div class="file-card">
-                <h4>{{ pdf|slice:"0:50" }}</h4>
-                <iframe src="{{ MEDIA_URL }}{{ pdf }}" height="400px"></iframe>
-                <p><a href="{{ MEDIA_URL }}{{ pdf }}" target="_blank">Download PDF</a></p>
-            </div>
-            {% endfor %}
+    <div class="sub-label" style="margin-top:1rem;">PDF Reports</div>
+
+    <div class="pdf-list">
+
+      {% for png in png_files %}
+        {% if "Cryst_cocktail_Table" in png %}
+        <div class="plot-thumb">
+          <img src="{{ MEDIA_URL }}{{ png }}" alt="{{ png }}">
         </div>
+        {% endif %}
+      {% endfor %}
+
+      {% for pdf in pdf_files %}
+      <div class="pdf-row">
+        <div class="pdf-icon">📄</div>
+        <div class="pdf-name">{{ pdf|cut:"outputs/" }}</div>
+
+        <div class="pdf-links">
+          <a href="{{ MEDIA_URL }}{{ pdf }}" target="_blank">Open</a>
+          <a href="{{ MEDIA_URL }}{{ pdf }}" download>Download</a>
+        </div>
+      </div>
+      {% endfor %}
+
     </div>
     {% endif %}
-{% endif %}
 
-</body>
-</html>
+  </div>
+</div>
+{% endif %}

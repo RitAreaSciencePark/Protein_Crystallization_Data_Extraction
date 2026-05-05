@@ -2,7 +2,6 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib.lines as mlines
 import matplotlib.patheffects as pe
-import matplotlib.gridspec as gridspec
 import numpy as np
 import re
 import os
@@ -24,11 +23,11 @@ def compute_col_widths(df, scale=0.01):
 # ============================================================
 # MAIN FUNCTION
 # ============================================================
-def run_plot(output_csv_file):
+def run_plot(output_csv_file, seq_type_name):
 
     print(f"▶ Loading CSV: {output_csv_file}")
     df = pd.read_csv(output_csv_file)
-    protein_name = os.path.basename(output_csv_file).split("_crystallization_data")[0]
+    protein_name = seq_type_name
 
     # --------------------------------------------------------
     # Clean method column
@@ -78,20 +77,25 @@ def run_plot(output_csv_file):
     # Compute plotting pH
     # --------------------------------------------------------
     def compute_plot_ph(row):
-    # Case 1: exact pH value present
-        if pd.notna(row.get("pH")):
-            return pd.Series([row["pH"], 0.0, 0.0])
+        pH = row["pH"] if "pH" in row and pd.notna(row["pH"]) else None
+        ph_low = row["pH_low"] if "pH_low" in row and pd.notna(row["pH_low"]) else None
+        ph_high = row["pH_high"] if "pH_high" in row and pd.notna(row["pH_high"]) else None
 
-        # Case 2: pH range available
-        if pd.notna(row.get("pH_low")) and pd.notna(row.get("pH_high")):
-            ph_low = row["pH_low"]
-            ph_high = row["pH_high"]
+        if pH is not None:
+            return (float(pH), 0.0, 0.0)
+
+        if ph_low is not None and ph_high is not None:
+            ph_low = float(ph_low)
+            ph_high = float(ph_high)
             ph_mid = (ph_low + ph_high) / 2
-            return pd.Series([ph_mid, ph_mid - ph_low, ph_high - ph_mid])
-        # Case 3: no pH info
-        return pd.Series([np.nan, 0.0, 0.0])
-        
-    df[["plot_pH", "err_low", "err_high"]] = df.apply(compute_plot_ph, axis=1, result_type="expand")
+            return (ph_mid, ph_mid - ph_low, ph_high - ph_mid)
+
+        return (np.nan, 0.0, 0.0)
+            
+    result = df.apply(compute_plot_ph, axis=1)
+    result = pd.DataFrame(result.tolist(), columns=["plot_pH", "err_low", "err_high"])
+
+    df = pd.concat([df, result], axis=1)
 
     df["has_ph"] = ~df["plot_pH"].isna()
     df["has_temp"] = ~df["Temp"].isna()
@@ -125,7 +129,10 @@ def run_plot(output_csv_file):
 
     # Round real temperature scale to 5K grid
     temp_min_tick = int(np.floor(temp_min / 5) * 5)
-    temp_max_tick = int(np.ceil(temp_max / 5) * 5)
+    if pd.isna(temp_max):
+        temp_max_tick = 0  # or a fallback value
+    else:
+        temp_max_tick = int(np.ceil(temp_max / 5) * 5)
 
     # Round bounds nicely
     ph_min_tick = np.floor(ph_min * 2) / 2     # round down to nearest 0.5
@@ -207,10 +214,10 @@ def run_plot(output_csv_file):
         if isinstance(x, (int, float)):
             return float(x)
         return np.nan
-
+    
     # Create column ONCE
     df["PEG_con_plot"] = df["PEG_con"].apply(parse_peg_con)
-        
+    
     # ========================================================
     # 1️⃣ FULL PLOT pH vs Temp (with Score coloring)
     # ========================================================
@@ -248,7 +255,7 @@ def run_plot(output_csv_file):
 
     ax_temp.set_xlabel("Temperature (K)")
     ax_temp.set_ylabel("pH")
-    ax_temp.set_title(f"pH vs Temperature (K)\nProtein: {protein_name}", fontsize=14, fontweight="bold")
+    ax_temp.set_title(f"pH vs Temperature (K)\n {protein_name}", fontsize=14, fontweight="bold")
 
     unique_methods = df["Method"].unique()
     legend_items = []
@@ -334,7 +341,7 @@ def run_plot(output_csv_file):
 
     ax_peg.set_xlabel("PEG concentration (%)")
     ax_peg.set_ylabel("pH")
-    ax_peg.set_title(f"pH vs PEG concentration (%)\nProtein: {protein_name}", fontsize=14, fontweight="bold")
+    ax_peg.set_title(f"pH vs PEG concentration (%)\n {protein_name}", fontsize=18, fontweight="bold")
 
     unique_methods = df["Method"].unique()
     legend_items = []
@@ -343,7 +350,7 @@ def run_plot(output_csv_file):
         marker = assign_marker(Method)
         if marker not in used_markers:
             legend_items.append(
-                mlines.Line2D([], [], color="black", marker=marker, linestyle="None", markersize=8, label=Method.title()))
+                mlines.Line2D([], [], color="black", marker=marker, linestyle="None", markersize=10, label=Method.title()))
             used_markers[marker] = True
 
     # Place legend **just above the x-axis label**
