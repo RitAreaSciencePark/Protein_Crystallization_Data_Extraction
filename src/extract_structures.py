@@ -2,6 +2,7 @@ import pandas as pd
 import types
 import sys
 import pickle
+import re
 
 def format_compounds(compound_list):
     """
@@ -24,10 +25,6 @@ def format_compounds(compound_list):
             formatted.append(str(compound_list[i]).strip())
 
     return ", ".join(formatted)
-
-import re
-
-import re
 
 def extract_peg_info(compound_str):
     if not isinstance(compound_str, str) or compound_str.strip() == "":
