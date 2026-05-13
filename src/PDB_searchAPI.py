@@ -463,7 +463,7 @@ def search_pdb_by_sequence(sequence, output_csv="pdb_mmcif_extracted.csv", keep_
 
     with ThreadPoolExecutor(max_workers=max_workers) as executor:
         futures = [executor.submit(process_hit, h) for h in pdb_hits]
-
+        
         for i, future in enumerate(as_completed(futures), 1):
             try:
                 result = future.result()
@@ -475,6 +475,7 @@ def search_pdb_by_sequence(sequence, output_csv="pdb_mmcif_extracted.csv", keep_
 
             except Exception as e:
                 print(f"  ✗ Error: {e}")
+                print(f"✔ Completed fetching all {len(pdb_hits)} entries")
 
     # -------------------------------
     # 4️⃣ SAVE CSV
