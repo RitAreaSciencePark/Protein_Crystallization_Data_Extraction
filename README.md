@@ -5,7 +5,7 @@
 
 ---
 
-## Table of contents
+## Table of Contents
 
 - [Overview](#overview)
 - [How it works](#how-it-works)
@@ -20,6 +20,31 @@
 - [Licence](#licence)
 
 ---
+
+## Repository Contents
+
+### `Input/`
+
+The scripts import lists and dictionaries from files in **json** format using the json Python module. The description of the **json** files in this directory are described [here](https://github.com/maxdudek/crystallizationDatabase/wiki/Explanation-of-Files)
+
+### `src/`
+
+This directory contains all the python codes for the general pipeline handling a single sequence as input.
+
+### `src_fasta_file/`
+
+This directory contains the codes that handle multi sequences fasta file.
+
+### `Structures/`
+
+This directory contains **structure.pkl** file which is the pdb database with the list of compound extracted from the **pdbx_details** at the level of the **exptl_crystal_grow** section of the mmCIF file. 
+
+### `Protein_crystalization_app/`
+
+This directory contains the code and all the elements used to design the django web application.
+
+
+--- 
 ## Project Overview
 Determining the right conditions to crystallize a protein is one of the most time-consuming challenge in structural biology. The primary goal is to eliminate the manual bottleneck of screening thousands of chemical cocktails by providing a **PDB-assisted shortcut**. This project addresses that challenge by mining the PDB for crystallization conditions used to solve structures of proteins similar to a given query sequence, allowing researchers to skip initial trial-and-error phases and move directly to optimization.
 
@@ -86,9 +111,8 @@ The pipeline is organized into four main stages, as illustrated in the project�
 ### 🔹 Step 3: Chemical Enrichment and Normalization
 
 - **Compound Mapping**  
-Maps PDB IDs to a specialized dictionary (structures.pkl) to identify cofactors, ligands, and bound molecules.
-- **Standardization** 
-Unifies terminology across datasets, such as normalizing buffer names and resolving varied PEG naming conventions into machine-readable PEG_Id and PEG_con columns.
+Maps PDB IDs to a specialized dictionary (structures.pkl) and extract the list of compounds from the dictionary to enrich the csv file. From the list of compounds, PEG_ID and the PEG_concentration were extrated for futher analysis.
+
 -**Publication Grouping**
  PDB ID having the same Conditions (PubMed ID, pH, temperatures and compounds) are grouped in one line. 
 
@@ -187,7 +211,7 @@ flowchart TD
 
 ```bash
 # 1. Clone the repository
-git clone https://github.com/your-username/PROTEIN_CRYSTALLIZATION_DATA_EXTRACTION.git
+git clone https://github.com/RitAreaSciencePark/Protein_Crystallization_Data_Extraction.git
 cd PROTEIN_CRYSTALLIZATION_DATA_EXTRACTION
 
 # 2. Create and activate a virtual environment
@@ -231,7 +255,6 @@ The pipeline runs as a background thread. Progress is pushed to the browser in r
 ```bash
 cd src
 python Main.py
-python main.py
 Enter sequence: MSPRKTYILKLYVAGNTPNSVRALK...
 Enter a descriptive sequence type name: KaiB
 ```
@@ -246,14 +269,12 @@ python main.py "NAME_OF_THE_FASTA_FILE".fasta
 Produces one CSV file per sequence in the FASTA file. Each CSV contains the PDB ID, similarity score, and experimental crystallization data for all homologous structures found.
 
 ---
-
 #### FASTA file input — combined CSV (no duplicates)
 
 ```bash
 cd src_fasta_file
-python main2.py input.fasta
+python main2.py "NAME_OF_THE_FASTA_FILE".fasta
 ```
-
 Produces a single combined CSV file for all sequences in the FASTA file. PDB entries that appear as hits for multiple sequences are included only once, making this output suitable for batch analysis across a protein family.
 
 ---
@@ -351,26 +372,6 @@ Generates all visualisation outputs from the merged CSV. Handles missing pH and 
 
 ---
 
-### `utils.py`
-
-Orchestrates the full pipeline as a single callable function. Accepts a `progress_queue` for real-time SSE updates and a `job_id` for database tracking. Manages all temporary files and cleans up after each stage.
-
-**Key function:** `run_pipeline(sequence, seq_type_name, base_output_dir, job_id, progress_queue)`
-
----
-
-### `views.py`
-
-Handles HTTP requests for the Django web application. Uses an in-memory queue registry (`_progress_queues`) to push pipeline progress events to the browser via Server-Sent Events, eliminating database polling lag.
-
-**Views:**
-- `run_pipeline_view` — renders the form and starts the background pipeline thread
-- `progress_stream` — SSE endpoint that streams live progress events
-- `submission_status` — polling fallback returning JSON progress
-- `results_api` — returns file paths for completed outputs
-
----
-
 ### `src_fasta_file/cleaning_and_read_fasta_file.py`
 
 Reads a raw FASTA file containing one or more sequences, removes gap characters (`-`), and returns a dictionary mapping sequence IDs to cleaned sequences.
@@ -382,6 +383,27 @@ Reads a raw FASTA file containing one or more sequences, removes gap characters 
 Performs a PDB sequence search for each sequence in a cleaned FASTA dictionary. Parses the resulting mmCIF files using `gemmi` to extract experimental crystallization details. The identity cutoff is set to 30 % to maximise the number of retrieved structures.
 
 **Key function:** `extract_crystallization(pdb_id)` — pulls all crystallization fields from the mmCIF block via `doc.sole_block()`
+
+---
+### For Web Application
+
+#### `utils.py`
+
+Orchestrates the full pipeline as a single callable function. Accepts a `progress_queue` for real-time SSE updates and a `job_id` for database tracking. Manages all temporary files and cleans up after each stage.
+
+**Key function:** `run_pipeline(sequence, seq_type_name, base_output_dir, job_id, progress_queue)`
+
+---
+
+#### `views.py`
+
+Handles HTTP requests for the Django web application. Uses an in-memory queue registry (`_progress_queues`) to push pipeline progress events to the browser via Server-Sent Events, eliminating database polling lag.
+
+**Views:**
+- `run_pipeline_view` — renders the form and starts the background pipeline thread
+- `progress_stream` — SSE endpoint that streams live progress events
+- `submission_status` — polling fallback returning JSON progress
+- `results_api` — returns file paths for completed outputs
 
 ---
 
@@ -405,13 +427,22 @@ pip install -r requirements.txt
 
 ---
 
----
-
 ## Licence
 
-This project is released under the terms of the licence included in the `LICENCE` file.
+This project is released under the terms of the licence included in the `LICENCE` file: `Copyright (c) 2025 RitAreaSciencePark`
 
 ---
 
+## Citation
 
-       
+If you use this tool in your research, please cite the associated thesis and the Protein Data Bank:
+> R. N. NANA<sup>1</sup>, Valerio PIOMPONI<sup>1</sup> and Adrea DALLE VEDOVE<sup>2</sup> (2026) "Data Extraction Tool for Protein
+Crystallization Conditions".
+
+> M. L. Lynch, M. F. Dudek, and S. E. Bowman (2020) A searchable database of crystallization cocktails in the pdb: analyzing the chemical condition
+space. *Patterns 1* no. **4**,  
+
+
+
+
+
