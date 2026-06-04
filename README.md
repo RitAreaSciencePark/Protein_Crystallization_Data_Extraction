@@ -418,6 +418,7 @@ Handles HTTP requests for the Django web application. Uses an in-memory queue re
 | `matplotlib` | Scatter plots and PDF table generation |
 | `numpy` | Numerical operations |
 | `tabulate` | Terminal table formatting |
+| `pdf2image` | to open the pdf file in the web application |
 
 Install all dependencies with:
 
