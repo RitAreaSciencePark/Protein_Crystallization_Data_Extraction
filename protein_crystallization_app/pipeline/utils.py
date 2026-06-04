@@ -1,3 +1,6 @@
+from email.mime import message
+
+
 def run_pipeline(sequence, seq_type_name, base_output_dir):
     import os
     import tempfile
@@ -8,17 +11,15 @@ def run_pipeline(sequence, seq_type_name, base_output_dir):
     from .extract_structures import append_compound_to_filtered_csv
     from .rcsb_sequence_identity import run_and_save
     import shutil
-
+    import json
+  
     output_dir = os.path.join(base_output_dir, seq_type_name)
 
-    # 🔥 delete previous results
+    # delete previous results
     if os.path.exists(output_dir):
         shutil.rmtree(output_dir)
 
     # recreate fresh folder
-    os.makedirs(output_dir, exist_ok=True)
-
-    output_dir = os.path.join(base_output_dir, seq_type_name)
     os.makedirs(output_dir, exist_ok=True)
 
     # FASTA
@@ -31,9 +32,6 @@ def run_pipeline(sequence, seq_type_name, base_output_dir):
     # STEP 1 — RCSB
     rcsb_csv = os.path.join(output_dir, f"{seq_type_name}_rcsb_hits.csv")
     rcsb_df = run_and_save(sequence, output_csv_1=rcsb_csv)
-
-    if rcsb_df is None or rcsb_df.empty:
-        return None
 
     # STEP 2 — crystallization
     with tempfile.NamedTemporaryFile(delete=False, suffix=".csv") as tmp_full:
@@ -79,7 +77,6 @@ def run_pipeline(sequence, seq_type_name, base_output_dir):
 
     # STEP 4 — plots
     run_plot(merged_csv, seq_type_name)
-
     # collect generated files
     png_files = [os.path.join(output_dir, f) for f in os.listdir(output_dir) if f.endswith(".png")]
     pdf_files = [os.path.join(output_dir, f) for f in os.listdir(output_dir) if f.endswith(".pdf")]

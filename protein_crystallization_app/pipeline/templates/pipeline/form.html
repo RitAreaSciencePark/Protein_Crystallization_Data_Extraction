@@ -264,36 +264,6 @@
   .status-badge.running .badge-dot { animation: blink 1s ease-in-out infinite; }
   @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.25} }
 
-  /* ── FILE CARDS ── */
-  .result-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 0.5rem;
-    margin-bottom: 1rem;
-  }
-  .result-card {
-    background: var(--bg);
-    border: 1px solid var(--border2);
-    border-radius: 3px;
-    padding: 0.5rem 0.7rem;
-    display: flex; align-items: center; gap: 8px;
-    text-decoration: none; color: var(--text);
-    transition: border-color 0.2s, background 0.2s;
-    min-width: 0;
-  }
-  .result-card:hover { border-color: var(--accent2); background: var(--glow); }
-  .result-icon {
-    width: 28px; height: 28px; border-radius: 3px;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 13px; flex-shrink: 0;
-  }
-  .result-icon.csv { background: rgba(61,232,160,0.1); }
-  .result-icon.pdf { background: rgba(224,80,96,0.1);  }
-  .result-icon.fa  { background: rgba(240,160,80,0.1); }
-  .result-meta { min-width: 0; }
-  .result-type { font-size: 9px; letter-spacing: 0.1em; color: var(--text3); text-transform: uppercase; }
-  .result-name { font-size: 10px; color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-
   /* ── PLOTS — THE KEY FIX ──────────────────────────────────────
      Two columns, fixed image height of 200px, object-fit:contain
      so the full plot is always visible with no horizontal scroll.
@@ -307,8 +277,8 @@
 
   .plots-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr;   /* 2 equal columns — fills page width */
-    gap: 0.6rem;
+    grid-template-columns: 1fr;   /* 2 equal columns — fills page width */
+    gap: 1rem;
   }
 
   .plot-thumb {
@@ -321,14 +291,39 @@
     transition: border-color 0.2s, transform 0.15s;
     cursor: pointer;
   }
-  .plot-thumb:hover { border-color: var(--accent2); transform: scale(1.005); }
+  .plot-thumb:hover { border-color: var(--accent2); transform: scale(0.95); }
 
   .plot-thumb img {
     width: 100%;
     height: 200px;          /* compact fixed height — no overflow */
     object-fit: contain;    /* show full plot, no cropping */
-    background: #091520;
+    background: #5373da;
     display: block;
+  }
+   /* Scrollable crystallization table */
+   /* Large scrollable table preview */
+
+  .pdf-preview-box {
+      width: 100%;
+      height: 75vh;
+      border: 1px solid var(--border2);
+      border-radius: 4px;
+      overflow: hidden;
+      background: var(--bg);
+      margin-bottom: 1rem;
+  }
+
+  .pdf-preview-scroll {
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+  }
+
+  .pdf-preview-image {
+      display: block;
+      width: auto;
+      height: auto;
+      max-width: none;
   }
 
   .plot-thumb-footer {
@@ -411,7 +406,15 @@
       </button>
     </form>
   </div>
+ 
+  <script>
+  document.getElementById("pipeline-form")
+  .addEventListener("submit", function() {
 
+    document.getElementById("progress-section")
+      .style.display = "block";});
+  </script>
+ 
   <!-- ══ PROGRESS ══ -->
   <div class="section" id="progress-section" style="display:none;">
     <div class="section-label">
@@ -497,27 +500,31 @@
     <!-- FILES -->
     <div class="result-grid">
 
-      {% if csv_file %}
-      <a class="result-card" href="{{ MEDIA_URL }}{{ csv_file }}" download>
-        <div class="result-icon csv">📊</div>
-        <div>
-          <div class="result-type">CSV</div>
-          <div class="result-name">Merged results</div>
-        </div>
-      </a>
-      {% endif %}
-
-      {% if fasta_file %}
-      <a class="result-card" href="{{ MEDIA_URL }}{{ fasta_file }}" download>
-        <div class="result-icon fa">🧬</div>
-        <div>
-          <div class="result-type">FASTA</div>
-          <div class="result-name">Sequence</div>
-        </div>
-      </a>
-      {% endif %}
-
+  {% if csv_file %}
+  <a class="result-card" href="{{ MEDIA_URL }}{{ csv_file }}" download>
+    <div class="result-icon csv">📊</div>
+    <div>
+      <div class="result-type">CSV</div>
+      <div class="result-name">
+        {{ csv_file|cut:"outputs/" }}
+      </div>
     </div>
+  </a>
+  {% endif %}
+
+  {% if fasta_file %}
+  <a class="result-card" href="{{ MEDIA_URL }}{{ fasta_file }}" download>
+    <div class="result-icon fa">🧬</div>
+    <div>
+      <div class="result-type">FASTA</div>
+      <div class="result-name">
+        {{ fasta_file|cut:"outputs/" }}
+      </div>
+    </div>
+  </a>
+  {% endif %}
+
+</div>
 
     <!-- PNG PLOTS -->
     {% if png_files %}
@@ -525,35 +532,39 @@
 
     <div class="plots-grid">
       {% for png in png_files %}
-
-        {% if "Cryst_cocktail_Table" not in png %}
-        <div class="plot-thumb">
-          <img src="{{ MEDIA_URL }}{{ png }}" alt="{{ png }}">
-
-          <div class="plot-thumb-label">
-            {{ png|cut:"outputs/"|truncatechars:40 }}
-          </div>
+      {% if "Cryst_cocktail_Table" not in png %}
+      <div class="plot-thumb" onclick="window.open('{{ MEDIA_URL }}{{ png }}','_blank')">
+        <img src="{{ MEDIA_URL }}{{ png }}" alt="{{ png }}" loading="lazy">
+        <div class="plot-thumb-footer">
+          <div class="plot-thumb-actions">
+            <a href="{{ MEDIA_URL }}{{ png }}" target="_blank" onclick="event.stopPropagation()">View</a>
+            <a href="{{ MEDIA_URL }}{{ png }}" download onclick="event.stopPropagation()">Save</a>
+            </div>
         </div>
-        {% endif %}
-
+      </div>
+      {% endif %}
       {% endfor %}
     </div>
     {% endif %}
 
-    <!-- PDF SECTION (AND SPECIAL PNG) -->
     {% if pdf_files %}
     <div class="sub-label" style="margin-top:1rem;">PDF Reports</div>
-
     <div class="pdf-list">
 
+      <!-- Table PNG Preview -->
       {% for png in png_files %}
         {% if "Cryst_cocktail_Table" in png %}
-        <div class="plot-thumb">
-          <img src="{{ MEDIA_URL }}{{ png }}" alt="{{ png }}">
+        <div class="pdf-preview-box">
+          <div class="pdf-preview-scroll">
+            <img
+              src="{{ MEDIA_URL }}{{ png }}"
+              alt="Crystallization Cocktail Table"
+              class="pdf-preview-image">
+          </div>
         </div>
         {% endif %}
       {% endfor %}
-
+      
       {% for pdf in pdf_files %}
       <div class="pdf-row">
         <div class="pdf-icon">📄</div>
