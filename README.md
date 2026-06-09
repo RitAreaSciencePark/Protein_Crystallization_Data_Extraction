@@ -1,15 +1,15 @@
-
 # Protein Crystallization Data Extraction (PCDE)
 
-> This project provides a computational tool designed to automate the "sequence-to-structure" workflow for structural biologists. By taking a single protein sequence as input, the pipeline identifies homologous proteins in the Protein Data Bank (PDB) and extracts historical experimental crystallization conditions to guide the design of new crystallization trials. 
+> This project provides a computational tool designed to automate the "sequence-to-structure" workflow for structural biologists. By taking a single protein sequence as input, the pipeline identifies homologous structures in the RCSB Protein Data Bank, extracts crystallization conditions, and generates publication-ready visualizations.
 
 ---
 
 ## Table of Contents
 
 - [Overview](#overview)
+- [Key Features](#key-features)
 - [How it works](#how-it-works)
-- [Project structure](#project-structure)
+- [Workflow Architecture](#-workflow-architecture)
 - [Installation](#installation)
 - [Usage](#usage)
   - [Web application](#web-application)
@@ -17,6 +17,8 @@
 - [Output files](#output-files)
 - [Module reference](#module-reference)
 - [Dependencies](#dependencies)
+- [Releases & Downloads](#releases--downloads)
+- [Citation](#citation)
 - [Licence](#licence)
 
 ---
@@ -25,7 +27,7 @@
 
 ### `Input/`
 
-The scripts import lists and dictionaries from files in **json** format using the json Python module. The description of the **json** files in this directory are described [here](https://github.com/maxdudek/crystallizationDatabase/wiki/Explanation-of-Files)
+The scripts import lists and dictionaries from files in **json** format using the json Python module. The description of the **json** files in this directory are described [here](https://github.com/RitAreaSciencePark/Protein_Crystallization_Data_Extraction/tree/main/Input).
 
 ### `src/`
 
@@ -37,44 +39,50 @@ This directory contains the codes that handle multi sequences fasta file.
 
 ### `Structures/`
 
-This directory contains **structure.pkl** file which is the pdb database with the list of compound extracted from the **pdbx_details** at the level of the **exptl_crystal_grow** section of the mmCIF file. 
+This directory contains **structure.pkl** file which is the pdb database with the list of compound extracted from the **pdbx_details** at the level of the **exptl_crystal_grow** section of the mmCIF format.
 
 ### `Protein_crystalization_app/`
 
 This directory contains the code and all the elements used to design the django web application.
 
-
 --- 
 ## Project Overview
-Determining the right conditions to crystallize a protein is one of the most time-consuming challenge in structural biology. The primary goal is to eliminate the manual bottleneck of screening thousands of chemical cocktails by providing a **PDB-assisted shortcut**. This project addresses that challenge by mining the PDB for crystallization conditions used to solve structures of proteins similar to a given query sequence, allowing researchers to skip initial trial-and-error phases and move directly to optimization.
+
+Determining the right conditions to crystallize a protein is one of the most time-consuming challenge in structural biology. The primary goal is to eliminate the manual bottleneck of screening thousands of crystallization conditions. PCDE automates this workflow by:
+
+1. **Mining the PDB:** Sequence similarity search against RCSB structures
+2. **Extracting metadata:** Parallel retrieval of experimental crystallization conditions
+3. **Enriching data:** Compound normalization and PEG concentration parsing
+4. **Visualizing results:** Publication-quality scatter plots and PDF tables
 
 ---
+
 ## Key features
 
 ### Automated sequence-based PDB mining
-The pipeline accepts any protein, DNA, or RNA sequence and automatically queries the RCSB PDB using the MMseqs2 sequence similarity engine. It filters results to X-ray diffraction structures only and ranks hits by sequence similarity score, eliminating manual database browsing entirely.
+The pipeline accepts any protein, DNA, or RNA sequence and automatically queries the RCSB PDB using the MMseqs2 sequence similarity engine. It filters results to X-ray diffraction structures only, ensuring data quality and relevance.
 
 ### Two-tier metadata extraction
-Every crystallization parameter is extracted using a two-tier strategy: the structured mmCIF field is read first, and if absent or empty, regular expression mining is applied to the free-text `pdbx_details` field. This ensures that no experimentally reported information is lost due to incomplete structured annotation.
+Every crystallization parameter is extracted using a two-tier strategy: the structured mmCIF field is read first, and if absent or empty, regular expression mining is applied to the free-text `pdbx_details` field to capture manually curated conditions.
 
 ### Intelligent free-text parsing
-The `pdbx_details` field is parsed using a multi-step natural language processing pipeline adapted from the crystallization database of Dudek et al. It handles PEG/MPEG name normalisation, concentration unit conversion, numeric range averaging, mixture compound expansion, and compound name standardisation against a curated reference dictionary — producing clean, machine-readable compound–concentration pairs from unstructured depositor text.
+The `pdbx_details` field is parsed using a multi-step natural language processing pipeline adapted from the crystallization database of Dudek et al. It handles PEG/MPEG name normalisation, concentration standardization, and chemical synonym recognition.
 
 ### Parallel data collection
-Metadata extraction uses a configurable multi-threaded `ThreadPoolExecutor`, processing multiple PDB entries simultaneously. A live progress bar (tqdm) updates in real time as each entry completes, giving immediate visibility into pipeline progress.
+Metadata extraction uses a configurable multi-threaded `ThreadPoolExecutor`, processing multiple PDB entries simultaneously. A live progress bar (tqdm) updates in real time as each entry completes, providing instant feedback to the user.
 
 ### FAIR-compliant data provenance
-Every row in the output dataset is traceable to its source through the PDB accession code, PubMed ID, and experimental method. All data originates from the publicly accessible RCSB REST and GraphQL APIs using open standards (mmCIF, JSON, FASTA), and outputs are saved in non-proprietary formats (CSV, PDF, PNG).
+Every row in the output dataset is traceable to its source through the PDB accession code, PubMed ID, and experimental method. All data originates from the publicly accessible RCSB REST and GraphQL APIs.
 
 ### Interactive web application
 A Django-based web application wraps the full pipeline in a browser interface. All output files are available for inline viewing and direct download when the pipeline completes.
 
-### High - Resolution Vizualization
-Two scatter plots are generated automatically: pH versus temperature and pH versus PEG concentration with data points coloured by sequence similarity score using the viridis colormap and shaped by crystallization method. A coloured PDF summary table compiles successful crystallization conditions with full metadata.
+### High-Resolution Visualization
+Two scatter plots are generated automatically: pH versus temperature and pH versus PEG concentration with data points coloured by sequence similarity score using the viridis colormap and shaped by crystallization method for instant visual interpretation.
 
- ## 🧬 Workflow Architecture
+## 🧬 Workflow Architecture
 
-The pipeline is organized into four main stages, as illustrated in the project’s graphical abstract:
+The pipeline is organized into four main stages, as illustrated in the project's graphical abstract:
 
 ### 🔹 Step 1: Sequence Input & PDB Search
 
@@ -95,26 +103,26 @@ The pipeline is organized into four main stages, as illustrated in the project�
   Utilizes six parallel workers to efficiently handle large-scale data retrieval.
 
 - **Caching**  
-  Implements local caching for **mmCIF files** and **PubMed IDs** to improve performance.
+  Implements local caching for **mmCIF files** and **PubMed IDs** to improve performance on repeated runs.
 
 - **Extraction Logic**  
   The `extract_mmcif_info` module aggregates key metadata, including:
   - Resolution  
   - Polymer type (`uni_pol` vs. `complex`)  
-  - Assembly details (monomer, dimer, etc.) etc.
+  - Assembly details (monomer, dimer, etc.)
 
 - **Filtering**  
-  The `filter_experimental_conditions` function removes entries missing critical experimental parameters which are **pH, temperature, method and pdbx_details**.
+  The `filter_experimental_conditions` function removes entries missing critical experimental parameters: **pH, temperature, method and pdbx_details**.
 
 ---
 
 ### 🔹 Step 3: Chemical Enrichment and Normalization
 
 - **Compound Mapping**  
-Maps PDB IDs to a specialized dictionary (structures.pkl) and extract the list of compounds from the dictionary to enrich the csv file. From the list of compounds, PEG_ID and the PEG_concentration were extrated for futher analysis.
+  Maps PDB IDs to a specialized dictionary (structures.pkl) and extracts the list of compounds to enrich the csv file. From the list of compounds, PEG_ID and the PEG_concentration are extracted and standardized.
 
--**Publication Grouping**
- PDB ID having the same Conditions (PubMed ID, pH, temperatures and compounds) are grouped in one line. 
+- **Publication Grouping**  
+  PDB IDs having the same crystallization conditions (PubMed ID, pH, temperatures and compounds) are grouped in one line to eliminate redundancy.
 
 ---
 
@@ -126,11 +134,12 @@ The `run_plot()` stage handles data visualization and output generation:
   - Crystallization methods → unique markers  
   - Alignment scores → `viridis` colormap  
 
-- **Generated Plot**
-  - pH vs. PEG concentration (%), including a *"No PEG"* and *"No pH"* categories. 
+- **Generated Plots**
+  - pH vs. PEG concentration (%), including *"No PEG"* and *"No pH"* categories
+  - pH vs. Temperature (K) for thermal trend analysis
 
 - **Final Report**  
-  Produces a color-coded PDF table: {name}_Cryst_cocktail_Table.pdf groups unique conditions by publication and experimental parameters
+  Produces a color-coded PDF table: `{name}_Cryst_cocktail_Table.pdf` that groups unique conditions by publication and experimental parameters for easy reference.
 
 ---
 
@@ -152,7 +161,7 @@ Filter · merge · standardize
 (pandas · compound parsing · PEG extraction)
         │
         ▼
-Vizualisation
+Visualization
 (pH vs PEG scatter · PDF cocktail table)
         │
         ▼
@@ -163,7 +172,6 @@ Output files
 The web application wraps the entire pipeline in a Django interface with Server-Sent Events (SSE) for live progress updates, so the user sees each stage complete in real time without page refresh.
 
 ---
-
 
 ## Project Architecture
 
@@ -212,7 +220,7 @@ flowchart TD
 ```bash
 # 1. Clone the repository
 git clone https://github.com/RitAreaSciencePark/Protein_Crystallization_Data_Extraction.git
-cd PROTEIN_CRYSTALLIZATION_DATA_EXTRACTION
+cd Protein_Crystallization_Data_Extraction
 
 # 2. Create and activate a virtual environment
 python -m venv venv
@@ -269,13 +277,14 @@ python main.py "NAME_OF_THE_FASTA_FILE".fasta
 Produces one CSV file per sequence in the FASTA file. Each CSV contains the PDB ID, similarity score, and experimental crystallization data for all homologous structures found.
 
 ---
+
 #### FASTA file input — combined CSV (no duplicates)
 
 ```bash
 cd src_fasta_file
 python main2.py "NAME_OF_THE_FASTA_FILE".fasta
 ```
-Produces a single combined CSV file for all sequences in the FASTA file. PDB entries that appear as hits for multiple sequences are included only once, making this output suitable for batch analysis across a protein family.
+Produces a single combined CSV file for all sequences in the FASTA file. PDB entries that appear as hits for multiple sequences are included only once, making this output suitable for batch analysis.
 
 ---
 
@@ -287,6 +296,7 @@ Produces a single combined CSV file for all sequences in the FASTA file. PDB ent
 | `{name}_rcsb_hits.csv` | CSV | MMseqs2 search results: PDB ID, entity, score, identity (%), E-value|
 | `{name}_merged_results.csv` | CSV | Full merged dataset: crystallization conditions + sequence similarity scores |
 | `{name}_PEG.png` | PNG | Scatter plot: pH vs PEG concentration (%), coloured by similarity score |
+| `{name}_TEMP.png` | PNG | Scatter plot: pH vs Temperature (K), coloured by similarity score |
 | `{name}_Cryst_cocktail_Table.pdf` | PDF | Coloured summary table of all unique crystallization conditions |
 
 ### Merged CSV columns
@@ -318,7 +328,7 @@ Produces a single combined CSV file for all sequences in the FASTA file. PDB ent
 
 ### `rcsb_sequence_identity.py`
 
-Performs a sequence similarity search against the RCSB PDB using the MMseqs2-based Search API. Filters results to X-ray diffraction structures only. Returns PDB ID, entity, similarity score, sequence identity, and E-value for each hit.
+Performs a sequence similarity search against the RCSB PDB using the MMseqs2-based Search API. Filters results to X-ray diffraction structures only. Returns PDB ID, entity, similarity score, sequence identity (%), and E-value for each hit.
 
 **Key function:** `run_and_save(sequence, output_csv_1)`
 
@@ -326,17 +336,17 @@ Performs a sequence similarity search against the RCSB PDB using the MMseqs2-bas
 
 ### `PDB_searchAPI.py`
 
-This module is the primary data collection engine of the pipeline. It queries the RCSB PDB for structures similar to a query sequence, downloads their experimental metadata, and saves the results to a CSV file.
+This module is the primary data collection engine of the pipeline. It queries the RCSB PDB for structures similar to a query sequence, downloads their experimental metadata, and saves the results to CSV.
 
-**Sequence search.** `search_pdb_by_sequence()` submits a combined query to the RCSB Search API: a sequence similarity search (MMseqs2, identity cutoff 50 %, E-value ≤ 1×10⁻⁵) intersected with an X-ray diffraction filter, so only crystallographically determined structures are returned. Results are ranked by score and filtered against a configurable score cutoff.
+**Sequence search.** `search_pdb_by_sequence()` submits a combined query to the RCSB Search API: a sequence similarity search (MMseqs2, identity cutoff 50 %, E-value ≤ 1×10⁻⁵) intersected with X-ray crystallography only.
 
-**Parallel metadata extraction.** For each hit, `extract_mmcif_info()` is called concurrently across a thread pool. It downloads and caches the mmCIF file for the entry, then extracts: resolution, PubMed ID, polymer type (single chain vs complex), biological assembly, crystallization method, pH, temperature, free-text crystallization details (`pdbx_details`), pH range, and ligands.
+**Parallel metadata extraction.** For each hit, `extract_mmcif_info()` is called concurrently across a thread pool. It downloads and caches the mmCIF file for the entry, then extracts: resolution, polymer type, and assembly information.
 
-**Two-tier field extraction.** Four dedicated functions — `get_ph_from_mmcif_or_details()`, `get_method_from_mmcif_or_details()`, `get_temperature_from_mmcif_or_details()`, and `get_pdbx_ph_range_from_mmcif_or_details()` — each attempt to read the value from the structured mmCIF field first, and fall back to regular expression mining of the free-text `pdbx_details` string if the structured field is absent or empty.
+**Two-tier field extraction.** Four dedicated functions — `get_ph_from_mmcif_or_details()`, `get_method_from_mmcif_or_details()`, `get_temperature_from_mmcif_or_details()`, and `get_pdbx_ph_range_from_mmcif_or_details()` — implement the two-tier extraction strategy.
 
 **Caching.** Downloaded mmCIF files and PubMed ID lookups are cached to a local `.pdb_cache/` directory so repeated runs do not re-download data already on disk.
 
-**Filtering.** `filter_experimental_conditions()` post-processes the output CSV to retain only rows that have at least one of pH, temperature, method, or pdbx_details populated — discarding entries with no usable crystallization information.
+**Filtering.** `filter_experimental_conditions()` post-processes the output CSV to retain only rows that have at least one of pH, temperature, method, or pdbx_details populated — discarding entries with incomplete metadata.
 
 **Key functions:**
 - `search_pdb_by_sequence(sequence, output_csv, max_workers)`
@@ -346,12 +356,11 @@ This module is the primary data collection engine of the pipeline. It queries th
 
 ### `extract_structures.py`
 
- Lynch et al. developed a Python-based tool in 2020 for creating a searchable and updatable database of crystallization conditions extracted from the free-text crystallization details available in PDB entries. The database includes a parsing method that converts crystallization descriptions into structured lists of chemical compounds and their concentrations, along with a dictionary for standardizing compound names. The tool is freely available through the [GitHub repository](https://github.com/maxdudek/crystallizationDatabase). An updated version of the database was generated for this study by executing the standalone `pdb_crystal_database.py` script located in the `src` subdirectory. The workflow was designed to parse the inconsistently formatted crystallization details associated with PDB structures solved using the X-ray diffraction (XRD) method into a standardized list of compounds suitable for computational analysis. In addition, the pipeline was executed using a newer version of Natural Language Toolkit (NLTK) with the `tokenizers/punkt_tab` tokenizer, enabling the successful extraction of crystallization data from 195,183 structures.
-  The database stored in the `structures.pkl` file of the `structures` sub-folder. The database can be updated as the PDB keep on growing in number of structures. 
+Lynch et al. developed a Python-based tool in 2020 for creating a searchable and updatable database of crystallization conditions extracted from the free-text crystallization details available in the PDB. The database is stored in the `structures.pkl` file of the `structures` sub-folder and can be updated as the PDB grows.
 
-  The extract_structure.py script matches entries using PDB identifiers and appends standardized compound and concentration information from the structures.pkl database to the filtered CSV dataset. In addition, the workflow automatically extracts PEG-related information, including PEG molecular weight identifiers and concentrations, through regular-expression-based parsing. The final processed dataset is exported as a CSV file containing structured crystallization conditions suitable for downstream computational and statistical analysis.
+The extract_structures.py script matches entries using PDB identifiers and appends standardized compound and concentration information from the structures.pkl database to the filtered CSV dataset.
 
-Appends compound and PEG data from a pre-built compound library (`structures.pkl`) to the filtered crystallization CSV. Uses a fake module injection pattern to safely unpickle `Structure` objects without requiring the original package.
+Appends compound and PEG data from a pre-built compound library (`structures.pkl`) to the filtered crystallization CSV. Uses a safe unpickling pattern to restore `Structure` objects.
 
 **Key functions:**
 - `format_compounds(compound_list)` — converts flat alternating list to `"Compound (concentration)"` string
@@ -359,15 +368,16 @@ Appends compound and PEG data from a pre-built compound library (`structures.pkl
 - `append_compound_to_filtered_csv(structures_file, filtered_csv, output_csv)`
 
 ---
+
 ### `plot.py`
 
-Generates all visualisation outputs from the merged CSV. Handles missing pH and temperature values using sentinel coordinates, assigns method-specific marker shapes, and colours data points by similarity score using the viridis colormap.
+Generates all visualisation outputs from the merged CSV. Handles missing pH and temperature values using sentinel coordinates, assigns method-specific marker shapes, and colours data points by sequence similarity using the viridis colormap.
 
 **Key function:** `run_plot(output_csv_file, protein_name)`
 
 **Outputs:**
-- `{name}_TEMP.png` — pH vs temperature scatter plot
-- `{name}_PEG.png` — pH vs PEG concentration scatter plot
+- `{name}_TEMP.png` — pH vs temperature scatter plot (300 dpi)
+- `{name}_PEG.png` — pH vs PEG concentration scatter plot (300 dpi)
 - `{name}_Cryst_cocktail_Table.pdf` — coloured condition summary table
 
 ---
@@ -380,16 +390,17 @@ Reads a raw FASTA file containing one or more sequences, removes gap characters 
 
 ### `src_fasta_file/extract_data_fasta.py`
 
-Performs a PDB sequence search for each sequence in a cleaned FASTA dictionary. Parses the resulting mmCIF files using `gemmi` to extract experimental crystallization details. The identity cutoff is set to 30 % to maximise the number of retrieved structures.
+Performs a PDB sequence search for each sequence in a cleaned FASTA dictionary. Parses the resulting mmCIF files using `gemmi` to extract experimental crystallization details. The identity cutoff is configurable.
 
 **Key function:** `extract_crystallization(pdb_id)` — pulls all crystallization fields from the mmCIF block via `doc.sole_block()`
 
 ---
+
 ### For Web Application
 
 #### `utils.py`
 
-Orchestrates the full pipeline as a single callable function. Accepts a `progress_queue` for real-time SSE updates and a `job_id` for database tracking. Manages all temporary files and cleans up after each stage.
+Orchestrates the full pipeline as a single callable function. Accepts a `progress_queue` for real-time SSE updates and a `job_id` for database tracking. Manages all temporary files and cleans up after completion.
 
 **Key function:** `run_pipeline(sequence, seq_type_name, base_output_dir, job_id, progress_queue)`
 
@@ -397,7 +408,7 @@ Orchestrates the full pipeline as a single callable function. Accepts a `progres
 
 #### `views.py`
 
-Handles HTTP requests for the Django web application. Uses an in-memory queue registry (`_progress_queues`) to push pipeline progress events to the browser via Server-Sent Events, eliminating database polling lag.
+Handles HTTP requests for the Django web application. Uses an in-memory queue registry (`_progress_queues`) to push pipeline progress events to the browser via Server-Sent Events, eliminating the need for polling.
 
 **Views:**
 - `run_pipeline_view` — renders the form and starts the background pipeline thread
@@ -418,7 +429,9 @@ Handles HTTP requests for the Django web application. Uses an in-memory queue re
 | `matplotlib` | Scatter plots and PDF table generation |
 | `numpy` | Numerical operations |
 | `tabulate` | Terminal table formatting |
-| `pdf2image` | to open the pdf file in the web application |
+| `pdf2image` | Display PDF files in the web application |
+| `tqdm` | Progress bar for CLI |
+| `concurrent.futures` | Parallel metadata extraction |
 
 Install all dependencies with:
 
@@ -428,22 +441,75 @@ pip install -r requirements.txt
 
 ---
 
-## Licence
+## Releases & Downloads
 
-This project is released under the terms of the licence included in the `LICENCE` file: `Copyright (c) 2025 RitAreaSciencePark`
+### Current Release: v1.0.0
+
+The first stable release of PCDE is now available! Download pre-built archives:
+
+| Format | Download | Description |
+|--------|----------|-------------|
+| ZIP | [V1.0.0.zip](https://github.com/RitAreaSciencePark/Protein_Crystallization_Data_Extraction/archive/refs/tags/V1.0.0.zip) | Complete repository as ZIP archive |
+| TAR.GZ | [V1.0.0.tar.gz](https://github.com/RitAreaSciencePark/Protein_Crystallization_Data_Extraction/archive/refs/tags/V1.0.0.tar.gz) | Complete repository as compressed TAR archive |
+
+**View the [full release notes](RELEASE_NOTES_v1.0.0.md) for v1.0.0**
+
+#### Quick Install from ZIP
+
+```bash
+unzip V1.0.0.zip
+cd Protein_Crystallization_Data_Extraction
+python -m venv venv
+source venv/bin/activate  # or venv\Scripts\activate on Windows
+pip install -r requirements.txt
+```
+
+**[See all releases](https://github.com/RitAreaSciencePark/Protein_Crystallization_Data_Extraction/releases)**
 
 ---
 
 ## Citation
 
-If you use this tool in your research, please cite the associated thesis and the Protein Data Bank:
-> R. N. NANA<sup>1</sup>, Valerio PIOMPONI<sup>1</sup> and Adrea DALLE VEDOVE<sup>2</sup> (2026) "Data Extraction Tool for Protein
-Crystallization Conditions".
+If you use this tool in your research, please cite:
 
-> M. L. Lynch, M. F. Dudek, and S. E. Bowman (2020) A searchable database of crystallization cocktails in the pdb: analyzing the chemical condition
-space. *Patterns 1* no. **4**,  
+> R. N. NANA, Valerio PIOMPONI, and Adrea DALLE VEDOVE (2026). "Data Extraction Tool for Protein Crystallization Conditions". GitHub Repository. https://github.com/RitAreaSciencePark/Protein_Crystallization_Data_Extraction
 
+Or use the [`CITATION.cff`](CITATION.cff) file included in this repository for automatic citation management.
 
+For the original crystallization database methodology, also cite:
 
+> M. L. Lynch, M. F. Dudek, and S. E. Bowman (2020). A searchable database of crystallization cocktails in the pdb: analyzing the chemical condition space. *Patterns* 1(4).
 
+---
 
+## Licence
+
+This project is released under the MIT License. See the [`LICENSE`](LICENSE) file for full details.
+
+```
+Copyright (c) 2025 RitAreaSciencePark
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+```
+
+---
+
+## Support & Contributing
+
+For issues, feature requests, or questions:
+- 📝 [Open an Issue](https://github.com/RitAreaSciencePark/Protein_Crystallization_Data_Extraction/issues)
+- 💬 [Start a Discussion](https://github.com/RitAreaSciencePark/Protein_Crystallization_Data_Extraction/discussions)
+
+We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+
+---
+
+**Thank you for using PCDE! 🧬**
