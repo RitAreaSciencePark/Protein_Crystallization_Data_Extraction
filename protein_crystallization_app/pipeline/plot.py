@@ -1,4 +1,6 @@
 import pandas as pd
+import matplotlib
+matplotlib.use('Agg')  # Add this BEFORE importing pyplot
 import matplotlib.pyplot as plt
 import matplotlib.lines as mlines
 import matplotlib.patheffects as pe
@@ -7,7 +9,6 @@ import numpy as np
 import re
 import os
 import textwrap
-
 
 # Automatically compute approximate column widths based on max text length
 def compute_col_widths(df, scale=0.01):
