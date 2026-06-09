@@ -1,37 +1,42 @@
 cff-version: 1.2.0
-title: "Protein Crystallization Data Extraction"
+title: "Protein Crystallization Data Extraction Tool"
 message: "If you use this software, please cite it as follows."
-type: Code
+type: Software
 
 authors:
   - family-names: <NANA NJANTANG >
     given-names: <Ruth>
+    orcid: "https://orcid.org/0000-0002-6003-7521"  # Replace with actual ORCID
   - family-names: <DALLE VEDOVE>
     given-names: <Andrea>
+    orcid: "https://orcid.org/0000-0001-5127-7737"  # Replace with actual ORCID
   - family-names: <PIOMPONI>
     given-names: <Valerio>
+    orcid: "https://orcid.org/0000-0003-0433-8319"  # Replace with actual ORCID
 
   # Add additional authors here
 
 repository-code: "https://github.com/RitAreaSciencePark/Protein_Crystallization_Data_Extraction"
 url: "https://github.com/RitAreaSciencePark/Protein_Crystallization_Data_Extraction"
 
+abstract: >
+  An automated computational pipeline that accepts a protein sequence as input,
+  retrieves all related PDB structures via the RCSB API, extracts and filters
+  crystallization condition metadata, annotates entries with chemical compound
+  information, and outputs analysis ready CSV, pdf, and high-resolution figures.
+keywords:
+  - protein crystallography
+  - crystallization conditions
+  - PDB
+  - data mining
+  - structural biology
+  - automated pipeline
 
-preferred-citation:
-  type: Conference Paper
-  authors:
-    - family-names: <NANA NJANTANG >
-      given-names: <Ruth>
-    - family-names: <DALLE VEDOVE>
-      given-names: <Andrea>
-    - family-names: <PIOMPONI>
-      given-names: <Valerio>
-  title: "Data Extraction Tool for Protein Crystallization Conditions"
-  journal: "Journal Name"
-  year: 2026
-  doi: 10.xxxx/xxxxx
+identifiers:
+  - type: doi
+    value: "10.5281/zenodo.XXXXXXX"
+    description: "Zenodo DOI (update after first release)"
 
-
-license: Apache-2.0
+license: MIT
 version: 1.0.0
-date-released: 2026-06-08
+date-released: 2026-06-09
