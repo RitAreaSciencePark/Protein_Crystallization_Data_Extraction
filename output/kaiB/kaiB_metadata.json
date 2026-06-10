@@ -1,0 +1,205 @@
+{
+  "metadata_version": "1.0",
+  "metadata_standard": "FAIR Principles Compliant",
+  "generation_timestamp": "2026-06-10T14:05:10.708325Z",
+  "generation_timestamp_human": "2026-06-10 14:05:10 UTC",
+  "dataset": {
+    "@context": "https://www.w3.org/ns/dcat",
+    "@type": "dcat:Catalog",
+    "dataset_id": "b20570a7-70d6-4282-a80d-1b29ccb8b16b",
+    "dataset_name": "PCDE Analysis Results - kaiB",
+    "dataset_description": "Comprehensive protein crystallization data extraction results for sequence: kaiB",
+    "creation_date": "2026-06-10T14:05:10.708325Z",
+    "creation_date_human": "2026-06-10 14:05:10 UTC",
+    "software": {
+      "name": "Protein Crystallization Data Extraction (PCDE)",
+      "version": "1.0.0",
+      "release_date": "2026-01-01",
+      "url": "https://github.com/RitAreaSciencePark/Protein_Crystallization_Data_Extraction"
+    },
+    "organization": {
+      "id": "rit-area-science-park",
+      "name": "RitAreaSciencePark",
+      "url": "https://github.com/RitAreaSciencePark"
+    },
+    "author": {
+      "name": "Nana Njantang Ruth",
+      "orcid": "https://orcid.org/0000-0002-6003-7521"
+    },
+    "data_source": {
+      "primary_database": "RCSB Protein Data Bank (PDB)",
+      "database_url": "https://www.rcsb.org/",
+      "search_scope": "Protein structures with X-ray crystallography experimental conditions",
+      "api_endpoints": [
+        "https://search.rcsb.org/rcsbsearch/v2/query",
+        "https://data.rcsb.org/rest/v1/core/entry"
+      ]
+    },
+    "metadata_standards": {
+      "standards": [
+        "FAIR",
+        "Dublin Core",
+        "RDF/JSON-LD"
+      ],
+      "version": "1.0",
+      "compliance_level": "Full compliance with FAIR principles"
+    },
+    "access": {
+      "url": "https://github.com/RitAreaSciencePark/Protein_Crystallization_Data_Extraction",
+      "type": "public",
+      "access_level": "open",
+      "distribution_format": [
+        "CSV",
+        "FASTA",
+        "PDF",
+        "PNG",
+        "JSON"
+      ]
+    },
+    "statistics": {
+      "total_files": 6,
+      "total_size_kb": 312.98
+    }
+  },
+  "files": [
+    {
+      "@context": "https://www.w3.org/ns/dcat",
+      "@type": "dcat:Dataset",
+      "file_id": "7dcd3630-57cd-4e86-a499-03e596d83c53",
+      "file_name": "kaiB_sequence.fasta",
+      "file_path": "/home/ruth/Protein_Crystallization_Data_Extraction/output/kaiB/kaiB_sequence.fasta",
+      "relative_path": "kaiB_sequence.fasta",
+      "file_properties": {
+        "size_kb": 0.11,
+        "file_extension": ".fasta",
+        "encoding": "utf-8"
+      },
+      "checksum": {
+        "algorithm": "SHA-256",
+        "value": "f24ab10c123b7f699fe1918f6a1cb9cef5f1da5bceddc700a987bd2b6f58476c"
+      },
+      "description": "Input sequence in FASTA format (kaiB_sequence.fasta)",
+      "category": "fasta",
+      "input_context": {
+        "sequence_type": "kaiB"
+      }
+    },
+    {
+      "@context": "https://www.w3.org/ns/dcat",
+      "@type": "dcat:Dataset",
+      "file_id": "83c1be38-3404-40bd-a7bf-86b421886dd2",
+      "file_name": "kaiB_TEMP.png",
+      "file_path": "/home/ruth/Protein_Crystallization_Data_Extraction/output/kaiB/kaiB_TEMP.png",
+      "relative_path": "kaiB_TEMP.png",
+      "file_properties": {
+        "size_kb": 132.89,
+        "file_extension": ".png",
+        "encoding": "binary"
+      },
+      "checksum": {
+        "algorithm": "SHA-256",
+        "value": "a1a8c921351dde1076335061bef1b8f71597cedf8090a5f543e3662024fb6df7"
+      },
+      "description": "Scatter plot visualization: Temperature analysis (kaiB_TEMP.png)",
+      "category": "plot_temp",
+      "input_context": {
+        "sequence_type": "kaiB"
+      }
+    },
+    {
+      "@context": "https://www.w3.org/ns/dcat",
+      "@type": "dcat:Dataset",
+      "file_id": "05221355-07ac-4dc0-b5e1-655d7fc745a5",
+      "file_name": "kaiB_Cryst_cocktail_Table.pdf",
+      "file_path": "/home/ruth/Protein_Crystallization_Data_Extraction/output/kaiB/kaiB_Cryst_cocktail_Table.pdf",
+      "relative_path": "kaiB_Cryst_cocktail_Table.pdf",
+      "file_properties": {
+        "size_kb": 35.55,
+        "file_extension": ".pdf",
+        "encoding": "binary"
+      },
+      "checksum": {
+        "algorithm": "SHA-256",
+        "value": "b922e2c404850b6309fccf8d2516acf26182d064b5584d4d48000a8d72512b86"
+      },
+      "description": "Consolidated PDF report with crystallization cocktail details (kaiB_Cryst_cocktail_Table.pdf)",
+      "category": "report",
+      "input_context": {
+        "sequence_type": "kaiB"
+      }
+    },
+    {
+      "@context": "https://www.w3.org/ns/dcat",
+      "@type": "dcat:Dataset",
+      "file_id": "36f2067a-b2d5-4a9b-aeb7-7e6558a0c7df",
+      "file_name": "kaiB_merged_results.csv",
+      "file_path": "/home/ruth/Protein_Crystallization_Data_Extraction/output/kaiB/kaiB_merged_results.csv",
+      "relative_path": "kaiB_merged_results.csv",
+      "file_properties": {
+        "size_kb": 2.25,
+        "file_extension": ".csv",
+        "encoding": "utf-8"
+      },
+      "checksum": {
+        "algorithm": "SHA-256",
+        "value": "2557365791e9d2e5423143fa31c3ea925d371f4c908b3797cb5c14911d054078"
+      },
+      "description": "Merged results combining RCSB hits and crystallization metadata (kaiB_merged_results.csv)",
+      "category": "merged",
+      "input_context": {
+        "sequence_type": "kaiB"
+      }
+    },
+    {
+      "@context": "https://www.w3.org/ns/dcat",
+      "@type": "dcat:Dataset",
+      "file_id": "3a393ea4-c905-4d10-a75d-1e2c7ab38631",
+      "file_name": "kaiB_PEG.png",
+      "file_path": "/home/ruth/Protein_Crystallization_Data_Extraction/output/kaiB/kaiB_PEG.png",
+      "relative_path": "kaiB_PEG.png",
+      "file_properties": {
+        "size_kb": 141.77,
+        "file_extension": ".png",
+        "encoding": "binary"
+      },
+      "checksum": {
+        "algorithm": "SHA-256",
+        "value": "bb5b1faf783f3dd7575911cca873ca2c74b0ad4c06b6f58d962e9ffbe2734f91"
+      },
+      "description": "Scatter plot visualization: PEG concentration analysis (kaiB_PEG.png)",
+      "category": "plot_peg",
+      "input_context": {
+        "sequence_type": "kaiB"
+      }
+    },
+    {
+      "@context": "https://www.w3.org/ns/dcat",
+      "@type": "dcat:Dataset",
+      "file_id": "f4b5edc3-0f8f-4bbc-9030-a5c24a32750e",
+      "file_name": "kaiB_rcsb_hits.csv",
+      "file_path": "/home/ruth/Protein_Crystallization_Data_Extraction/output/kaiB/kaiB_rcsb_hits.csv",
+      "relative_path": "kaiB_rcsb_hits.csv",
+      "file_properties": {
+        "size_kb": 0.41,
+        "file_extension": ".csv",
+        "encoding": "utf-8"
+      },
+      "checksum": {
+        "algorithm": "SHA-256",
+        "value": "64a712befafdbdca48f230f74456629f1bb71e3f4bbbc1f716db6d4c5c3ba07c"
+      },
+      "description": "RCSB sequence search results with X-ray crystallography filters (kaiB_rcsb_hits.csv)",
+      "category": "hits",
+      "input_context": {
+        "sequence_type": "kaiB"
+      }
+    }
+  ],
+  "summary": {
+    "total_files": 6,
+    "total_size_kb": 312.98,
+    "generation_tool": "Protein Crystallization Data Extraction (PCDE)",
+    "generation_tool_version": "1.0.0",
+    "sequence_analyzed": "kaiB"
+  }
+}
