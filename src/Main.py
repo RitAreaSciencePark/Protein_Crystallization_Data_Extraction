@@ -6,6 +6,7 @@ from PDB_searchAPI import search_pdb_by_sequence, filter_experimental_conditions
 from plot import run_plot
 from extract_structures import append_compound_to_filtered_csv
 from rcsb_sequence_identity import run_and_save
+from metadata_generator import generate_metadata_for_outputs
 
 
 def main():
@@ -112,6 +113,11 @@ def main():
     # STEP 4 — PLOT CRYSTALLIZATION DATA
     # =========================================================
     run_plot(merged_csv, seq_type_name)
+
+    # =========================================================
+    # STEP 5 — GENERATE FAIR METADATA
+    # =========================================================
+    generate_metadata_for_outputs(seq_type_name, output_dir)
 
     # =========================================================
     # DONE
