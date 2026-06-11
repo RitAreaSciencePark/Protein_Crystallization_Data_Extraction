@@ -20,6 +20,8 @@ import hashlib
 from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Any
+from datetime import datetime
+import re
 
 
 class FAIRMetadataGenerator:
@@ -75,9 +77,10 @@ class FAIRMetadataGenerator:
         self.search_timestamp = datetime.utcnow()
     
     @staticmethod
-    def _generate_file_id() -> str:
-        """Generate a unique file identifier (UUID v4)."""
-        return str(uuid.uuid4())
+    def generate_next_dataset_id(prefix="PCDE"):
+        timestamp = datetime.now().strftime("%Y%m%d-%H%M%S-%f")
+
+        return f"{prefix}-{timestamp}"
     
     @staticmethod
     def _generate_file_hash(file_path: str, algorithm: str = "sha256") -> str:
@@ -144,6 +147,18 @@ class FAIRMetadataGenerator:
             "metadata": f"FAIR-compliant metadata for all output files ({file_name})",
         }
         return descriptions.get(file_category, f"Output file from PCDE pipeline ({file_name})")
+
+    def _generate_file_id(self, file_name: str) -> str:
+        """
+        Generate a unique file ID using the file name and timestamp.
+
+        Example:
+        protein_sequences-20260611-154230
+        """
+        stem = Path(file_name).stem.replace(" ", "_")
+        timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
+
+        return f"{stem}-{timestamp}"
     
     def generate_file_metadata(self, file_path: str) -> Dict[str, Any]:
         """
@@ -165,7 +180,7 @@ class FAIRMetadataGenerator:
             "@type": "dcat:Dataset",
             
             # Unique Identifier (FAIR Principle: Findable)
-            "file_id": self._generate_file_id(),
+            "file_id": self._generate_file_id(file_name),
             "file_name": file_name,
             "file_path": os.path.abspath(file_path),
             "relative_path": os.path.relpath(file_path, self.output_dir),
@@ -207,7 +222,7 @@ class FAIRMetadataGenerator:
         Returns:
             Dict: Complete dataset metadata
         """
-        dataset_id = str(uuid.uuid4())
+        dataset_id = self.generate_next_dataset_id()
         
         dataset_metadata = {
             "@context": "https://www.w3.org/ns/dcat",
