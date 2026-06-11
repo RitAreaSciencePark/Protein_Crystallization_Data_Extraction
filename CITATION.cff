@@ -4,14 +4,14 @@ message: "If you use this software, please cite it as follows."
 type: Software
 
 authors:
-  - family-names: <NANA NJANTANG >
-    given-names: <Ruth>
+  - family-names: NANA NJANTANG 
+    given-names: Ruth
     orcid: "https://orcid.org/0000-0002-6003-7521"  # Replace with actual ORCID
-  - family-names: <DALLE VEDOVE>
-    given-names: <Andrea>
+  - family-names: DALLE VEDOVE
+    given-names: Andrea
     orcid: "https://orcid.org/0000-0001-5127-7737"  # Replace with actual ORCID
-  - family-names: <PIOMPONI>
-    given-names: <Valerio>
+  - family-names: PIOMPONI
+    given-names: Valerio  
     orcid: "https://orcid.org/0000-0003-0433-8319"  # Replace with actual ORCID
 
   # Add additional authors here
@@ -19,11 +19,12 @@ authors:
 repository-code: "https://github.com/RitAreaSciencePark/Protein_Crystallization_Data_Extraction"
 url: "https://github.com/RitAreaSciencePark/Protein_Crystallization_Data_Extraction"
 
-abstract: >
-  An automated computational pipeline that accepts a protein sequence as input,
-  retrieves all related PDB structures via the RCSB API, extracts and filters
-  crystallization condition metadata, annotates entries with chemical compound
-  information, and outputs analysis ready CSV, pdf, and high-resolution figures.
+abstract: 
+  An automated computational pipeline that turn raw PDB metadata into structure, FAIR compliant datasets. 
+  It accepts a protein sequence as input, retrieves all related PDB structures via the RCSB API, extracts 
+  and filters crystallization condition metadata, annotates entries with chemical compound information,
+  outputs analysis ready CSV, pdf, and high-resolution figures. 
+  
 keywords:
   - protein crystallography
   - crystallization conditions
@@ -35,7 +36,7 @@ keywords:
 identifiers:
   - type: doi
     value: "https://doi.org/10.5281/zenodo.20613858"
-    description: "Zenodo DOI (update after first release)"
+    description: "Zenodo DOI"
 
 license: MIT
 version: 1.0.0
