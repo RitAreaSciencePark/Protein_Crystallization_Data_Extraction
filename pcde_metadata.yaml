@@ -1,0 +1,467 @@
+# ════════════════════════════════════════════════════════════════════════════
+# PCDE: Protein Crystallization Data Extraction Tool
+# Master Metadata File (Single Source of Truth)
+# ════════════════════════════════════════════════════════════════════════════
+#
+# This file serves as the authoritative source for all PCDE metadata.
+# All other metadata files (README, CITATION.cff, etc.) are derived from this.
+#
+# Last Updated: 2026-06-11
+# Format: YAML (human-readable, machine-parseable)
+#
+# ════════════════════════════════════════════════════════════════════════════
+
+software:
+  # ─────────────────────────────────────────────────────────
+  # BASIC METADATA
+  # ─────────────────────────────────────────────────────────
+  id: "https://github.com/RitAreaSciencePark/Protein_Crystallization_Data_Extraction"
+  name: "Protein Crystallization Data Extraction"
+  shortname: "PCDE"
+  type: "command-line tool + web application"
+  
+  # ─────────────────────────────────────────────────────────
+  # DESCRIPTION
+  # ─────────────────────────────────────────────────────────
+  description:
+    short: "Automated tool for retrieving and analyzing protein crystallization conditions from RCSB PDB"
+    long: |
+      PCDE is a computational pipeline that transforms protein sequences into 
+      analysis-ready datasets of crystallization conditions. It combines sequence 
+      similarity searching (MMseqs2), parallel metadata extraction, intelligent 
+      free-text parsing, and publication-quality visualization.
+      
+      The tool accepts any protein, DNA, or RNA sequence as input and produces:
+      - Merged CSV datasets with 20+ experimental parameters
+      - High-resolution scatter plots (pH vs Temperature, pH vs PEG concentration)
+      - Colored PDF crystallization cocktail tables
+      - FAIR-compliant metadata with full provenance tracking
+  
+  keywords:
+    - protein crystallography
+    - crystallization conditions
+    - PDB (Protein Data Bank)
+    - data mining
+    - structural biology
+    - automated pipeline
+    - sequence similarity search
+    - metadata extraction
+    - FAIR principles
+  
+  # ─────────────────────────────────────────────────────────
+  # VERSION & RELEASE INFORMATION
+  # ─────────────────────────────────────────────────────────
+  version:
+    current: "1.0.1"
+    latest: "1.0.1"
+    release_date: "2026-06-09"
+    
+    # Semantic Versioning Breakdown
+    semantic:
+      major: 1        # Breaking changes (none yet)
+      minor: 0        # Feature additions (none yet)
+      patch: 1        # Bug fixes
+      prerelease: false
+      metadata_version: "1.0"
+  
+  # ─────────────────────────────────────────────────────────
+  # VERSIONING HISTORY
+  # ─────────────────────────────────────────────────────────
+  releases:
+    - version: "1.0.1"
+      date: "2026-06-09"
+      tag: "v1.0.1"
+      status: "stable"
+      notes: "Minor bug fixes in compound annotation"
+      url: "https://github.com/RitAreaSciencePark/Protein_Crystallization_Data_Extraction/releases/tag/v1.0.1"
+      
+    - version: "1.0.0"
+      date: "2026-06-09"
+      tag: "V1.0.0"
+      status: "stable"
+      notes: "Initial stable release"
+      url: "https://github.com/RitAreaSciencePark/Protein_Crystallization_Data_Extraction/releases/tag/V1.0.0"
+  
+  # ─────────────────────────────────────────────────────────
+  # AUTHORS & CONTRIBUTORS
+  # ─────────────────────────────────────────────────────────
+  authors:
+    - name: "Ruth Nana Njantang"
+      surname: "NANA NJANTANG"
+      given_name: "Ruth"
+      role: "Lead Developer & Principal Investigator"
+      email: "njantang@ritarea.org"
+      orcid: "0000-0002-6003-7521"
+      affiliation: "RitAreaSciencePark"
+      contributions:
+        - "Pipeline design"
+        - "Core algorithm implementation"
+        - "FAIR principles implementation"
+      
+    - name: "Valerio Piomponi"
+      role: "Co-Developer"
+      orcid: "0000-0003-0433-8319"
+      affiliation: "RitAreaSciencePark"
+      contributions:
+        - "Compound annotation"
+        - "NLP parsing"
+      
+    - name: "Andrea Dalle Vedove"
+      role: "Co-Developer"
+      orcid: "0000-0001-5127-7737"
+      affiliation: "RitAreaSciencePark"
+      contributions:
+        - "Web application interface"
+        - "Visualization"
+  
+  # ─────────────────────────────────────────────────────────
+  # ORGANIZATION
+  # ─────────────────────────────────────────────────────────
+  organization:
+    name: "RitAreaSciencePark"
+    url: "https://github.com/RitAreaSciencePark"
+    type: "Research Organization"
+    country: "Italy"
+  
+  # ─────────────────────────────────────────────────────────
+  # LICENSE & USAGE
+  # ─────────────────────────────────────────────────────────
+  license:
+    type: "MIT"
+    url: "https://opensource.org/licenses/MIT"
+    spdx_id: "MIT"
+    full_name: "MIT License"
+    description: "Permissive open-source license"
+    permissions:
+      - "Commercial use"
+      - "Modification"
+      - "Distribution"
+      - "Private use"
+    conditions:
+      - "License and copyright notice required"
+    limitations:
+      - "Liability"
+      - "Warranty"
+  
+  # ─────────────────────────────────────────────────────────
+  # REPOSITORY
+  # ─────────────────────────────────────────────────────────
+  repository:
+    url: "https://github.com/RitAreaSciencePark/Protein_Crystallization_Data_Extraction"
+    type: "git"
+    clone_url: "https://github.com/RitAreaSciencePark/Protein_Crystallization_Data_Extraction.git"
+    host: "GitHub"
+    owner: "RitAreaSciencePark"
+    repo_name: "Protein_Crystallization_Data_Extraction"
+    access: "public"
+    issues_url: "https://github.com/RitAreaSciencePark/Protein_Crystallization_Data_Extraction/issues"
+    discussions_url: "https://github.com/RitAreaSciencePark/Protein_Crystallization_Data_Extraction/discussions"
+    releases_url: "https://github.com/RitAreaSciencePark/Protein_Crystallization_Data_Extraction/releases"
+  
+  # ─────────────────────────────────────────────────────────
+  # IDENTIFIERS (FAIR PRINCIPLES)
+  # ─────────────────────────────────────────────────────────
+  identifiers:
+    github_url: "https://github.com/RitAreaSciencePark/Protein_Crystallization_Data_Extraction"
+    zenodo_doi: "10.5281/zenodo.20613858"
+    zenodo_url: "https://zenodo.org/record/20613858"
+    software_heritage: "swh:1:rel:..."  # To be added after registration
+  
+  # ─────────────────────────────────────────────────────────
+  # PROGRAMMING LANGUAGE & REQUIREMENTS
+  # ─────────────────────────────────────────────────────────
+  programming:
+    languages:
+      - "Python"
+    language_versions:
+      min: "3.10" +
+    platforms:
+      - "Linux"
+      - "macOS"
+      - "Windows"
+  
+  # ─────────────────────────────────────────────────────────
+  # DEPENDENCIES
+  # ─────────────────────────────────────────────────────────
+  dependencies:
+    required:
+      - name: "django"
+        version: "6.0.5"
+        url: "https://www.djangoproject.com/"
+        license: "BSD"
+        purpose: "Web application framework"
+        
+      - name: "requests"
+        version: "2.34.2"
+        url: "https://requests.readthedocs.io/"
+        license: "Apache 2.0"
+        purpose: "HTTP client for RCSB API calls"
+        
+      - name: "pandas"
+        version: "3.0.3"
+        url: "https://pandas.pydata.org/"
+        license: "BSD 3-Clause"
+        purpose: "Data manipulation and CSV handling"
+        
+      - name: "gemmi"
+        version: "0.7.5"
+        url: "https://gemmi.readthedocs.io/"
+        license: "MPL 2.0"
+        purpose: "mmCIF file parsing"
+        
+      - name: "matplotlib"
+        version: "3.10.9"
+        url: "https://matplotlib.org/"
+        license: "PSF"
+        purpose: "Scatter plots and PDF table generation"
+        
+      - name: "numpy"
+        version: "2.4.6"
+        url: "https://numpy.org/"
+        license: "BSD"
+        purpose: "Numerical operations"
+        
+      - name: "tqdm"
+        version: "4.67.3"
+        url: "https://tqdm.github.io/"
+        license: "MPL 2.0"
+        purpose: "Progress bar for CLI"
+    
+    external_services:
+      - name: "RCSB Protein Data Bank"
+        url: "https://www.rcsb.org/"
+        api: "https://search.rcsb.org/rcsbsearch/v2/query"
+        status: "Required"
+        description: "Primary data source for protein structures"
+  
+  # ─────────────────────────────────────────────────────────
+  # MODULES (COMPONENTS)
+  # ─────────────────────────────────────────────────────────
+  modules:
+    - id: "pcde:module:rcsb-sequence-identity"
+      name: "RCSB Sequence Identity Module"
+      file: "src/rcsb_sequence_identity.py"
+      version: "1.0.0"
+      description: "Search RCSB PDB by protein sequence using MMseqs2"
+      functions:
+        - id: "pcde:fn:search-pdb-by-sequence"
+          name: "search_pdb_by_sequence"
+          signature: "search_pdb_by_sequence(sequence: str, max_hits: int = 1000) -> List[Dict]"
+          uri: "/api/v1/search/sequence"
+          
+        - id: "pcde:fn:detect-sequence-type"
+          name: "detect_seq_type"
+          signature: "detect_seq_type(sequence: str) -> Literal['protein', 'dna', 'rna']"
+          uri: "/api/v1/analyze/sequence-type"
+    
+    - id: "pcde:module:pdb-search-api"
+      name: "PDB Search & Crystallization Extraction Module"
+      file: "src/PDB_searchAPI.py"
+      version: "1.0.0"
+      description: "Retrieve and filter crystallization metadata from RCSB PDB"
+      functions:
+        - id: "pcde:fn:search-pdb-by-sequence-api"
+          name: "search_pdb_by_sequence"
+          uri: "/api/v1/extract/crystallization"
+          
+        - id: "pcde:fn:filter-experimental-conditions"
+          name: "filter_experimental_conditions"
+          uri: "/api/v1/filter/experimental-conditions"
+    
+    - id: "pcde:module:extract-structures"
+      name: "Compound Annotation Module"
+      file: "src/extract_structures.py"
+      version: "1.0.0"
+      description: "Annotate crystallization data with compound information"
+      functions:
+        - id: "pcde:fn:append-compound"
+          name: "append_compound_to_filtered_csv"
+          uri: "/api/v1/annotate/compounds"
+    
+    - id: "pcde:module:plot"
+      name: "Visualization Module"
+      file: "src/plot.py"
+      version: "1.0.0"
+      description: "Generate scatter plots and PDF reports"
+      functions:
+        - id: "pcde:fn:run-plot"
+          name: "run_plot"
+          uri: "/api/v1/visualize/plots"
+    
+    - id: "pcde:module:metadata-generator"
+      name: "FAIR Metadata Generation Module"
+      file: "src/metadata_generator.py"
+      version: "1.0.0"
+      description: "Generate FAIR-compliant metadata for outputs"
+      functions:
+        - id: "pcde:fn:generate-metadata"
+          name: "generate_metadata_for_outputs"
+          uri: "/api/v1/generate/metadata"
+  
+  # ─────────────────────────────────────────────────────────
+  # DATA SOURCES
+  # ─────────────────────────────────────────────────────────
+  data_sources:
+    - name: "RCSB Protein Data Bank (PDB)"
+      url: "https://www.rcsb.org/"
+      description: "Primary database of protein structures"
+      api_endpoints:
+        search: "https://search.rcsb.org/rcsbsearch/v2/query"
+        data: "https://data.rcsb.org/rest/v1/core/entry"
+      format: "mmCIF (macromolecular crystallographic information file)"
+      reference: "https://doi.org/10.1038/s41592-019-0677-2"
+      
+    - name: "PubMed"
+      url: "https://pubmed.ncbi.nlm.nih.gov/"
+      description: "Publication metadata and references"
+      
+    - name: "MMseqs2"
+      url: "https://github.com/soedinglab/MMseqs2"
+      description: "Sequence similarity search engine"
+      reference: "https://doi.org/10.1038/nbt.4053"
+  
+  # ─────────────────────────────────────────────────────────
+  # OUTPUT FILES
+  # ─────────────────────────────────────────────────────────
+  outputs:
+    - name: "{name}_sequence.fasta"
+      format: "FASTA"
+      description: "Input sequence saved in standard format"
+      
+    - name: "{name}_rcsb_hits.csv"
+      format: "CSV"
+      description: "MMseqs2 search results: PDB ID, entity, score, identity (%), E-value"
+      columns:
+        - PDB_ID
+        - Entity
+        - Score
+        - Seq_id
+        - E-value
+      
+    - name: "{name}_merged_results.csv"
+      format: "CSV"
+      description: "Full merged dataset: crystallization conditions + sequence similarity scores"
+      columns:
+        - PDB_ID
+        - Entity
+        - Score
+        - Seq_id
+        - E-value
+        - Resolution
+        - Pubmed_id
+        - Method
+        - pH
+        - Temp
+        - Ligands
+        - Polymer
+        - Assembly
+        - pdbx_pH_range
+        - pdbx_details
+        - Compounds
+        - PEG_Id
+        - PEG_con
+      
+    - name: "{name}_TEMP.png"
+      format: "PNG"
+      resolution: "300 dpi"
+      description: "Scatter plot: pH vs Temperature (K), coloured by similarity score"
+      
+    - name: "{name}_PEG.png"
+      format: "PNG"
+      resolution: "300 dpi"
+      description: "Scatter plot: pH vs PEG concentration (%), coloured by similarity score"
+      
+    - name: "{name}_Cryst_cocktail_Table.pdf"
+      format: "PDF"
+      description: "Coloured summary table of all unique crystallization conditions"
+      
+    - name: "{name}_metadata.json"
+      format: "JSON-LD"
+      description: "FAIR-compliant metadata for all output files"
+  
+  # ─────────────────────────────────────────────────────────
+  # CITATION
+  # ─────────────────────────────────────────────────────────
+  citation:
+    bibtex: |
+      @software{pcde2026,
+        author = {Nana Njantang, Ruth and Piomponi, Valerio and Dalle Vedove, Andrea},
+        title = {Protein Crystallization Data Extraction Tool (PCDE)},
+        year = {2026},
+        url = {https://github.com/RitAreaSciencePark/Protein_Crystallization_Data_Extraction},
+        doi = {10.5281/zenodo.20613858},
+        version = {1.0.1},
+        note = {Zenodo DOI}
+      }
+    
+    apa: |
+      Nana Njantang, R., Piomponi, V., & Dalle Vedove, A. (2026). Protein 
+      Crystallization Data Extraction Tool (v1.0.1). GitHub Repository. 
+      https://doi.org/10.5281/zenodo.20613858
+    
+    mla: |
+      Nana Njantang, Ruth, et al. "Protein Crystallization Data Extraction Tool." 
+      GitHub, 2026, https://github.com/RitAreaSciencePark/Protein_Crystallization_Data_Extraction. 
+      Zenodo, https://doi.org/10.5281/zenodo.20613858.
+  
+  # ─────────────────────────────────────────────────────────
+  # DOCUMENTATION
+  # ─────────────────────────────────────────────────────────
+  documentation:
+    readme: "README.md"
+    api: "docs/API.md"
+    installation: "docs/INSTALLATION.md"
+    usage: "docs/USAGE.md"
+    contributing: "CONTRIBUTING.md"
+    changelog: "RELEASE_NOTES_v1.0.0.md"
+    
+  # ─────────────────────────────────────────────────────────
+  # REGISTRIES & DISCOVERABILITY
+  # ─────────────────────────────────────────────────────────
+  registries:
+    bio_tools:
+      registered: false
+      url: "https://bio.tools/pcde"
+      status: "pending"
+      
+    elixir_service_registry:
+      registered: false
+      url: "https://elixir-europe.org/services"
+      status: "pending"
+      
+    galaxy_tool_shed:
+      registered: false
+      url: "https://toolshed.g2.bx.psu.edu/"
+      status: "pending"
+      
+    pypi:
+      registered: false
+      package_name: "pcde-tool"
+      url: "https://pypi.org/project/pcde-tool/"
+      status: "pending"
+  
+  # ─────────────────────────────────────────────────────────
+  # FUNDING & ACKNOWLEDGEMENTS
+  # ─────────────────────────────────────────────────────────
+  funding:
+    - organization: "RitAreaSciencePark"
+      grant_id: null
+      url: "https://github.com/RitAreaSciencePark"
+  
+  acknowledgements: |
+    This project builds upon the crystallization database methodology of Lynch et al. (2020).
+    We acknowledge RCSB PDB for providing publicly accessible structural biology data.
+  
+  # ─────────────────────────────────────────────────────────
+  # RELATED PUBLICATIONS
+  # ─────────────────────────────────────────────────────────
+  related_publications:
+    - authors: "Lynch, M.L., Dudek, M.F., Bowman, S.E."
+      year: 2020
+      title: "A searchable database of crystallization cocktails in the PDB: analyzing the chemical condition space"
+      journal: "Patterns"
+      volume: 1
+      issue: 4
+      doi: "10.1016/j.patter.2020.100129"
+      url: "https://doi.org/10.1016/j.patter.2020.100129"
+  
