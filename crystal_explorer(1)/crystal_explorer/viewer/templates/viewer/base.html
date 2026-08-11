@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{% block title %}Crystal Explorer{% endblock %}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+{% block extra_head %}{% endblock %}
+<style>
+  :root {
+    --bg: #EEF1F3;
+    --panel: #FFFFFF;
+    --ink: #14181B;
+    --ink-muted: #5B6670;
+    --line: #D9DEE2;
+    --accent: #0B6E7D;
+    --flash: #FF6B4A;
+    --head-blue: #1B3A6B;
+    --head-green: #DFF3E1;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background-color: var(--bg);
+    background-image: url("data:image/svg+xml,%3Csvg%20xmlns=%27http://www.w3.org/2000/svg%27%20width=%27260%27%20height=%27260%27%3E%20%3Cg%20fill=%27none%27%20stroke=%27%230B6E7D%27%20stroke-width=%271.4%27%20stroke-linecap=%27round%27%20opacity=%270.12%27%3E%20%3Cpolyline%20points=%2755,0%2061.8,6.5%2067.9,13%2072.8,19.5%2075.9,26%2077,32.5%2075.9,39%2072.8,45.5%2067.9,52%2061.8,58.5%2055,65%2048.2,71.5%2042.1,78%2037.2,84.5%2034.1,91%2033,97.5%2034.1,104%2037.2,110.5%2042.1,117%2048.2,123.5%2055,130%2061.8,136.5%2067.9,143%2072.8,149.5%2075.9,156%2077,162.5%2075.9,169%2072.8,175.5%2067.9,182%2061.8,188.5%2055,195%2048.2,201.5%2042.1,208%2037.2,214.5%2034.1,221%2033,227.5%2034.1,234%2037.2,240.5%2042.1,247%2048.2,253.5%2055,260%27/%3E%20%3Cpolyline%20points=%2755,0%2048.2,6.5%2042.1,13%2037.2,19.5%2034.1,26%2033,32.5%2034.1,39%2037.2,45.5%2042.1,52%2048.2,58.5%2055,65%2061.8,71.5%2067.9,78%2072.8,84.5%2075.9,91%2077,97.5%2075.9,104%2072.8,110.5%2067.9,117%2061.8,123.5%2055,130%2048.2,136.5%2042.1,143%2037.2,149.5%2034.1,156%2033,162.5%2034.1,169%2037.2,175.5%2042.1,182%2048.2,188.5%2055,195%2061.8,201.5%2067.9,208%2072.8,214.5%2075.9,221%2077,227.5%2075.9,234%2072.8,240.5%2067.9,247%2061.8,253.5%2055,260%27/%3E%20%3Cline%20x1=%2777%27%20y1=%2732.5%27%20x2=%2733%27%20y2=%2732.5%27/%3E%20%3Cline%20x1=%2733%27%20y1=%2797.5%27%20x2=%2777%27%20y2=%2797.5%27/%3E%20%3Cline%20x1=%2777%27%20y1=%27162.5%27%20x2=%2733%27%20y2=%27162.5%27/%3E%20%3Cline%20x1=%2733%27%20y1=%27227.5%27%20x2=%2777%27%20y2=%27227.5%27/%3E%20%3C/g%3E%20%3Cg%20fill=%27none%27%20stroke=%27%231B3A6B%27%20stroke-width=%271.3%27%20opacity=%270.10%27%3E%20%3Cpolygon%20points=%27209.7,46.5%20209.7,63.5%20195,72%20180.3,63.5%20180.3,46.5%20195,38%27/%3E%20%3Cpolygon%20points=%27209.7,181.5%20209.7,198.5%20195,207%20180.3,198.5%20180.3,181.5%20195,173%27/%3E%20%3Cline%20x1=%27195%27%20y1=%2738%27%20x2=%27195%27%20y2=%2724%27/%3E%20%3Cline%20x1=%27195%27%20y1=%27173%27%20x2=%27195%27%20y2=%27159%27/%3E%20%3C/g%3E%20%3Cg%20fill=%27%231B3A6B%27%20opacity=%270.14%27%3E%20%3Ccircle%20cx=%27209.7%27%20cy=%2746.5%27%20r=%272.1%27/%3E%3Ccircle%20cx=%27209.7%27%20cy=%2763.5%27%20r=%272.1%27/%3E%3Ccircle%20cx=%27195%27%20cy=%2772%27%20r=%272.1%27/%3E%20%3Ccircle%20cx=%27180.3%27%20cy=%2763.5%27%20r=%272.1%27/%3E%3Ccircle%20cx=%27180.3%27%20cy=%2746.5%27%20r=%272.1%27/%3E%3Ccircle%20cx=%27195%27%20cy=%2738%27%20r=%272.1%27/%3E%20%3Ccircle%20cx=%27195%27%20cy=%2724%27%20r=%272.1%27/%3E%20%3Ccircle%20cx=%27209.7%27%20cy=%27181.5%27%20r=%272.1%27/%3E%3Ccircle%20cx=%27209.7%27%20cy=%27198.5%27%20r=%272.1%27/%3E%3Ccircle%20cx=%27195%27%20cy=%27207%27%20r=%272.1%27/%3E%20%3Ccircle%20cx=%27180.3%27%20cy=%27198.5%27%20r=%272.1%27/%3E%3Ccircle%20cx=%27180.3%27%20cy=%27181.5%27%20r=%272.1%27/%3E%3Ccircle%20cx=%27195%27%20cy=%27173%27%20r=%272.1%27/%3E%20%3Ccircle%20cx=%27195%27%20cy=%27159%27%20r=%272.1%27/%3E%20%3C/g%3E%20%3Cg%20fill=%27%230B6E7D%27%20opacity=%270.14%27%3E%20%3Ccircle%20cx=%2755%27%20cy=%270%27%20r=%272.1%27/%3E%3Ccircle%20cx=%2777%27%20cy=%2732.5%27%20r=%272.1%27/%3E%3Ccircle%20cx=%2733%27%20cy=%2732.5%27%20r=%272.1%27/%3E%20%3Ccircle%20cx=%2755%27%20cy=%2765%27%20r=%272.1%27/%3E%3Ccircle%20cx=%2733%27%20cy=%2797.5%27%20r=%272.1%27/%3E%3Ccircle%20cx=%2777%27%20cy=%2797.5%27%20r=%272.1%27/%3E%20%3Ccircle%20cx=%2755%27%20cy=%27130%27%20r=%272.1%27/%3E%3Ccircle%20cx=%2777%27%20cy=%27162.5%27%20r=%272.1%27/%3E%3Ccircle%20cx=%2733%27%20cy=%27162.5%27%20r=%272.1%27/%3E%20%3Ccircle%20cx=%2755%27%20cy=%27195%27%20r=%272.1%27/%3E%3Ccircle%20cx=%2733%27%20cy=%27227.5%27%20r=%272.1%27/%3E%3Ccircle%20cx=%2777%27%20cy=%27227.5%27%20r=%272.1%27/%3E%20%3Ccircle%20cx=%2755%27%20cy=%27260%27%20r=%272.1%27/%3E%20%3C/g%3E%20%3Cg%20fill=%27none%27%20stroke=%27%23FF6B4A%27%20stroke-width=%271.4%27%20stroke-linejoin=%27round%27%20opacity=%270.16%27%3E%20%3Cpolygon%20points=%27113.9,43.5%20146.1,43.5%20153,52.7%20130,80.3%20107,52.7%27/%3E%20%3Cline%20x1=%27113.9%27%20y1=%2743.5%27%20x2=%27130%27%20y2=%2780.3%27/%3E%20%3Cline%20x1=%27146.1%27%20y1=%2743.5%27%20x2=%27130%27%20y2=%2780.3%27/%3E%20%3Cline%20x1=%27107%27%20y1=%2752.7%27%20x2=%27153%27%20y2=%2752.7%27/%3E%20%3Cpolygon%20points=%27113.9,183.5%20146.1,183.5%20153,192.7%20130,220.3%20107,192.7%27/%3E%20%3Cline%20x1=%27113.9%27%20y1=%27183.5%27%20x2=%27130%27%20y2=%27220.3%27/%3E%20%3Cline%20x1=%27146.1%27%20y1=%27183.5%27%20x2=%27130%27%20y2=%27220.3%27/%3E%20%3Cline%20x1=%27107%27%20y1=%27192.7%27%20x2=%27153%27%20y2=%27192.7%27/%3E%20%3C/g%3E%20%3C/svg%3E");
+    background-repeat: repeat;
+    color: var(--ink);
+    font-family: 'IBM Plex Sans', sans-serif;
+    line-height: 1.5;
+  }
+  header {
+    position: relative;
+    padding: 2rem 2.5rem 1.25rem;
+    border-bottom: 1px solid var(--line);
+    background: var(--head-green);
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+  header::before {
+    content: "";
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--accent), #17A6A6, var(--flash));
+  }
+  header h1 {
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 700;
+    font-size: 2.6rem;
+    letter-spacing: -0.01em;
+    margin: 0 0 0.35rem;
+    background: linear-gradient(100deg, var(--accent) 0%, #17A6A6 45%, var(--flash) 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: var(--accent);
+    -webkit-text-fill-color: transparent;
+  }
+  header p {
+    margin: 0;
+    color: var(--accent);
+    font-weight: 500;
+    font-size: 0.95rem;
+    max-width: 60ch;
+  }
+  header a.home-link {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.82rem;
+    color: var(--accent);
+    text-decoration: none;
+    white-space: nowrap;
+  }
+  header a.home-link:hover { text-decoration: underline; }
+  main {
+    padding: 1.75rem 2.5rem 4rem;
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+  .panel {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    padding: 1.25rem 1.25rem 1.25rem;
+    margin-bottom: 1.75rem;
+  }
+  .panel-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 1rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--head-blue);
+    margin: 0 0 0.75rem;
+  }
+  .hint {
+    font-size: 0.85rem;
+    color: var(--ink-muted);
+    margin: 0.4rem 0 0.9rem;
+  }
+  .error-box {
+    background: #FCEDE9;
+    border: 1px solid #E8B4A6;
+    color: #7A2E1B;
+    padding: 1rem 1.25rem;
+    border-radius: 4px;
+    font-size: 0.9rem;
+    font-family: 'IBM Plex Mono', monospace;
+    white-space: pre-wrap;
+  }
+  footer {
+    padding: 1.5rem 2.5rem;
+    color: var(--ink-muted);
+    font-size: 0.78rem;
+    font-family: 'IBM Plex Mono', monospace;
+  }
+</style>
+{% block extra_style %}{% endblock %}
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>{% block header_title %}Crystal Explorer{% endblock %}</h1>
+    <p>{% block header_subtitle %}Sequence-homolog crystallization conditions from the RCSB PDB.{% endblock %}</p>
+  </div>
+  {% block header_extra %}{% endblock %}
+</header>
+
+<main>
+{% block content %}{% endblock %}
+</main>
+
+<footer>{% block footer %}Crystal Explorer{% endblock %}</footer>
+
+{% block extra_scripts %}{% endblock %}
+</body>
+</html>
