@@ -1,0 +1,167 @@
+{% extends "viewer/base.html" %}
+
+{% block title %}Search history — Crystal Explorer{% endblock %}
+
+{% block header_extra %}
+  <a class="home-link" href="{% url 'viewer:index' %}">&larr; New search</a>
+{% endblock %}
+
+{% block extra_style %}
+<style>
+  .status-pill {
+    display: inline-block;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    padding: 0.2rem 0.55rem;
+    border-radius: 999px;
+    white-space: nowrap;
+  }
+  .status-pill--completed { background: #E3F5EA; color: #1B6B3E; }
+  .status-pill--failed { background: #FCEDE9; color: #A6371D; }
+  .status-pill--running { background: #FDF3DC; color: #92640A; }
+  .run-params {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.76rem;
+    color: var(--ink-muted);
+  }
+  .run-error {
+    display: block;
+    margin-top: 0.3rem;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.74rem;
+    color: #A6371D;
+    max-width: 46ch;
+    white-space: pre-wrap;
+  }
+  .pagination {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    align-items: center;
+    margin-top: 1rem;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.82rem;
+  }
+  .pagination a { color: var(--accent); text-decoration: none; }
+  .pagination a:hover { text-decoration: underline; }
+  .pagination .disabled { color: var(--ink-muted); }
+  .history-placeholder {
+    border: 1px dashed var(--line);
+    border-radius: 4px;
+    padding: 3rem 1.5rem;
+    text-align: center;
+    color: var(--ink-muted);
+    font-size: 0.92rem;
+  }
+  .history-placeholder a { color: var(--accent); }
+  .action-cell { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
+  .action-cell form { margin: 0; }
+  .action-link {
+    display: inline-block;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.76rem;
+    color: var(--accent);
+    text-decoration: none;
+    border: 1px solid var(--line);
+    background: #F5F8F9;
+    padding: 0.25rem 0.55rem;
+    border-radius: 4px;
+    white-space: nowrap;
+    cursor: pointer;
+  }
+  .action-link:hover { background: #EAF1F2; border-color: var(--accent); }
+  .action-link--danger { color: #A6371D; }
+  .action-link--danger:hover { background: #FCEDE9; border-color: #E8B4A6; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="panel">
+  <p class="panel-label">Search history ({{ page_obj.paginator.count }} run{{ page_obj.paginator.count|pluralize }})</p>
+
+  {% if page_obj.object_list %}
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr>
+            <th>Protein</th>
+            <th>Sequence type</th>
+            <th>Params</th>
+            <th>Status</th>
+            <th>Conditions</th>
+            <th>Submitted</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for run in page_obj.object_list %}
+            <tr>
+              <td>
+                {{ run.protein_name }}
+                {% if run.sequence_preview %}<br><span class="run-params">{{ run.sequence_preview }}&hellip;</span>{% endif %}
+              </td>
+              <td>{{ run.get_sequence_type_display|default:run.sequence_type }}</td>
+              <td class="run-params">
+                identity &ge; {{ run.identity }}<br>
+                e-value &le; {{ run.evalue }}<br>
+                max hits: {{ run.max_hits }}
+                {% if run.llm_fallback %}<br>+ Claude fallback{% endif %}
+              </td>
+              <td>
+                <span class="status-pill status-pill--{{ run.status }}">{{ run.get_status_display }}</span>
+                {% if run.status == "failed" and run.error_message %}
+                  <span class="run-error">{{ run.error_message }}</span>
+                {% endif %}
+              </td>
+              <td>{{ run.row_count|default:"—" }}</td>
+              <td class="run-params">{{ run.created_at|date:"Y-m-d H:i" }}</td>
+              <td>
+                <div class="action-cell">
+                  {% if run.status == "completed" %}
+                    <a class="action-link" href="{% url 'viewer:results' run.folder_name %}">View results</a>
+                  {% elif run.status == "running" %}
+                    <span class="hint">still running&hellip;</span>
+                  {% else %}
+                    <span class="hint">no results</span>
+                  {% endif %}
+                  <form method="post" action="{% url 'viewer:delete_run' run.id %}"
+                        onsubmit="return confirm('Delete this run for &quot;{{ run.protein_name|escapejs }}&quot;? This also removes its output files and cannot be undone.');">
+                    {% csrf_token %}
+                    <input type="hidden" name="page" value="{{ page_obj.number }}">
+                    <button type="submit" class="action-link action-link--danger">Delete</button>
+                  </form>
+                </div>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    {% if page_obj.paginator.num_pages > 1 %}
+      <div class="pagination">
+        {% if page_obj.has_previous %}
+          <a href="?page={{ page_obj.previous_page_number }}">&larr; Newer</a>
+        {% else %}
+          <span class="disabled">&larr; Newer</span>
+        {% endif %}
+        <span>Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+        {% if page_obj.has_next %}
+          <a href="?page={{ page_obj.next_page_number }}">Older &rarr;</a>
+        {% else %}
+          <span class="disabled">Older &rarr;</span>
+        {% endif %}
+      </div>
+    {% endif %}
+  {% else %}
+    <div class="history-placeholder">
+      No searches yet. <a href="{% url 'viewer:index' %}">Run one</a> and it'll show up here.
+    </div>
+  {% endif %}
+</div>
+{% endblock %}
+
+{% block footer %}Crystal Explorer &middot; search history{% endblock %}

@@ -1,0 +1,119 @@
+{% extends "viewer/base.html" %}
+
+{% block title %}Crystal Explorer{% endblock %}
+
+{% block header_subtitle %}Turn a protein sequence into a ready-to-use crystallization playbook.{% endblock %}
+
+{% block extra_style %}
+<style>
+  .hero-lead {
+    font-size: 1.02rem;
+    line-height: 1.7;
+    color: var(--ink);
+    max-width: 72ch;
+    margin: 0 0 0.75rem;
+  }
+  .hero-lead:last-child { margin-bottom: 0; }
+  .hero-cta {
+    display: inline-block;
+    margin-top: 0.75rem;
+    background: var(--accent);
+    color: white;
+    text-decoration: none;
+    padding: 0.7rem 1.5rem;
+    border-radius: 4px;
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 600;
+    font-size: 0.95rem;
+  }
+  .hero-cta:hover { opacity: 0.92; }
+  .feature-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.25rem;
+  }
+  @media (max-width: 900px) {
+    .feature-grid { grid-template-columns: 1fr; }
+  }
+  .feature-card {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    padding: 1.25rem;
+  }
+  .feature-card .step {
+    display: inline-block;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    color: var(--flash);
+    margin-bottom: 0.4rem;
+  }
+  .feature-card h3 {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 1.05rem;
+    margin: 0 0 0.5rem;
+    color: var(--head-blue);
+  }
+  .feature-card p {
+    font-size: 0.88rem;
+    color: var(--ink-muted);
+    line-height: 1.55;
+    margin: 0;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="panel">
+  <p class="panel-label">Mission</p>
+  <p class="hero-lead">
+    Crystal Explorer takes a protein, DNA, or RNA sequence and searches the RCSB Protein Data Bank
+    for structurally solved homologs. For every match it finds, it parses the free-text
+    crystallization notes depositors leave behind &mdash; pH, temperature, precipitants, buffers,
+    salts, polymers &mdash; into a structured, comparable dataset.
+  </p>
+  <p class="hero-lead">
+    The result: interactive pH-vs-PEG and pH-vs-temperature plots colored by sequence identity,
+    a full per-entry conditions table with one-click 3D structure views, and exportable CSV/PDF
+    summaries &mdash; everything a lab needs to plan its next crystallization trial, without
+    manually digging through dozens of PDB entries by hand.
+  </p>
+  <p class="hero-lead">
+    Every search is saved to a history, so past runs stay a click away instead of being rerun
+    from scratch.
+  </p>
+  <a class="hero-cta" href="{% url 'viewer:index' %}">Launch Explorer &rarr;</a>
+</div>
+
+<div class="panel">
+  <p class="panel-label">How it works</p>
+  <div class="feature-grid">
+    <div class="feature-card">
+      <span class="step">01 &middot; Search</span>
+      <h3>Find homologs</h3>
+      <p>
+        Paste a raw sequence or FASTA record. Crystal Explorer searches RCSB PDB for structures
+        sharing your protein's fold, filtered by minimum identity and E-value.
+      </p>
+    </div>
+    <div class="feature-card">
+      <span class="step">02 &middot; Extract</span>
+      <h3>Parse conditions</h3>
+      <p>
+        Each hit's crystallization notes are mined with a chemistry-aware dictionary (with an
+        optional LLM fallback) to pull out reagents, concentrations, pH, and temperature.
+      </p>
+    </div>
+    <div class="feature-card">
+      <span class="step">03 &middot; Visualize</span>
+      <h3>Compare &amp; export</h3>
+      <p>
+        Browse results as interactive plots and a searchable table, jump into a 3D structure
+        viewer, and export CSV/PDF summaries for the bench.
+      </p>
+    </div>
+  </div>
+</div>
+{% endblock %}
