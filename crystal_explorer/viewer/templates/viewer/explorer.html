@@ -81,24 +81,26 @@
     color: var(--ink-muted);
     font-size: 0.92rem;
   }
-  table { width: 100%; border-collapse: collapse; font-size: 0.84rem; }
-  thead th {
-    position: sticky; top: 0; background: var(--panel); text-align: left;
-    font-family: 'IBM Plex Mono', monospace; font-size: 0.7rem; letter-spacing: 0.05em;
-    text-transform: uppercase; color: var(--ink-muted);
-    padding: 0.55rem 0.7rem; border-bottom: 2px solid var(--line); white-space: nowrap;
-  }
-  tbody td {
-    padding: 0.5rem 0.7rem; border-bottom: 1px solid var(--line); vertical-align: top;
-    font-family: 'IBM Plex Mono', monospace; font-size: 0.8rem;
-  }
-  tbody td:first-child { font-weight: 500; color: var(--accent); }
-  tbody tr:nth-child(even) { background: #F3F6F8; }
-  tbody tr:hover { background: #E7F0F2; }
-  .table-scroll { max-height: 520px; overflow: auto; border-radius: 4px; }
-  tr.row-highlight { animation: flash-row 1.6s ease-out; }
+  /* Each column (PDB ID, Score, Seq. ID, PubMed, Polymer, Assembly, Method,
+     Non-Polymers, pH, Temp, Compounds) gets its own light tint, header
+     included, so the eye can track a column down the table instead of
+     just across a striped row. Sticky header stays opaque since every
+     column is covered by one of these 11 rules. */
+  table th:nth-child(1),  table td:nth-child(1)  { background: #E8F1FA; }
+  table th:nth-child(2),  table td:nth-child(2)  { background: #E7F6F1; }
+  table th:nth-child(3),  table td:nth-child(3)  { background: #EFF6E4; }
+  table th:nth-child(4),  table td:nth-child(4)  { background: #FBF5DF; }
+  table th:nth-child(5),  table td:nth-child(5)  { background: #FCEEE2; }
+  table th:nth-child(6),  table td:nth-child(6)  { background: #FBE9E9; }
+  table th:nth-child(7),  table td:nth-child(7)  { background: #FAE8F1; }
+  table th:nth-child(8),  table td:nth-child(8)  { background: #F1E9F7; }
+  table th:nth-child(9),  table td:nth-child(9)  { background: #E9EAF8; }
+  table th:nth-child(10), table td:nth-child(10) { background: #E3F3F5; }
+  table th:nth-child(11), table td:nth-child(11) { background: #F7F7DD; }
+
+  tr.row-highlight td { animation: flash-row 1.6s ease-out; }
   @keyframes flash-row { 0% { background: #FFE3D8; } 100% { background: transparent; } }
-  @media (prefers-reduced-motion: reduce) { tr.row-highlight { animation: none; background: #FFE3D8; } }
+  @media (prefers-reduced-motion: reduce) { tr.row-highlight td { animation: none; background: #FFE3D8; } }
   .downloads { display: flex; gap: 0.75rem; flex-wrap: wrap; margin-top: 0.5rem; }
   .downloads a {
     font-family: 'IBM Plex Mono', monospace; font-size: 0.78rem; color: var(--accent);

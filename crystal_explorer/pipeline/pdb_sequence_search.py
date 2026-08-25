@@ -105,14 +105,38 @@ def build_sequence_query(
     }
 
 
-def run_sequence_search(query: dict, timeout: int = 30) -> List[dict]:
-    """POST the query to the RCSB Search API and return the raw result list."""
-    resp = requests.post(SEARCH_URL, json=query, timeout=timeout)
-    if resp.status_code == 204:
-        return []  # no hits
-    resp.raise_for_status()
-    data = resp.json()
-    return data.get("result_set", [])
+_RETRYABLE_STATUS = {502, 503, 504}
+
+
+def run_sequence_search(query: dict, timeout: int = 60, retries: int = 2) -> List[dict]:
+    """POST the query to the RCSB Search API and return the raw result list.
+
+    A sequence-similarity search can occasionally take RCSB longer than a
+    plain lookup to compute, and the endpoint is sometimes just slow or
+    briefly unavailable under load -- a single 30s attempt with no retry
+    meant a run could fail outright on a transient hiccup. Retries with
+    backoff on timeouts, connection errors, and 502/503/504 (upstream
+    having a bad moment); anything else (4xx, bad JSON) still fails
+    immediately since retrying won't fix it."""
+    last_exc = None
+    for attempt in range(retries + 1):
+        try:
+            resp = requests.post(SEARCH_URL, json=query, timeout=timeout)
+            if resp.status_code == 204:
+                return []  # no hits
+            resp.raise_for_status()  # raises HTTPError for any 4xx/5xx, caught below
+            data = resp.json()
+            return data.get("result_set", [])
+        except (requests.exceptions.Timeout, requests.exceptions.ConnectionError) as e:
+            last_exc = e
+        except requests.exceptions.HTTPError as e:
+            if e.response is not None and e.response.status_code in _RETRYABLE_STATUS:
+                last_exc = e
+            else:
+                raise
+        if attempt < retries:
+            time.sleep(2 * (attempt + 1))
+    raise last_exc
 
 
 _MATCH_CONTEXT_FIELDS = [
