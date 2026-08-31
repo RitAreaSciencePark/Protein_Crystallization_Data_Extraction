@@ -262,26 +262,43 @@ def _parse_non_polymer_codes(value) -> str:
     return parsed.get("non_polymers") or ""
 
 
-def _build_3d_view(pdb_id, non_polymers_value):
-    """Every row has a PDB ID, so every row gets a 3D-view link -- unlike
-    the old ligand-only link, this doesn't depend on the entry having
-    non-polymers. Ligand codes (if any) are still surfaced as the link
-    label so that information isn't lost.
+def _split_pdb_ids(value) -> list:
+    """PDB_ID cells hold plot.py's merged ", "-joined string when several
+    structures share one crystallization condition (e.g. "1ABC, 2XYZ").
+    Split it back into individual IDs so each can get its own RCSB link --
+    a single link wrapping the whole merged string is not a valid PDB ID
+    and can't be clicked "separately" for each entry."""
+    if pd.isna(value) or not str(value).strip():
+        return []
+    return [pid.strip() for pid in str(value).split(",") if pid.strip()]
 
-    The link points at molstar.org's bare viewer (?pdb=<id>) rather than
+
+def _build_3d_view(pdb_ids, non_polymers_value):
+    """Every row has at least one PDB ID, so every row gets 3D-view link(s)
+    -- unlike the old ligand-only link, this doesn't depend on the entry
+    having non-polymers. Ligand codes (if any) are still surfaced as the
+    link label so that information isn't lost.
+
+    A row can carry several merged PDB IDs (see `_split_pdb_ids`), and each
+    structure needs its own link/box -- one link for the whole group would
+    point at a single bogus molstar URL and couldn't open a specific
+    structure. So this returns one dict per PDB ID.
+
+    Each link points at molstar.org's bare viewer (?pdb=<id>) rather than
     RCSB's own https://www.rcsb.org/3d-view/<id> page: the RCSB page is a
     full site (header, tabs, summary text) meant to be browsed on its own,
     not embedded, whereas molstar.org/viewer is built to be embedded --
     just the 3D canvas and its control panel, which is what the in-page
     viewer panel here wants to show."""
-    if pd.isna(pdb_id) or not str(pdb_id).strip():
-        return None
-    pdb_id = str(pdb_id).strip()
-    return {
-        "url": f"https://molstar.org/viewer/?pdb={pdb_id}",
-        "pdb_id": pdb_id,
-        "codes": _parse_non_polymer_codes(non_polymers_value),
-    }
+    codes = _parse_non_polymer_codes(non_polymers_value)
+    return [
+        {
+            "url": f"https://molstar.org/viewer/?pdb={pdb_id}",
+            "pdb_id": pdb_id,
+            "codes": codes,
+        }
+        for pdb_id in pdb_ids
+    ]
 
 
 def build_table_rows(df: pd.DataFrame):
@@ -292,15 +309,16 @@ def build_table_rows(df: pd.DataFrame):
     (rendered as a clickable link) without extra template logic elsewhere."""
     rows = []
     for rec in df.to_dict("records"):
+        pdb_ids = _split_pdb_ids(rec["PDB_ID"])
         values = {
-            "PDB_ID": rec["PDB_ID"],
+            "PDB_ID": pdb_ids,
             "Score": f"{rec['Score']:.3f}" if pd.notna(rec["Score"]) else "",
             "Seq_id": f"{rec['Seq_id']:.1f}" if pd.notna(rec["Seq_id"]) else "",
             "Pubmed_id": _format_pubmed(rec["Pubmed_id"]),
             "Polymer": rec["Polymer"] if pd.notna(rec["Polymer"]) else "",
             "Assembly": rec["Assembly"] if pd.notna(rec["Assembly"]) else "",
             "Method": rec["Method"].title() if isinstance(rec["Method"], str) else "",
-            "View3D": _build_3d_view(rec["PDB_ID"], rec["Non_polymers"]),
+            "View3D": _build_3d_view(pdb_ids, rec["Non_polymers"]),
             "pH": f"{rec['plot_pH_numeric']:.2f}" if pd.notna(rec["plot_pH_numeric"]) else "",
             "Temp": f"{rec['Temp']:.1f}" if pd.notna(rec["Temp"]) else "",
             "compound": rec["compound"] if pd.notna(rec["compound"]) else "",
