@@ -364,6 +364,13 @@
   <div>
     {% if error %}
       <div class="panel"><div class="error-box">{{ error }}</div></div>
+    {% elif no_hits %}
+      <div class="panel">
+        <div class="output-placeholder">
+          <strong>NO HITS FOUND</strong><br>
+          No PDB structures matched this sequence at the current identity / e-value thresholds. Try lowering the identity cutoff or raising the e-value, then run the search again.
+        </div>
+      </div>
     {% elif peg_plot_div %}
       <div class="panel">
         <p class="panel-label">pH vs. PEG concentration &nbsp;/&nbsp; pH vs. Temperature</p>
@@ -419,7 +426,7 @@
     {% endif %}
   </div>
 
-  {% if peg_plot_div and not error %}
+  {% if peg_plot_div and not error and not no_hits %}
     <div class="panel panel-fullwidth">
       <p class="panel-label">
         Crystallization conditions ({{ table_rows|length }} entries)

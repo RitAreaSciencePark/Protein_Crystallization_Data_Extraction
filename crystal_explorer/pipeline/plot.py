@@ -254,6 +254,13 @@ def run_plot(protein_dir, protein_name, compounds_csv_name="Output_compounds.csv
         table row, and intended to also be shared with the web app."""
         cond_cols = ["Pubmed_id", "Method", "plot_pH_numeric", "compound"]
 
+        if df.empty:
+            # No search hits at all -- `.agg(join, axis=1)` on an empty
+            # frame returns a DataFrame instead of a Series (pandas
+            # quirk), which breaks the `_condition_key` assignment below.
+            # Nothing to group, so just hand back the empty frame as-is.
+            return df
+
         key_cols = df[cond_cols].fillna("").astype(str)
         condition_key = key_cols.agg("||".join, axis=1)
 
