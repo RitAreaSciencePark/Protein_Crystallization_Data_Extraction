@@ -169,6 +169,8 @@
     font-family: 'IBM Plex Mono', monospace; font-size: 0.8rem;
   }
   tbody td:first-child { font-weight: 500; color: var(--accent); }
+  tbody td a { color: inherit; text-decoration: none; border-bottom: 1px solid transparent; }
+  tbody td a:hover { border-bottom-color: currentColor; }
   tbody tr:hover td { filter: brightness(0.94); }
   .table-scroll { max-height: 520px; overflow: auto; border-radius: 4px; }
   footer {
@@ -188,10 +190,9 @@
     <a href="{% url 'viewer:home' %}"{% if active_nav == "home" %} class="active"{% endif %}>Home</a>
     <a href="{% url 'viewer:index' %}"{% if active_nav == "explorer" %} class="active"{% endif %}>Explorer</a>
     <a href="{% url 'viewer:history' %}"{% if active_nav == "history" %} class="active"{% endif %}>History</a>
-    <a href="{% url 'viewer:laboratory' %}"{% if active_nav == "laboratory" %} class="active"{% endif %}>Laboratory</a>
+    <a href="{% url 'viewer:organization'%}"{% if active_nav == "organization" %} class="active"{% endif %}>Organization</a>
   </div>
 </nav>
-
 <header>
   <div>
     <h1>{% block header_title %}Crystal Explorer{% endblock %}</h1>

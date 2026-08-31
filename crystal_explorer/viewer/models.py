@@ -20,6 +20,14 @@ class SearchRun(models.Model):
         max_length=220, unique=True,
         help_text="Output directory name under PIPELINE_OUTPUT_DIR; also the results/download URL key.",
     )
+    sequence = models.TextField(blank=True, help_text="Original sequence used for the search.")
+    search_signature = models.CharField(
+        max_length=128,
+        unique=False,
+        db_index=True,
+        blank=True,
+        help_text="Canonical signature for deduplicating repeated searches.",
+    )
     sequence_type = models.CharField(max_length=10)
     identity = models.FloatField()
     evalue = models.FloatField()
@@ -33,6 +41,7 @@ class SearchRun(models.Model):
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default=STATUS_RUNNING)
     error_message = models.TextField(blank=True)
     row_count = models.IntegerField(null=True, blank=True)
+    runtime_seconds = models.FloatField(default=0.0, help_text="Time spent running the pipeline.")
 
     created_at = models.DateTimeField(auto_now_add=True)
     finished_at = models.DateTimeField(null=True, blank=True)
