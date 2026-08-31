@@ -287,6 +287,7 @@
     white-space: nowrap;
   }
   a.ligand-box:hover { background: #EAF1F2; border-color: var(--accent); }
+  a.ligand-box + a.ligand-box { margin-left: 0.35rem; }
 
   .viewer-3d-frame-wrap {
     border: 1px solid var(--line);
@@ -433,11 +434,11 @@
                 {% for key, value in row.cells %}
                   <td>
                     {% if key == "View3D" and value %}
-                      <a class="ligand-box" href="{{ value.url }}" data-viewer-url="{{ value.url }}" data-pdb-id="{{ value.pdb_id }}" onclick="return showViewer3D(this);">
-                        {% if value.codes %}{{ value.codes }}{% else %}3D View{% endif %}
-                      </a>
+                      {% for v in value %}<a class="ligand-box" href="{{ v.url }}" data-viewer-url="{{ v.url }}" data-pdb-id="{{ v.pdb_id }}" onclick="return showViewer3D(this);">
+                        {% if value|length > 1 %}{{ v.pdb_id }}{% elif v.codes %}{{ v.codes }}{% else %}3D View{% endif %}
+                      </a>{% endfor %}
                     {% elif key == "PDB_ID" and value %}
-                      <a href="https://www.rcsb.org/structure/{{ value }}" target="_blank" rel="noopener">{{ value }}</a>
+                      {% for pdb in value %}<a href="https://www.rcsb.org/structure/{{ pdb }}" target="_blank" rel="noopener">{{ pdb }}</a>{% if not forloop.last %}, {% endif %}{% endfor %}
                     {% elif key == "Pubmed_id" and value %}
                       <a href="https://pubmed.ncbi.nlm.nih.gov/{{ value }}/" target="_blank" rel="noopener">{{ value }}</a>
                     {% else %}
