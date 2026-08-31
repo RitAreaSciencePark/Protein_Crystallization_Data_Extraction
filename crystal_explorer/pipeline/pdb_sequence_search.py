@@ -575,6 +575,17 @@ def filter_experimental_conditions(rows_or_csv, output_csv="Output.csv"):
         df = pd.DataFrame(rows_or_csv)
 
     condition_cols = ["pH", "Temp", "Method", "pdbx_details"]
+
+    if df.empty:
+        # No hits at all (e.g. the sequence search matched zero PDB
+        # entries) -- rows_or_csv was an empty list, so df has no columns
+        # to check. That's a normal outcome, not malformed data, so write
+        # an empty-but-headered CSV instead of raising on the "missing"
+        # condition columns.
+        pd.DataFrame(columns=condition_cols).to_csv(output_csv, index=False)
+        print(f"No entries to filter -- empty CSV saved to: {os.path.abspath(output_csv)}")
+        return output_csv
+
     missing_cols = [c for c in condition_cols if c not in df.columns]
     if missing_cols:
         raise KeyError(

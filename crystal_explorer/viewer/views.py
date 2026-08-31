@@ -276,6 +276,7 @@ def results(request, protein_name):
     grouped_csv_path = os.path.join(output_dir, "Grouped_conditions.csv")
 
     error = None
+    no_hits = False
     peg_plot_div = None
     temp_plot_div = None
     table_rows = []
@@ -292,20 +293,27 @@ def results(request, protein_name):
             import plotly.offline as pyo
             df = load_conditions(grouped_csv_path)
 
-            method_legend = build_method_legend(df)
-            plot_config = {"displaylogo": False, "responsive": True}
+            if df.empty:
+                # The search ran fine but matched zero PDB entries (or none
+                # of the matches had usable crystallization conditions) --
+                # that's a normal outcome, not an error, so show a plain
+                # "no hits" message instead of empty plots/table.
+                no_hits = True
+            else:
+                method_legend = build_method_legend(df)
+                plot_config = {"displaylogo": False, "responsive": True}
 
-            peg_fig = build_peg_plot(df)
-            peg_plot_div = pyo.plot(
-                peg_fig, output_type="div", include_plotlyjs=False, config=plot_config
-            )
+                peg_fig = build_peg_plot(df)
+                peg_plot_div = pyo.plot(
+                    peg_fig, output_type="div", include_plotlyjs=False, config=plot_config
+                )
 
-            temp_fig = build_temp_plot(df)
-            temp_plot_div = pyo.plot(
-                temp_fig, output_type="div", include_plotlyjs=False, config=plot_config
-            )
+                temp_fig = build_temp_plot(df)
+                temp_plot_div = pyo.plot(
+                    temp_fig, output_type="div", include_plotlyjs=False, config=plot_config
+                )
 
-            table_rows = build_table_rows(df)
+                table_rows = build_table_rows(df)
         except Exception as e:
             error = f"Could not load or process {grouped_csv_path}: {e}"
 
@@ -330,6 +338,7 @@ def results(request, protein_name):
         "table_rows": table_rows,
         "table_columns": TABLE_COLUMNS,
         "error": error,
+        "no_hits": no_hits,
         "csv_path": grouped_csv_path,
         "has_pdf": os.path.exists(pdf_path),
         "has_peg_png": os.path.exists(peg_png_path),
