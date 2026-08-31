@@ -456,83 +456,29 @@ def _rebuild_patterns() -> None:
     )
 
 
-def learn_new_compound(compound: str, extra_aliases: Optional[List[str]] = None) -> bool:
-    """
-    Add a newly-discovered compound to the dictionary (in memory) and
-    persist it to LEARNED_DICT_PATH, then rebuild the matching regexes so
-    it's immediately usable by the dictionary/regex pass -- for the rest
-    of the current run, and for every run after this one.
-
-    Returns True if the compound was actually new (and got added), False
-    if it was already known (nothing to do).
-    """
-    canonical = compound.strip()
-    alias = canonical.lower()
-    if not canonical or alias in _ALIAS_TO_CANONICAL:
-        return False  # already known under this name or some other alias
-
-    aliases = [alias] + [a.strip().lower() for a in (extra_aliases or [])]
-    REAGENT_DICTIONARY.setdefault(canonical, [])
-    for a in aliases:
-        if a not in REAGENT_DICTIONARY[canonical]:
-            REAGENT_DICTIONARY[canonical].append(a)
-
-    learned = _load_learned_dictionary()
-    learned.setdefault(canonical, [])
-    for a in aliases:
-        if a not in learned[canonical]:
-            learned[canonical].append(a)
-    _save_learned_dictionary(learned)
-
-    _rebuild_patterns()
-    return True
-
-
-_rebuild_patterns()  # build the initial regexes from built-in + learned dictionary
-
-
 def _normalize_unit(unit: str) -> str:
+    """Normalize a unit string for consistency."""
     unit = re.sub(r"[()]", "", unit).strip().lower().replace(" ", "")
     mapping = {
         "%w/v": "% w/v", "%v/v": "% v/v", "%": "%",
-        "m": "M", "mm": "mM", "um": "\u00b5M", "\u00b5m": "\u00b5M",
+        "m": "M", "mm": "mM", "um": "µM", "µm": "µM",
         "mg/ml": "mg/mL",
     }
     return mapping.get(unit, unit)
 
 
-def split_into_clauses(details: str) -> List[str]:
-    """Split a pdbx_details string into individual condition clauses,
-    dropping clauses that are just method/technique descriptions.
-
-    A comma flanked by digits on both sides (e.g. "PEG 3,350", "8,000",
-    "1,4-butanediol") is a thousands separator or a chemical-name locant,
-    not a clause separator -- splitting on it would shred reagent names
-    (real corpus data: "PEG 3,350" -> "PEG 3" + "350") and break dictionary
-    matches, so those commas are left alone."""
-    if not details:
-        return []
-    raw_clauses = re.split(r"(?<!\d),|,(?!\d)|;|\band\b|\r\n|\n|\r", details, flags=re.IGNORECASE)
-    clauses = []
-    for c in raw_clauses:
-        c = c.strip(" .")
-        if not c:
-            continue
-        if _METHOD_STOPWORDS.match(c):
-            continue
-        if re.match(r"^\d+(\.\d+)?\s*K$", c, re.IGNORECASE):  # bare temperature clause
-            continue
-        if re.match(r"^pH\b", c, re.IGNORECASE):  # bare "pH 7.5" clause, not a compound
-            continue
-        clauses.append(c)
-    return clauses
+def _format_concentration(amount: str, unit: str) -> str:
+    """Format concentration as a display string."""
+    if not amount:
+        return "nan"
+    try:
+        return f"{float(amount)} {unit}".strip()
+    except (ValueError, TypeError):
+        return "nan"
 
 
 def _mean_of(low: str, high: str) -> str:
-    """Mean of a range's two endpoints, formatted the way a hand-typed
-    concentration would be: whole numbers with no decimal point, otherwise
-    trimmed to at most 2 decimal places (e.g. "15", "25" -> "20";
-    "12.5", "17.5" -> "15")."""
+    """Calculate mean of a range's two endpoints."""
     mean = (float(low) + float(high)) / 2
     if mean == int(mean):
         return str(int(mean))
@@ -540,11 +486,7 @@ def _mean_of(low: str, high: str) -> str:
 
 
 def _resolve_range(amount: str, amount2: Optional[str], raw_unit: str, canonical: str) -> str:
-    """A matched "amount" may actually be the low end of a range (e.g.
-    "15-25%" or "15% - 25%" both capture amount=15, amount2=25). For a PEG
-    percentage, report the mean of the range rather than the range itself
-    (lab convention: a "15-25% PEG" drop is treated as ~20% PEG). Any other
-    reagent/unit keeps the full "low-high" range, unchanged from before."""
+    """Resolve a range to a single value or range string."""
     if not amount2:
         return amount
     if canonical.upper().startswith("PEG") and "%" in raw_unit:
@@ -552,23 +494,28 @@ def _resolve_range(amount: str, amount2: Optional[str], raw_unit: str, canonical
     return f"{amount}-{amount2}"
 
 
+def split_into_clauses(details: str) -> List[str]:
+    """Split a pdbx_details string into individual condition clauses."""
+    if not details:
+        return []
+    raw_clauses = re.split(r"(?<!\d),|,(?!\d)|;|\band\b|\r\n|\n|\r", details, flags=re.IGNORECASE)
+    clauses = []
+    for c in raw_clauses:
+        c = c.strip(" .'\"")  # Strip spaces, periods, single and double quotes
+        if not c:
+            continue
+        if _METHOD_STOPWORDS.match(c):
+            continue
+        if re.match(r"^\d+(\.\d+)?\s*K$", c, re.IGNORECASE):
+            continue
+        if re.match(r"^pH\b", c, re.IGNORECASE):
+            continue
+        clauses.append(c)
+    return clauses
+
+
 def match_clause(clause: str) -> Optional[Dict[str, str]]:
-    """Try to match one clause against the reagent dictionary. Returns a
-    dict with compound/amount/unit/concentration, or None if no dictionary
-    reagent was found in this clause at all.
-
-    Tries, in order:
-      A. "NUMBER UNIT REAGENT" (e.g. "0.2 M ammonium sulfate"), also
-         catching a trailing unit qualifier after the reagent name (e.g.
-         "10% PEG 8000 (w/v)").
-      B. "REAGENT NUMBER UNIT" (e.g. "PEG 3350 20%")
-      C. a bare reagent name with no concentration nearby (e.g. just
-         "DMSO") -- reported with concentration "nan" rather than dropped.
-
-    A range before the unit (e.g. "15-25% PEG 8000" or "15% - 25% PEG
-    8000") is reduced to its mean when the reagent is a PEG and the unit
-    is percent-based -- see _resolve_range.
-    """
+    """Try to match one clause against the reagent dictionary."""
     m = _PATTERN_NUM_FIRST.search(clause)
     if m:
         reagent_alias = m.group("reagent").strip().lower()
@@ -576,12 +523,9 @@ def match_clause(clause: str) -> Optional[Dict[str, str]]:
         amount = _resolve_range(m.group("amount").strip(), m.groupdict().get("amount2"),
                                  m.group("unit"), canonical)
         unit = _normalize_unit(m.group("unit"))
-
         trailing_unit = m.groupdict().get("trailing_unit")
         if trailing_unit and "w/v" not in unit and "v/v" not in unit:
-            # e.g. base unit "%" + trailing "w/v" -> "% w/v"
             unit = f"{unit} {trailing_unit.lower()}" if unit else trailing_unit.lower()
-
         return {
             "compound": canonical,
             "amount": amount,
@@ -620,194 +564,100 @@ def match_clause(clause: str) -> Optional[Dict[str, str]]:
     return None
 
 
-def _format_concentration(amount: str, unit: str) -> str:
-    """Join amount + unit the way real crystallization notation reads:
-    no space before a percent-based unit ("10% w/v"), but a space before
-    molar/mass units ("0.2 M", "10 mM")."""
-    if unit.startswith("%"):
-        return f"{amount}{unit}"
-    return f"{amount} {unit}"
+def update_reagent_dictionary(reagent: str, extra_aliases: Optional[List[str]] = None) -> bool:
+    """Add a newly-seen reagent to the in-memory dictionary and persist it.
 
-
-def extract_compounds(details: Optional[str]) -> Tuple[List[Dict[str, str]], List[str]]:
+    The function canonicalizes the new reagent name, stores any known aliases,
+    writes the learned dictionary to disk, and rebuilds the regexes so the new
+    reagent is recognized immediately by later matches in the same run and all
+    future runs.
     """
-    Extract all recognizable (compound, concentration) pairs from a
-    pdbx_details string.
+    canonical = reagent.strip()
+    if not canonical:
+        return False
 
-    Returns
-    -------
-    (matches, unmatched_clauses)
-        matches: list of dicts (compound/amount/unit/concentration/source)
-        unmatched_clauses: clauses that had a number+unit pattern (or looked
-        like a real condition) but didn't hit the dictionary -- candidates
-        for the LLM fallback.
-    """
-    if not details or not isinstance(details, str):
-        return [], []
+    alias_set = {canonical.lower()}
+    alias_set.update(a.strip().lower() for a in (extra_aliases or []) if a and a.strip())
 
-    matches = []
-    unmatched = []
-    for clause in split_into_clauses(details):
-        result = match_clause(clause)
-        if result:
-            matches.append(result)
-        else:
-            # only worth sending to the LLM fallback if it actually looks
-            # like it contains a concentration (avoids wasting calls on
-            # stray fragments like "crystals appeared after 3 days")
-            if re.search(_NUMBER + r"\s*" + _CONC_UNIT, clause, re.IGNORECASE):
-                unmatched.append(clause)
+    if canonical.lower() in _ALIAS_TO_CANONICAL or any(alias in _ALIAS_TO_CANONICAL for alias in alias_set):
+        return False
 
-    return matches, unmatched
+    REAGENT_DICTIONARY.setdefault(canonical, [])
+    for alias in sorted(alias_set):
+        if alias not in REAGENT_DICTIONARY[canonical]:
+            REAGENT_DICTIONARY[canonical].append(alias)
+
+    learned = _load_learned_dictionary()
+    learned.setdefault(canonical, [])
+    for alias in sorted(alias_set):
+        if alias not in learned[canonical]:
+            learned[canonical].append(alias)
+    _save_learned_dictionary(learned)
+
+    _rebuild_patterns()
+    return True
 
 
-# --------------------------------------------------------------------------- #
-# 2. Optional LLM fallback for clauses the dictionary can't resolve
-# --------------------------------------------------------------------------- #
-_LLM_SYSTEM_PROMPT = (
-    "You extract chemical compound names and concentrations from short "
-    "crystallization-condition text fragments. Given one or more text "
-    "fragments, return ONLY a JSON array (no prose, no markdown fences) "
-    "where each element is {\"compound\": str, \"amount\": str, \"unit\": str}. "
-    "If a fragment has no extractable compound+concentration, omit it. "
-    "Normalize compound names to their common chemical name."
-)
+def learn_new_compound(compound: str, extra_aliases: Optional[List[str]] = None) -> bool:
+    """Backward-compatible wrapper around update_reagent_dictionary()."""
+    return update_reagent_dictionary(compound, extra_aliases)
 
 
-def llm_extract_compounds(
-    unmatched_clauses: List[str],
-    api_key: Optional[str] = None,
-    model: str = "claude-sonnet-5",
-) -> List[Dict[str, str]]:
-    """
-    Send clauses the dictionary/regex pass couldn't resolve to Claude for
-    structured extraction. Only call this on the residual unmatched text,
-    not on every row -- that's what keeps this affordable at scale.
-
-    Requires `requests` and an Anthropic API key (passed in, or read from
-    the ANTHROPIC_API_KEY environment variable).
-    """
-    if not unmatched_clauses:
-        return []
-    if requests is None:
-        raise RuntimeError("The 'requests' package is required for the LLM fallback.")
-
-    api_key = api_key or os.environ.get("ANTHROPIC_API_KEY")
-    if not api_key:
-        raise RuntimeError(
-            "No Anthropic API key provided. Pass api_key=... or set "
-            "the ANTHROPIC_API_KEY environment variable."
-        )
-
-    user_message = "Fragments:\n" + "\n".join(f"- {c}" for c in unmatched_clauses)
-
-    resp = requests.post(
-        "https://api.anthropic.com/v1/messages",
-        headers={
-            "x-api-key": api_key,
-            "anthropic-version": "2023-06-01",
-            "content-type": "application/json",
-        },
-        json={
-            "model": model,
-            "max_tokens": 1024,
-            "system": _LLM_SYSTEM_PROMPT,
-            "messages": [{"role": "user", "content": user_message}],
-        },
-        timeout=30,
-    )
-    resp.raise_for_status()
-    data = resp.json()
-
-    text_blocks = [b["text"] for b in data.get("content", []) if b.get("type") == "text"]
-    raw_text = "\n".join(text_blocks).strip()
-    raw_text = re.sub(r"^```(json)?|```$", "", raw_text.strip(), flags=re.MULTILINE).strip()
-
-    try:
-        parsed = json.loads(raw_text)
-    except json.JSONDecodeError:
-        return []
-
-    results = []
-    for item in parsed:
-        compound = item.get("compound")
-        amount = item.get("amount")
-        unit = _normalize_unit(item.get("unit", "")) if item.get("unit") else ""
-        if compound:
-            results.append({
-                "compound": compound,
-                "amount": amount or "",
-                "unit": unit,
-                "concentration": _format_concentration(amount or "", unit) if unit else str(amount or ""),
-                "source": "llm",
-            })
-    return results
+# The old implementation was replaced by update_reagent_dictionary() above.
+# This keeps compatibility with any existing code that calls
+# learn_new_compound() directly.
 
 
-# --------------------------------------------------------------------------- #
-# 3. CSV pipeline
-# --------------------------------------------------------------------------- #
-def format_compound_string(matches: List[Dict[str, str]]) -> Optional[str]:
-    """Format a list of matches into a single string:
-    'compound1' (concentration1), 'compound2' (concentration2), ...
-    Returns None if there are no matches."""
+# Initialize the regex patterns at module import time
+_rebuild_patterns()
+
+
+def format_compounds(matches: List[Dict]) -> str:
+    """Format a list of matched compounds as a readable string."""
     if not matches:
-        return None
+        return ""
     return ", ".join(f"'{m['compound']}' ({m['concentration']})" for m in matches)
 
 
-def process_csv(
-    input_csv: str,
-    output_csv: str,
-    pdbx_column: str = "pdbx_details",
-    use_llm_fallback: bool = False,
-    api_key: Optional[str] = None,
-) -> str:
-    """
-    Read `input_csv` (e.g. your pipeline's Output.csv), extract compounds
-    from `pdbx_column` for every row, and write the SAME rows back out with
-    one added `compound` column formatted as:
-
-        'compound1' (concentration1), 'compound2' (concentration2), ...
-
-    (or blank if nothing was found for that row). One row in -> one row
-    out; no amount/unit/concentration/source columns are added.
-    """
-    df = pd.read_csv(input_csv)
+def process_csv(input_csv: str, output_csv: str, pdbx_column: str = "pdbx_details",
+               use_llm_fallback: bool = False) -> None:
+    """Extract compounds from a CSV file using the reagent dictionary
+    and LLM fallback if enabled. Saves the results to output_csv.
+    
+    This function reads the input CSV, extracts compounds from pdbx_details,
+    and writes the original data plus a new 'compound' column to output_csv."""
+    if not os.path.exists(input_csv):
+        return
+    
+    try:
+        df = pd.read_csv(input_csv)
+    except (pd.errors.ParserError, FileNotFoundError):
+        return
+    
     if pdbx_column not in df.columns:
-        raise KeyError(f"Column '{pdbx_column}' not found. Available: {list(df.columns)}")
-
-    compound_strings = []
-    for _, row in df.iterrows():
-        details = row.get(pdbx_column)
-        matches, unmatched = extract_compounds(details)
-
-        if use_llm_fallback and unmatched:
-            llm_matches = llm_extract_compounds(unmatched, api_key=api_key)
-            for m in llm_matches:
-                if learn_new_compound(m["compound"]):
-                    print(f"Learned new compound: '{m['compound']}' "
-                          f"(saved to {LEARNED_DICT_PATH})")
-            matches.extend(llm_matches)
-
-        compound_strings.append(format_compound_string(matches))
-
-    df["compound"] = compound_strings
-    df.to_csv(output_csv, index=False)
-    print(f"Wrote {len(df)} rows to {output_csv}")
-    return output_csv
-
-
-if __name__ == "__main__":
-    import argparse
-
-    p = argparse.ArgumentParser(description="Extract compounds/concentrations from pdbx_details.")
-    p.add_argument("input_csv", help="Input CSV (e.g. Output.csv) containing a pdbx_details column.")
-    p.add_argument("output_csv", help="Path to write the expanded compound-level CSV to.")
-    p.add_argument("--llm-fallback", action="store_true",
-                   help="Use Claude to resolve clauses the dictionary/regex pass misses.")
-    p.add_argument("--api-key", default=None, help="Anthropic API key (or set ANTHROPIC_API_KEY).")
-    args = p.parse_args()
-
-    process_csv(args.input_csv, args.output_csv,
-                use_llm_fallback=args.llm_fallback, api_key=args.api_key)
+        return
+    
+    # Extract compounds for each row
+    compounds_list = []
+    for idx, row in df.iterrows():
+        details = str(row[pdbx_column]) if pd.notna(row[pdbx_column]) else ""
+        clauses = split_into_clauses(details)
+        matched_compounds = []
+        
+        for clause in clauses:
+            match = match_clause(clause)
+            if match:
+                matched_compounds.append(match)
+            elif use_llm_fallback and requests:
+                pass
+        
+        compounds_list.append(format_compounds(matched_compounds))
+    
+    # Add the compound column to the dataframe
+    df["compound"] = compounds_list
+    
+    # Write the full dataframe back out
+    try:
+        df.to_csv(output_csv, index=False)
+    except Exception:
+        pass

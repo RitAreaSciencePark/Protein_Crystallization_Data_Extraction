@@ -21,6 +21,13 @@
   .layout > div {
     min-width: 0;
   }
+  /* The conditions table has a lot of columns -- give it the full page
+     width (not just the 1fr output column squeezed next to the 380px
+     form) so every column fits without horizontal scrolling. */
+  .panel-fullwidth {
+    grid-column: 1 / -1;
+    min-width: 0;
+  }
   @media (max-width: 900px) {
     .layout { grid-template-columns: 1fr; }
   }
@@ -82,7 +89,7 @@
     font-size: 0.92rem;
   }
   /* Each column (PDB ID, Score, Seq. ID, PubMed, Polymer, Assembly, Method,
-     Non-Polymers, pH, Temp, Compounds) gets its own light tint, header
+     3D View, pH, Temp, Compounds) gets its own light tint, header
      included, so the eye can track a column down the table instead of
      just across a striped row. Sticky header stays opaque since every
      column is covered by one of these 11 rules. */
@@ -402,39 +409,6 @@
           </div>
         </div>
       {% endif %}
-
-      <div class="panel">
-        <p class="panel-label">Crystallization conditions ({{ table_rows|length }} entries)</p>
-        <div class="table-scroll">
-          <table>
-            <thead><tr>{% for key, label in table_columns %}<th>{{ label }}</th>{% endfor %}</tr></thead>
-            <tbody>
-              {% for row in table_rows %}
-                <tr id="row-{{ row.row_id }}">
-                  {% for key, value in row.cells %}
-                    <td>
-                      {% if key == "Non_polymers" and value %}
-                        <a class="ligand-box" href="{{ value.url }}" data-viewer-url="{{ value.url }}" data-pdb-id="{{ value.pdb_id }}" onclick="return showViewer3D(this);">
-                          {% if value.codes %}{{ value.codes }}{% else %}3D View{% endif %}
-                        </a>
-                      {% else %}
-                        {{ value }}
-                      {% endif %}
-                    </td>
-                  {% endfor %}
-                </tr>
-              {% endfor %}
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      <div class="panel" id="viewer-3d" hidden>
-        <p class="panel-label" id="viewer-3d-label">3D structure viewer</p>
-        <div class="viewer-3d-frame-wrap">
-          <iframe id="viewer-3d-frame" title="Mol* 3D structure viewer" loading="lazy"></iframe>
-        </div>
-      </div>
     {% else %}
       <div class="panel">
         <div class="output-placeholder">
@@ -443,6 +417,48 @@
       </div>
     {% endif %}
   </div>
+
+  {% if peg_plot_div and not error %}
+    <div class="panel panel-fullwidth">
+      <p class="panel-label">
+        Crystallization conditions ({{ table_rows|length }} entries)
+        {% if run_runtime_seconds %}<span class="hint" style="margin-left: 0.75rem;">Completed in {{ run_runtime_seconds|floatformat:1 }}s</span>{% endif %}
+      </p>
+      <div class="table-scroll">
+        <table>
+          <thead><tr>{% for key, label in table_columns %}<th>{{ label }}</th>{% endfor %}</tr></thead>
+          <tbody>
+            {% for row in table_rows %}
+              <tr id="row-{{ row.row_id }}">
+                {% for key, value in row.cells %}
+                  <td>
+                    {% if key == "View3D" and value %}
+                      <a class="ligand-box" href="{{ value.url }}" data-viewer-url="{{ value.url }}" data-pdb-id="{{ value.pdb_id }}" onclick="return showViewer3D(this);">
+                        {% if value.codes %}{{ value.codes }}{% else %}3D View{% endif %}
+                      </a>
+                    {% elif key == "PDB_ID" and value %}
+                      <a href="https://www.rcsb.org/structure/{{ value }}" target="_blank" rel="noopener">{{ value }}</a>
+                    {% elif key == "Pubmed_id" and value %}
+                      <a href="https://pubmed.ncbi.nlm.nih.gov/{{ value }}/" target="_blank" rel="noopener">{{ value }}</a>
+                    {% else %}
+                      {{ value }}
+                    {% endif %}
+                  </td>
+                {% endfor %}
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="panel panel-fullwidth" id="viewer-3d" hidden>
+      <p class="panel-label" id="viewer-3d-label">3D structure viewer</p>
+      <div class="viewer-3d-frame-wrap">
+        <iframe id="viewer-3d-frame" title="Mol* 3D structure viewer" loading="lazy"></iframe>
+      </div>
+    </div>
+  {% endif %}
 
 </div>
 {% endblock %}

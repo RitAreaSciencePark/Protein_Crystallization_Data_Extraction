@@ -6,14 +6,56 @@
 
 {% block extra_style %}
 <style>
+  .mission-list {
+    list-style: none;
+    margin: 0 0 1.25rem;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 1.1rem;
+    max-width: 72ch;
+  }
+  .mission-item {
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+  }
+  .mission-index {
+    flex: 0 0 auto;
+    width: 1.9rem;
+    height: 1.9rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: var(--head-green);
+    color: var(--accent);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.8rem;
+    font-weight: 700;
+  }
+  .mission-body { padding-top: 0.1rem; }
+  .mission-body .mission-title {
+    display: block;
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 600;
+    font-size: 0.78rem;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: var(--head-blue);
+    margin: 0 0 0.3rem;
+  }
   .hero-lead {
     font-size: 1.02rem;
     line-height: 1.7;
+    letter-spacing: 0.005em;
     color: var(--ink);
-    max-width: 72ch;
-    margin: 0 0 0.75rem;
+    margin: 0;
   }
-  .hero-lead:last-child { margin-bottom: 0; }
+  .hero-lead strong {
+    color: var(--accent);
+    font-weight: 600;
+  }
   .hero-cta {
     display: inline-block;
     margin-top: 0.75rem;
@@ -59,8 +101,13 @@
   .feature-card p {
     font-size: 0.88rem;
     color: var(--ink-muted);
-    line-height: 1.55;
+    line-height: 1.6;
+    letter-spacing: 0.005em;
     margin: 0;
+  }
+  .feature-card p strong {
+    color: var(--ink);
+    font-weight: 600;
   }
 </style>
 {% endblock %}
@@ -68,22 +115,42 @@
 {% block content %}
 <div class="panel">
   <p class="panel-label">Mission</p>
-  <p class="hero-lead">
-    Crystal Explorer takes a protein, DNA, or RNA sequence and searches the RCSB Protein Data Bank
-    for structurally solved homologs. For every match it finds, it parses the free-text
-    crystallization notes depositors leave behind &mdash; pH, temperature, precipitants, buffers,
-    salts, polymers &mdash; into a structured, comparable dataset.
-  </p>
-  <p class="hero-lead">
-    The result: interactive pH-vs-PEG and pH-vs-temperature plots colored by sequence identity,
-    a full per-entry conditions table with one-click 3D structure views, and exportable CSV/PDF
-    summaries &mdash; everything a lab needs to plan its next crystallization trial, without
-    manually digging through dozens of PDB entries by hand.
-  </p>
-  <p class="hero-lead">
-    Every search is saved to a history, so past runs stay a click away instead of being rerun
-    from scratch.
-  </p>
+  <ul class="mission-list">
+    <li class="mission-item">
+      <span class="mission-index">1</span>
+      <div class="mission-body">
+        <span class="mission-title">Search &amp; parse</span>
+        <p class="hero-lead">
+          Crystal Explorer takes a <strong>protein, DNA, or RNA sequence</strong> and searches the
+          RCSB Protein Data Bank for structurally solved homologs. For every match it finds, it
+          parses the free-text crystallization notes depositors leave behind &mdash; pH, temperature,
+          precipitants, buffers, salts, polymers &mdash; into a structured, comparable dataset.
+        </p>
+      </div>
+    </li>
+    <li class="mission-item">
+      <span class="mission-index">2</span>
+      <div class="mission-body">
+        <span class="mission-title">Visualize &amp; export</span>
+        <p class="hero-lead">
+          The result: interactive <strong>pH-vs-PEG</strong> and <strong>pH-vs-temperature</strong>
+          plots colored by sequence identity, a full per-entry conditions table with one-click 3D
+          structure views, and exportable CSV/PDF summaries &mdash; everything a lab needs to plan its
+          next crystallization trial, without manually digging through dozens of PDB entries by hand.
+        </p>
+      </div>
+    </li>
+    <li class="mission-item">
+      <span class="mission-index">3</span>
+      <div class="mission-body">
+        <span class="mission-title">Revisit anytime</span>
+        <p class="hero-lead">
+          Every search is saved to a <strong>history</strong>, so past runs stay a click away
+          instead of being rerun from scratch.
+        </p>
+      </div>
+    </li>
+  </ul>
   <a class="hero-cta" href="{% url 'viewer:index' %}">Launch Explorer &rarr;</a>
 </div>
 
@@ -103,7 +170,7 @@
       <h3>Parse conditions</h3>
       <p>
         Each hit's crystallization notes are mined with a chemistry-aware dictionary (with an
-        optional LLM fallback) to pull out reagents, concentrations, pH, and temperature.
+        optional LLM fallback) to pull out reagents from the pdbx_details.
       </p>
     </div>
     <div class="feature-card">

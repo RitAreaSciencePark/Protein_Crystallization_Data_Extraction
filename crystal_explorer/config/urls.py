@@ -14,10 +14,19 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+from django.conf import settings
 from django.contrib import admin
+from django.contrib.staticfiles.views import serve as serve_static
 from django.urls import path, include
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('viewer.urls')),
 ]
+
+if not settings.DEBUG:
+    # Serve static files even with DEBUG=False, since this app has no
+    # separate web server (nginx/whitenoise) fronting it locally.
+    urlpatterns += [
+        path('static/<path:path>', serve_static, {'insecure': True}),
+    ]

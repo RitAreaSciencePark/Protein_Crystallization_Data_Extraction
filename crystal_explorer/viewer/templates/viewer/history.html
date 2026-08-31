@@ -93,6 +93,7 @@
             <th>Status</th>
             <th>Conditions</th>
             <th>Submitted</th>
+            <th>Runtime</th>
             <th>Action</th>
           </tr>
         </thead>
@@ -118,6 +119,13 @@
               </td>
               <td>{{ run.row_count|default:"—" }}</td>
               <td class="run-params">{{ run.created_at|date:"Y-m-d H:i" }}</td>
+              <td class="run-params">
+                {% if run.runtime_seconds %}
+                  {{ run.runtime_seconds|floatformat:1 }}s
+                {% else %}
+                  —
+                {% endif %}
+              </td>
               <td>
                 <div class="action-cell">
                   {% if run.status == "completed" %}

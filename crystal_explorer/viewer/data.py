@@ -225,7 +225,7 @@ TABLE_COLUMNS = [
     ("Polymer", "Polymer"),
     ("Assembly", "Assembly"),
     ("Method", "Method"),
-    ("Non_polymers", "Non-Polymers"),
+    ("View3D", "3D View"),
     ("pH", "pH"),
     ("Temp", "Temp (K)"),
     ("compound", "Compounds"),
@@ -233,19 +233,40 @@ TABLE_COLUMNS = [
 
 
 def _format_pubmed(value) -> str:
-    if pd.isna(value) or str(value) in ("NA", ""):
+    # RCSB's own API returns pdbx_database_id_pub_med as -1 (not null/"NA")
+    # for entries that simply have no PubMed ID -- treat that the same as
+    # missing rather than showing/linking a bogus "-1".
+    if pd.isna(value) or str(value) in ("NA", "", "-1", "-1.0"):
         return ""
     if isinstance(value, float) and value.is_integer():
         return str(int(value))
     return str(value)
 
 
-def _parse_non_polymers(value):
+def _parse_non_polymer_codes(value) -> str:
     """Non_polymers cells hold a dict -- {"non_polymers": "LIG1, LIG2",
     "view_3d_url": "https://www.rcsb.org/3d-view/1XOM"} -- that comes back
-    as a stringified dict after the CSV round-trip. Pull out the PDB ID
-    and ligand codes for the table's in-page 3D-view link; None if there's
-    nothing usable (blank cell, unparsable, no URL).
+    as a stringified dict after the CSV round-trip. Pull out just the
+    ligand codes, if any; "" if there's nothing usable (blank cell,
+    unparsable)."""
+    if pd.isna(value) or not str(value).strip():
+        return ""
+    parsed = value if isinstance(value, dict) else None
+    if parsed is None:
+        try:
+            parsed = ast.literal_eval(str(value))
+        except (ValueError, SyntaxError):
+            return ""
+    if not isinstance(parsed, dict):
+        return ""
+    return parsed.get("non_polymers") or ""
+
+
+def _build_3d_view(pdb_id, non_polymers_value):
+    """Every row has a PDB ID, so every row gets a 3D-view link -- unlike
+    the old ligand-only link, this doesn't depend on the entry having
+    non-polymers. Ligand codes (if any) are still surfaced as the link
+    label so that information isn't lost.
 
     The link points at molstar.org's bare viewer (?pdb=<id>) rather than
     RCSB's own https://www.rcsb.org/3d-view/<id> page: the RCSB page is a
@@ -253,26 +274,13 @@ def _parse_non_polymers(value):
     not embedded, whereas molstar.org/viewer is built to be embedded --
     just the 3D canvas and its control panel, which is what the in-page
     viewer panel here wants to show."""
-    if pd.isna(value) or not str(value).strip():
+    if pd.isna(pdb_id) or not str(pdb_id).strip():
         return None
-    parsed = value if isinstance(value, dict) else None
-    if parsed is None:
-        try:
-            parsed = ast.literal_eval(str(value))
-        except (ValueError, SyntaxError):
-            return None
-    if not isinstance(parsed, dict):
-        return None
-    rcsb_url = parsed.get("view_3d_url")
-    if not rcsb_url:
-        return None
-    pdb_id = rcsb_url.rstrip("/").rsplit("/", 1)[-1]
-    if not pdb_id:
-        return None
+    pdb_id = str(pdb_id).strip()
     return {
         "url": f"https://molstar.org/viewer/?pdb={pdb_id}",
         "pdb_id": pdb_id,
-        "codes": parsed.get("non_polymers") or "",
+        "codes": _parse_non_polymer_codes(non_polymers_value),
     }
 
 
@@ -280,7 +288,7 @@ def build_table_rows(df: pd.DataFrame):
     """Return a list of dicts: {"row_id": ..., "cells": [(key, value), ...]}
     with cells in the same order as TABLE_COLUMNS, ready for simple
     template iteration. Cells are (key, value) pairs -- rather than bare
-    values -- so the template can special-case columns like "Non_polymers"
+    values -- so the template can special-case columns like "View3D"
     (rendered as a clickable link) without extra template logic elsewhere."""
     rows = []
     for rec in df.to_dict("records"):
@@ -292,7 +300,7 @@ def build_table_rows(df: pd.DataFrame):
             "Polymer": rec["Polymer"] if pd.notna(rec["Polymer"]) else "",
             "Assembly": rec["Assembly"] if pd.notna(rec["Assembly"]) else "",
             "Method": rec["Method"].title() if isinstance(rec["Method"], str) else "",
-            "Non_polymers": _parse_non_polymers(rec["Non_polymers"]),
+            "View3D": _build_3d_view(rec["PDB_ID"], rec["Non_polymers"]),
             "pH": f"{rec['plot_pH_numeric']:.2f}" if pd.notna(rec["plot_pH_numeric"]) else "",
             "Temp": f"{rec['Temp']:.1f}" if pd.notna(rec["Temp"]) else "",
             "compound": rec["compound"] if pd.notna(rec["compound"]) else "",
