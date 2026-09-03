@@ -5,6 +5,8 @@ import shutil
 import sys
 import traceback
 
+import requests
+
 from django.conf import settings
 from django.core.paginator import Paginator
 from django.http import FileResponse, Http404
@@ -25,6 +27,7 @@ sys.path.insert(0, str(settings.BASE_DIR))
 from pipeline.pdb_sequence_search import find_homologs_with_conditions, filter_experimental_conditions
 from pipeline.compound_extraction import process_csv
 from pipeline.plot import run_plot
+from pipeline.metadata_generator import generate_metadata_for_outputs
 
 
 # Real project metadata (kept in sync with CITATION.cff / pcde_metadata.yaml)
@@ -72,6 +75,24 @@ def _build_search_signature(protein_name: str, sequence: str, sequence_type: str
         "1" if llm_fallback else "0",
     ])
     return hashlib.sha256(payload.encode("utf-8")).hexdigest()
+
+
+def _friendly_pipeline_error(e: Exception) -> str:
+    """RCSB's search API answers a malformed query (e.g. a sequence with
+    characters that aren't valid for the chosen protein/DNA/RNA type, or
+    one that's empty/too short) with a 400 -- surfaced by `requests` as an
+    HTTPError whose message is just "400 Client Error: Bad Request for
+    url: ...". That's meaningless to someone who just typed a sequence in,
+    so translate it into something actionable instead of the raw
+    exception text."""
+    if isinstance(e, requests.exceptions.HTTPError) and e.response is not None \
+            and e.response.status_code == 400:
+        return (
+            "Bad format for sequence -- please check that it only contains "
+            "valid characters for the selected sequence type (protein, DNA, "
+            "or RNA) and try again."
+        )
+    return f"Pipeline failed: {e}"
 
 
 def _existing_completed_run(**filters):
@@ -195,6 +216,11 @@ def index(request):
 
                 run_plot(output_dir, folder_name)
 
+                generate_metadata_for_outputs(
+                    folder_name, output_dir,
+                    sequence_type=form.cleaned_data["sequence_type"],
+                )
+
             except Exception as e:
                 run.status = SearchRun.STATUS_FAILED
                 run.error_message = str(e)
@@ -203,7 +229,7 @@ def index(request):
                 run.save()
                 return render(request, "viewer/explorer.html", {
                     "form": form,
-                    "run_error": f"Pipeline failed: {e}",
+                    "run_error": _friendly_pipeline_error(e),
                     "run_error_detail": traceback.format_exc(),
                     "active_nav": "explorer",
                 })
@@ -322,6 +348,7 @@ def results(request, protein_name):
     temp_png_path = os.path.join(output_dir, f"{protein_name}_TEMP.png")
     fasta_path = os.path.join(output_dir, f"{protein_name}.fasta")
     compounds_csv_path = os.path.join(output_dir, "Output_compounds.csv")
+    metadata_json_path = os.path.join(output_dir, f"{protein_name}_metadata.json")
 
     return render(request, "viewer/explorer.html", {
         "active_nav": "explorer",
@@ -345,6 +372,7 @@ def results(request, protein_name):
         "has_temp_png": os.path.exists(temp_png_path),
         "has_fasta": os.path.exists(fasta_path),
         "has_compounds_csv": os.path.exists(compounds_csv_path),
+        "has_metadata": os.path.exists(metadata_json_path),
     })
 
 
@@ -352,6 +380,7 @@ _DOWNLOAD_KINDS = {
     "pdf": (lambda name: f"{name}_Cryst_cocktail_Table.pdf", "application/pdf"),
     "peg": (lambda name: f"{name}_PEG.png", "image/png"),
     "temp": (lambda name: f"{name}_TEMP.png", "image/png"),
+    "metadata": (lambda name: f"{name}_metadata.json", "application/json"),
     "fasta": (lambda name: f"{name}.fasta", "text/plain"),
     "compounds": (lambda name: "Output_compounds.csv", "text/csv"),
 }
