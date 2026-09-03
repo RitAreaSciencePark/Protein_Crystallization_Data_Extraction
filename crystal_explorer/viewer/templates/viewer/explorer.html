@@ -405,7 +405,7 @@
         <p class="hint">Marker shape = crystallization method &middot; Marker color = search score &middot; Click a point on either plot to locate it below.</p>
       </div>
 
-      {% if has_pdf or has_peg_png or has_temp_png or has_fasta or has_compounds_csv %}
+      {% if has_pdf or has_peg_png or has_temp_png or has_fasta or has_compounds_csv or has_metadata %}
         <div class="panel">
           <p class="panel-label">Static exports</p>
           <div class="downloads">
@@ -414,6 +414,7 @@
             {% if has_pdf %}<a href="{% url 'viewer:download' protein_name 'pdf' %}">PDF summary table</a>{% endif %}
             {% if has_peg_png %}<a href="{% url 'viewer:download' protein_name 'peg' %}">PEG plot (PNG)</a>{% endif %}
             {% if has_temp_png %}<a href="{% url 'viewer:download' protein_name 'temp' %}">Temperature plot (PNG)</a>{% endif %}
+            {% if has_metadata %}<a href="{% url 'viewer:download' protein_name 'metadata' %}">FAIR metadata (JSON)</a>{% endif %}
           </div>
         </div>
       {% endif %}
