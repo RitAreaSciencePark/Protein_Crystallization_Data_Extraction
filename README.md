@@ -39,9 +39,9 @@ This directory contains the codes that handle multi sequences fasta file.
 
 This directory contains **structure.pkl** file which is the pdb database with the list of compound extracted from the **pdbx_details** at the level of the **exptl_crystal_grow** section of the mmCIF file. 
 
-### `Protein_crystalization_app/`
+### `crystal_explorer/`
 
-This directory contains the code and all the elements used to design the django web application.
+This directory contains the Django web application: a form-driven front end that runs the same three-stage pipeline (RCSB search → compound extraction → plotting) server-side and shows the results as an interactive plot and table. See [`crystal_explorer/README.md`](crystal_explorer/README.md) for setup and project-layout details specific to the app.
 
 
 --- 
@@ -160,7 +160,7 @@ Output files
 (CSV · FASTA · PNG plots · PDF table)
 ```
 
-The web application wraps the entire pipeline in a Django interface with Server-Sent Events (SSE) for live progress updates, so the user sees each stage complete in real time without page refresh.
+The web application (`crystal_explorer/`) wraps the entire pipeline in a Django interface. The search runs synchronously inside the HTTP request — the browser tab waits for RCSB search, per-hit metadata extraction, and plotting to finish before the results page loads — so `max_hits` defaults to a modest value to keep run times reasonable.
 
 ---
 
@@ -215,7 +215,7 @@ venv\Scripts\activate             # Windows
 pip install -r requirements.txt
 
 # 4. Apply database migrations (web app only)
-cd protein_crystallization_app
+cd crystal_explorer
 python manage.py migrate
 
 # 5. Start the development server
@@ -230,13 +230,11 @@ The web application will be available at `http://127.0.0.1:8000`.
 
 ### Web application
 
-1. Open `http://127.0.0.1:8000` in your browser.
-2. Enter a descriptive **sequence name** (used to name output files).
-3. Paste your **protein sequence** in plain amino acid string format.
-4. Click **Run pipeline**.
-5. When complete, download the output files directly from the results panel.
-
-The pipeline runs as a background thread. Progress is pushed to the browser in real time via Server Sent Events, no polling, no page refresh required.
+1. Open `http://127.0.0.1:8000` and go to **Explorer**.
+2. Enter a **protein name** (used to name the output folder/files) and paste your **sequence** (raw or FASTA).
+3. Choose the **sequence type** (protein / DNA / RNA) and, optionally, adjust the identity, E-value, and max-hits thresholds.
+4. Click **Run search**.
+5. When the results page loads, browse the interactive plot and conditions table, or download the static PDF/PNG/CSV/metadata exports. Past runs are listed under **History** and are reused automatically if you resubmit the same sequence and settings.
 
 ---
 
@@ -377,25 +375,23 @@ Performs a PDB sequence search for each sequence in a cleaned FASTA dictionary. 
 **Key function:** `extract_crystallization(pdb_id)` — pulls all crystallization fields from the mmCIF block via `doc.sole_block()`
 
 ---
-### For Web Application
+### For the web application (`crystal_explorer/`)
 
-#### `utils.py`
+The web app re-runs the same pipeline logic as its own importable `pipeline/` package (`pdb_sequence_search.py`, `compound_extraction.py`, `plot.py`, plus `metadata_generator.py` for FAIR-compliant output metadata), rather than importing directly from `src/`, so it can evolve independently of the standalone CLI scripts.
 
-Orchestrates the full pipeline as a single callable function. Accepts a `progress_queue` for real-time SSE updates and a `job_id` for database tracking. Manages all temporary files and cleans up after each stage.
+#### `viewer/forms.py`
 
-**Key function:** `run_pipeline(sequence, seq_type_name, base_output_dir, job_id, progress_queue)`
+Defines `SequenceSearchForm`: protein name, sequence, sequence type, identity/E-value/max-hits thresholds, and an optional Claude-fallback checkbox for compounds the built-in reagent dictionary can't resolve.
 
----
+#### `viewer/views.py`
 
-#### `views.py`
+Handles HTTP requests. `index` runs the pipeline synchronously and redirects to the results page (reusing a prior run instead of re-running it if the same sequence/settings were already searched); `results` loads a run's `Grouped_conditions.csv` and renders its plots/table; `history` lists past runs; `download` serves the static exports (PDF, PNG, FASTA, compounds CSV, metadata JSON).
 
-Handles HTTP requests for the Django web application. Uses an in-memory queue registry (`_progress_queues`) to push pipeline progress events to the browser via Server-Sent Events, eliminating database polling lag.
+#### `viewer/data.py`
 
-**Views:**
-- `run_pipeline_view` — renders the form and starts the background pipeline thread
-- `progress_stream` — SSE endpoint that streams live progress events
-- `submission_status` — polling fallback returning JSON progress
-- `results_api` — returns file paths for completed outputs
+Turns `Grouped_conditions.csv` into the interactive Plotly figures and the HTML table rows shown on the results page.
+
+See [`crystal_explorer/README.md`](crystal_explorer/README.md) for the full project layout.
 
 ---
 
