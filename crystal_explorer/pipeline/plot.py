@@ -115,7 +115,7 @@ def run_plot(protein_dir, protein_name, compounds_csv_name="Output_compounds.csv
     }
     df = df.rename(columns={k: v for k, v in rename_map.items() if k in df.columns})
 
-    for required in ["PDB_ID", "Score", "Seq_id", "Pubmed_id", "Polymer", "Assembly",
+    for required in ["PDB_ID", "UniProt", "Score", "Seq_id", "Pubmed_id", "Polymer", "Assembly",
                       "Method", "pH", "Temp", "pdbx_pH_range", "compound"]:
         if required not in df.columns:
             df[required] = np.nan
@@ -267,11 +267,24 @@ def run_plot(protein_dir, protein_name, compounds_csv_name="Output_compounds.csv
         df_with_key = df.copy()
         df_with_key["_condition_key"] = condition_key
 
+        def _merge_unique(series):
+            """", "-joined de-duplicated values from a group's column --
+            each cell may already itself be a ", "-joined list (e.g. a
+            multi-entity complex's several UniProt accessions)."""
+            seen = []
+            for cell in series.dropna().astype(str):
+                for part in cell.split(","):
+                    part = part.strip()
+                    if part and part not in seen:
+                        seen.append(part)
+            return ", ".join(seen)
+
         merged_rows = []
         for _, group in df_with_key.groupby("_condition_key"):
-            merged_pdb = ", ".join(group["PDB_ID"].astype(str).tolist())
             row = group.iloc[0].copy()
-            row["PDB_ID"] = merged_pdb
+            row["PDB_ID"] = ", ".join(group["PDB_ID"].astype(str).tolist())
+            if "UniProt" in group.columns:
+                row["UniProt"] = _merge_unique(group["UniProt"])
             merged_rows.append(row)
 
         merged_df = pd.DataFrame(merged_rows)

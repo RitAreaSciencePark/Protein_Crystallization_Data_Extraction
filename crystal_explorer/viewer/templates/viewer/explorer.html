@@ -447,8 +447,12 @@
                       </a>{% endfor %}
                     {% elif key == "PDB_ID" and value %}
                       {% for pdb in value %}<a href="https://www.rcsb.org/structure/{{ pdb }}" target="_blank" rel="noopener">{{ pdb }}</a>{% if not forloop.last %}, {% endif %}{% endfor %}
+                    {% elif key == "UniProt" %}
+                      {% for acc in value %}<a href="https://www.uniprot.org/uniprotkb/{{ acc }}" target="_blank" rel="noopener">{{ acc }}</a>{% if not forloop.last %}, {% endif %}{% endfor %}
                     {% elif key == "Pubmed_id" and value %}
                       <a href="https://pubmed.ncbi.nlm.nih.gov/{{ value }}/" target="_blank" rel="noopener">{{ value }}</a>
+                    {% elif key == "compound" %}
+                      {% for c in value %}'<a href="https://pubchem.ncbi.nlm.nih.gov/compound/{{ c.name|urlencode }}" target="_blank" rel="noopener">{{ c.name }}</a>' ({{ c.concentration }}){% if not forloop.last %}, {% endif %}{% endfor %}
                     {% else %}
                       {{ value }}
                     {% endif %}
