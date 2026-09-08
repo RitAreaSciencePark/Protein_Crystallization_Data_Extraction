@@ -480,6 +480,30 @@ def get_polymer_type_from_mmcif(block):
         print(f"Failed to determine polymer type: {e}")
         return None
 
+def get_uniprot_from_mmcif(block):
+    """UniProt accession(s) cross-referenced for this entry, from
+    `_struct_ref` (db_name == "UNP"). A complex with several distinct
+    polymers can carry several accessions -- collected here as a
+    ", "-joined, de-duplicated string, mirroring how PDB_ID itself gets
+    merged for entries sharing a crystallization condition (see
+    all_conditions_with_merged_pdb in plot.py)."""
+    try:
+        db_names = block.find_values("_struct_ref.db_name")
+        accessions = block.find_values("_struct_ref.pdbx_db_accession")
+    except Exception:
+        return None
+
+    seen = []
+    for db_name, accession in zip(db_names, accessions):
+        if str(db_name).strip().upper() != "UNP":
+            continue
+        accession = str(accession).strip()
+        if accession and accession not in (".", "?") and accession not in seen:
+            seen.append(accession)
+
+    return ", ".join(seen) if seen else None
+
+
 def extract_mmcif_info(pdb_id):
     """
     Extract mmCIF info for a PDB entry and compute sequence identity
@@ -519,9 +543,10 @@ def extract_mmcif_info(pdb_id):
 
     # Collect info
     info = {
-        "pdb_id": pdb_id, 
+        "pdb_id": pdb_id,
         "Resolution": block.find_value("_refine.ls_d_res_high"),
         "Pubmed_id": pubmed,
+        "UniProt": get_uniprot_from_mmcif(block),
         "Polymer": polymer_type, 
         "Assembly": assembly_detail,
         "Method": get_method_from_mmcif_or_details(block),

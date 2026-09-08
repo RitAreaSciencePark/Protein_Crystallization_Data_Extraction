@@ -25,13 +25,14 @@ so the page still renders instead of erroring out.
 """
 
 import ast
+import re
 
 import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
 
 REQUIRED_COLUMNS = [
-    "row_id", "PDB_ID", "Score", "Seq_id", "Pubmed_id", "Polymer", "Assembly",
+    "row_id", "PDB_ID", "UniProt", "Score", "Seq_id", "Pubmed_id", "Polymer", "Assembly",
     "Method", "Non_polymers", "plot_pH_numeric", "Temp", "PEG_con_plot", "compound",
 ]
 
@@ -219,6 +220,7 @@ build_plot = build_peg_plot
 
 TABLE_COLUMNS = [
     ("PDB_ID", "PDB ID"),
+    ("UniProt", "UniProt"),
     ("Score", "Score"),
     ("Seq_id", "Seq. ID (%)"),
     ("Pubmed_id", "PubMed"),
@@ -262,12 +264,30 @@ def _parse_non_polymer_codes(value) -> str:
     return parsed.get("non_polymers") or ""
 
 
-def _split_pdb_ids(value) -> list:
-    """PDB_ID cells hold plot.py's merged ", "-joined string when several
-    structures share one crystallization condition (e.g. "1ABC, 2XYZ").
-    Split it back into individual IDs so each can get its own RCSB link --
-    a single link wrapping the whole merged string is not a valid PDB ID
-    and can't be clicked "separately" for each entry."""
+_COMPOUND_CELL_RE = re.compile(r"'([^']+)'\s*\(([^)]*)\)")
+
+
+def _parse_compound_cell(value) -> list:
+    """The 'compound' cell holds compound_extraction.py's
+    format_compounds() output -- "'PEG 4000' (25.0 % w/v), 'NaCl' (0.1 M)"
+    -- one or more single-quoted compound names each followed by a
+    parenthesized concentration. Split back into (name, concentration)
+    pairs so each name can link to its own PubChem page instead of the
+    whole cell being unclickable free text."""
+    if pd.isna(value) or not str(value).strip():
+        return []
+    return [
+        {"name": name.strip(), "concentration": concentration.strip()}
+        for name, concentration in _COMPOUND_CELL_RE.findall(str(value))
+    ]
+
+
+def _split_merged_ids(value) -> list:
+    """PDB_ID and UniProt cells hold plot.py's merged ", "-joined string
+    when several structures share one crystallization condition (e.g.
+    "1ABC, 2XYZ"). Split back into individual IDs so each can get its own
+    link -- a single link wrapping the whole merged string is not a valid
+    PDB ID/accession and can't be clicked "separately" for each entry."""
     if pd.isna(value) or not str(value).strip():
         return []
     return [pid.strip() for pid in str(value).split(",") if pid.strip()]
@@ -279,7 +299,7 @@ def _build_3d_view(pdb_ids, non_polymers_value):
     having non-polymers. Ligand codes (if any) are still surfaced as the
     link label so that information isn't lost.
 
-    A row can carry several merged PDB IDs (see `_split_pdb_ids`), and each
+    A row can carry several merged PDB IDs (see `_split_merged_ids`), and each
     structure needs its own link/box -- one link for the whole group would
     point at a single bogus molstar URL and couldn't open a specific
     structure. So this returns one dict per PDB ID.
@@ -309,9 +329,10 @@ def build_table_rows(df: pd.DataFrame):
     (rendered as a clickable link) without extra template logic elsewhere."""
     rows = []
     for rec in df.to_dict("records"):
-        pdb_ids = _split_pdb_ids(rec["PDB_ID"])
+        pdb_ids = _split_merged_ids(rec["PDB_ID"])
         values = {
             "PDB_ID": pdb_ids,
+            "UniProt": _split_merged_ids(rec["UniProt"]),
             "Score": f"{rec['Score']:.3f}" if pd.notna(rec["Score"]) else "",
             "Seq_id": f"{rec['Seq_id']:.1f}" if pd.notna(rec["Seq_id"]) else "",
             "Pubmed_id": _format_pubmed(rec["Pubmed_id"]),
@@ -321,7 +342,7 @@ def build_table_rows(df: pd.DataFrame):
             "View3D": _build_3d_view(pdb_ids, rec["Non_polymers"]),
             "pH": f"{rec['plot_pH_numeric']:.2f}" if pd.notna(rec["plot_pH_numeric"]) else "",
             "Temp": f"{rec['Temp']:.1f}" if pd.notna(rec["Temp"]) else "",
-            "compound": rec["compound"] if pd.notna(rec["compound"]) else "",
+            "compound": _parse_compound_cell(rec["compound"]),
         }
         rows.append({
             "row_id": rec["row_id"],
