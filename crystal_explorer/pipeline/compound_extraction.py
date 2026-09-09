@@ -22,7 +22,7 @@ REAGENT_DICTIONARY: Dict[str, List[str]] = {
     "PEG 1000": ["peg 1000", "peg1000", "peg-1000", "peg1k", "peg 1k", "polyethylene glycol 1000", "poly(ethylene glycol) 1000",
                  "peg 1,000"],
     "PEG 3350": ["peg 3350", "peg3350", "peg-3350", "polyethylene glycol 3350", "poly(ethylene glycol) 3350",
-                 "peg 3,350", "peg3,350", "peg3330"],
+                 "peg 3,350", "peg3,350", "peg3330", "polyethylene glycol 3,350"],
     "PEG 4000": ["peg 4000", "peg4000", "peg-4000", "peg4k", "peg 4k", "polyethylene glycol 4000", "poly(ethylene glycol) 4000",
                  "peg 4,000", "pegf-4000"],
     "PEG 6000": ["peg 6000", "peg6000", "peg-6000", "peg6k", "peg 6k", "polyethylene glycol 6000", "poly(ethylene glycol) 6000",
@@ -37,7 +37,8 @@ REAGENT_DICTIONARY: Dict[str, List[str]] = {
                     "peg 550mme", "peg 550 mme", "polyethylene glycol monomethyl ether 550"],
     "PEG MME 2000": ["peg mme 2000", "peg mme 2k", "peg mme2k", "peg monomethyl ether 2000",
                      "peg mme2000", "peg 2k mme", "peg 2kmme", "polyethylene glycol monomethyl ether 2000",
-                     "polyethylene glycol monomethyl ether 2,000"],
+                     "polyethylene glycol monomethyl ether 2,000",
+                     "polyethylene glycol monomethyl ether (peg) 2000"],
     "PEG MME 5000": ["peg mme 5000", "peg monomethyl ether 5000", "polyethylene glycol monomethyl ether 5000",
                       "polyethylene glycol monomethyl ether 5,000"],
     "PEG 3500": ["peg 3500", "peg3500", "peg 3550", "peg3550"],
@@ -57,6 +58,7 @@ REAGENT_DICTIONARY: Dict[str, List[str]] = {
     "PEG 12000": ["peg 12000", "peg12000", "peg-12000", "peg12k", "peg 12k", "polyethylene glycol 12000", "peg 12,000"],
     "PEG 20000": ["peg 20000", "peg20000", "peg-20000", "peg20k", "peg 20k", "polyethylene glycol 20000", "peg 20,000"],
     "Jeffamine ED-2001": ["jeffamine ed-2001", "ed2001"],
+    "Jeffamine M-600": ["jeffamine m-600", "jeffamine m600"],
 
     # --- Salts ---
     "ammonium sulfate": ["ammonium sulfate", "ammonium sulphate", "(nh4)2so4", "ammonium-sulfate",
@@ -69,9 +71,9 @@ REAGENT_DICTIONARY: Dict[str, List[str]] = {
     "magnesium sulfate": ["magnesium sulfate", "magnesium sulphate", "mgso4"],
     "calcium chloride": ["calcium chloride", "cacl2"],
     "sodium phosphate": ["sodium phosphate", "nah2po4", "na2hpo4", "sodium phospahte", "na2po4"],
-    "potassium phosphate": ["potassium phosphate", "kh2po4", "k2hpo4"],
+    "potassium phosphate": ["potassium phosphate", "kh2po4", "k2hpo4", "potassium dihydrogen phosphate", "potassium dihydrogenphosphate"],
     "sodium/potassium phosphate": ["sodium potassium phosphate", "sodium/potassium phosphate", "na/k phosphate", "napo4"],
-    "sodium acetate": ["sodium acetate", "sodium actate", "naoac", "naac"],
+    "sodium acetate": ["sodium acetate", "sodium actate", "naoac", "naac", "naacetate"],
     "sodium citrate": ["sodium citrate", "tri-sodium citrate", "NAcitrate", "trisodium citrate", "na citrate", "Na-citrate", "na3citrate", "na3cit", "nacit"],
     "sodium formate": ["sodium formate", "NAformate", "na formate", "Na-formate", "formic acid sodium salt", ],
     "potassium chloride": ["potassium chloride", "kcl", "potassium cloride"],
@@ -86,10 +88,10 @@ REAGENT_DICTIONARY: Dict[str, List[str]] = {
     "ammonium phosphate": ["ammonium phosphate","(nh4)3po4"],
     "ammonium bicarbonate": ["ammonium bicarbonate","nh4hco3"],
     "potassium sulfate": ["potassium sulfate","potassium sulphate","k2so4"],
-    "Monosodium phosphate": ["monosodium phosphate", "sodium phosphate monobasic", "nah2po4", "na h2po4", "sodium dihydrogen phosphate"],
+    "Monosodium phosphate": ["monosodium phosphate", "sodium phosphate monobasic", "nah2po4", "na h2po4", "sodium dihydrogen phosphate", "sodium dihydrogenphosphate"],
     "NaH2PO4": ["nah2po4", "na h2 po4", "monosodium phosphate", "sodium phosphate monobasic"],
     "Disodium phosphate": ["disodium phosphate", "sodium phosphate dibasic", "na2hpo4", "na2 hpo4"],
-    "Dipotassium hydrogen phosphate": ["dipotassium hydrogen phosphate", "potassium phosphate dibasic", "k2hpo4", "k2 hpo4"],
+    "Dipotassium hydrogen phosphate": ["dipotassium hydrogen phosphate", "potassium phosphate dibasic", "k2hpo4", "k2 hpo4", "potassium hydrogen phosphate", "potassium hydrogenphosphate", "dipotassium phosphate"],
     "Potassium phosphate": ["potassium phosphate","kh2po4","k2hpo4"],
     "sodium sulfate": ["sodium sulfate","sodium sulphate","na2so4"],
     "lithium nitrate": ["lithium nitrate"],
@@ -125,17 +127,18 @@ REAGENT_DICTIONARY: Dict[str, List[str]] = {
     "Magnesium acetate": ["magnesium acetate", "mg acetate", "mg(oac)2"],
     "Magnesium formate": ["magnesium formate", "mg formate", "mg(hcoo)2"],
     "Cobalt(II) chloride": ["cobalt chloride", "cobalt(ii) chloride", "cobalt (ii) chloride", "cocl2", "cobaltous chloride"],
+    "Cobalt(III) chloride": ["cobalt(iii) chloride", "cobalt (iii) chloride", "cocl3"],
     "Cadmium chloride": ["cadmium chloride", "cadmium(ii) chloride", "cdcl2"],
     "Nickel(II) chloride": ["nickel chloride", "nickel(ii) chloride", "nickel (ii) chloride", "nicl2"],
     "Sodium iodide": ["sodium iodide", "nai","na iodide", "NAI"],
     "Sodium succinate": ["sodium succinate","sodium succinate buffer","disodium succinate","succinic acid disodium salt","succinate","na succinate","sodium hydrogen succinate"],
 
     # --- Buffers ---
-    "Tris-HCl": ["tris-hcl", "tris hcl", "tris buffer", "tris"],
+    "Tris-HCl": ["tris-hcl", "tris hcl", "tris buffer", "tris", "trishydroxymethylaminomethane"],
     "Bis-Tris": ["bis-tris", "bis tris", "bistris", "bis_tris", "bis tris buffer","bis-tris buffer"],
     "HEPES": ["hepes", "hepes buffer", "4-(2-hydroxyethyl)-1-piperazineethanesulfonic acid"],
     "MES": ["mes","mes buffer","2-(n-morpholino)ethanesulfonic acid", "2 morpholinoethanesulfonic acid"],
-    "bis-tris propane": ["bis-tris propane"],
+    "bis-tris propane": ["bis-tris propane", "bis_tris propane", "bis tris propane", "bistris propane"],
     "Bis-Tris chloride": ["bis-tris chloride", "bis tris chloride","bis-tris hcl"],
     "CHES": ["ches"],
     "CAPS": ["caps"],
@@ -171,10 +174,12 @@ REAGENT_DICTIONARY: Dict[str, List[str]] = {
     "acetonitrile": ["acetonitrile"],
     "Sorbitol": ["sorbitol", "d-sorbitol", "D-sorbitol", "glucitol", "d-glucitol", "hexane-1,2,3,4,5,6-hexol", "sorbitol solution"],
     "Trehalose": ["trehalose", "d-trehalose", "trehalose dihydrate"],
+    "myo-Inositol": ["myo-inositol", "myo inositol", "inositol"],
     "Xylitol": ["xylitol"],
     "trimethylamine N-oxide": ["trimethylamine n-oxide", "tmao", "trimethylamine oxide"],
     "sarcosine": ["sarcosine", "n-methylglycine"],
     "1,3-propanediol": ["1,3-propanediol", "1,3 propanediol"],
+    "1,2-Propanediol": ["1,2-propanediol", "1,2 propanediol", "propylene glycol", "propan-1,2-diol"],
     "1,5-pentanediol": ["1,5-pentanediol", "1,5 pentanediol"],
 
     # --- Additives / cryoprotectants ---
@@ -257,6 +262,7 @@ REAGENT_DICTIONARY: Dict[str, List[str]] = {
 # --- Hampton additive screen compounds ---
     "benzamidine hydrochloride": ["benzamidine","benzamidine hcl"],
     "guanidine hydrochloride": ["guanidine hcl", "guanidinium chloride"],
+    "Guanidine sulfate": ["guanidine sulfate", "guanidinium sulfate"],
     "urea": ["urea"],
     "thiourea": ["thiourea"],
     "acetamide": ["acetamide"],
@@ -273,6 +279,8 @@ REAGENT_DICTIONARY: Dict[str, List[str]] = {
     "Poly(acrylic acid sodium salt) 5100": ["poly(acrylicacid sodium salt) 5100", "poly(acrylic acid sodium salt) 5100", "poly acrylic acid sodium salt 5100", "polyacrylic acid sodium salt 5100",
     "sodium polyacrylate 5100", "poly(sodium acrylate) 5100", "paa sodium salt 5100", "paaa 5100", "polyacrylate sodium salt"],
     "Sucrose": ["sucrose", "d-sucrose", "\u03b1-d-glucopyranosyl-(1\u21922)-\u03b2-d-fructofuranoside", "cane sugar", "table sugar", "saccharose", "sucrose solution"],
+    "Polyvinylpyrrolidone K15": ["polyvinylpyrrolidone k15", "pvp k15", "pvp-k15", "polyvinylpyrrolidone", "pvp"],
+    "Dextran sulfate": ["dextran sulfate", "dextran sulphate"],
     
 # --- PLP Snyder fluorescent dyes ---
     "PLP_Snyder441": ["plp_snyder441", "plp snyder 441","snyder 441"],
@@ -282,6 +290,7 @@ REAGENT_DICTIONARY: Dict[str, List[str]] = {
     "PLP_Snyder496": ["plp_snyder496","plp snyder 496","snyder 496"],
     "PLP_Snyder530": ["plp_snyder530","plp snyder 530","snyder 530"],
     "PLP_Snyder608": ["plp_snyder608","plp snyder 608","snyder 608"],
+    "PLP_Snyder630": ["plp_snyder630","plp snyder 630","snyder 630"],
 
 # --- Ligands / additives ---
 
@@ -308,6 +317,7 @@ REAGENT_DICTIONARY: Dict[str, List[str]] = {
     "Monoolein": ["monoolein", "1-oleoyl-rac-glycerol", "glycerol monooleate"],
     "6-Aminohexanoic acid": ["6-aminohexanoic acid", "aminohexanoic acid", "epsilon-aminocaproic acid"],
     "Spermine": ["spermine"],
+    "Spermine tetrahydrochloride": ["spermine tetrahydrochloride", "spermine 4hcl", "spermine 4 hcl"],
     "Cholesterol": ["cholesterol"],
     "Malic acid": ["malic acid", "dl-malic acid", "l-malic acid", "s-malate", "rs-malate", "malate"],
     "DL-Serine": ["dl-serine"],
@@ -317,6 +327,8 @@ REAGENT_DICTIONARY: Dict[str, List[str]] = {
     "EGTA": ["egta"],
     "Lactose": ["lactose"],
     "NDSB-221": ["ndsb-221", "ndsb 221"],
+    "NDSB-195": ["ndsb-195", "ndsb 195"],
+    "NDSB-256": ["ndsb-256", "ndsb 256"],
     "1-Deoxynojirimycin": ["1-deoxynojirimycin", "deoxynojirimycin"],
     "Pyruvate": ["pyruvate", "sodium pyruvate"],
     "Dithioerythritol": ["dithioerythritol", "dte"],
@@ -332,6 +344,9 @@ REAGENT_DICTIONARY: Dict[str, List[str]] = {
     "Potassium fluoride": ["potassium fluoride", "kf"],
     "Potassium formate": ["potassium formate"],
     "Potassium citrate": ["potassium citrate", "potassium citrate tribasic"],
+    "Cesium acetate": ["cesium acetate", "csoac"],
+    "Potassium oxalate": ["potassium oxalate", "k2c2o4"],
+    "Ammonium oxalate": ["ammonium oxalate", "(nh4)2c2o4"],
     "Potassium bromide": ["potassium bromide", "kbr"],
     "Sodium dithionite": ["sodium dithionite", "na2-dithionite", "na dithionite"],
     "Hexaamminecobalt(III) chloride": ["hexaamminecobalt(iii) chloride", "hexaammine cobalt chloride",
@@ -432,28 +447,37 @@ def _rebuild_patterns() -> None:
     aliases_sorted = sorted(_ALIAS_TO_CANONICAL.keys(), key=len, reverse=True)
     reagent_alternation = "|".join(re.escape(a) for a in aliases_sorted)
 
+    # Guard the reagent alternation so a short alias (e.g. "og" for octyl
+    # glucoside, "ki" for potassium iodide) can only match as a standalone
+    # word/token, never as a substring swallowed inside an unrelated longer
+    # word -- e.g. "og" inside "nitrOGen" or "microgravity", or "ki" inside
+    # "seeKIng". A plain \b boundary doesn't work here since many aliases
+    # are chemical formulas starting/ending in non-word characters (e.g.
+    # "(nh4)2so4"), where \b itself wouldn't match after a preceding space.
+    # Excluding only an adjacent ASCII letter (not digits/punctuation)
+    # keeps "0.2M(NH4)2SO4" and "PEG3350" working while still blocking the
+    # mid-word false positives above.
+    reagent_group = rf"(?<![A-Za-z])(?P<reagent>{reagent_alternation})(?![A-Za-z])"
+
     # Pattern A: "NUMBER UNIT REAGENT" e.g. "0.2 M ammonium sulfate", also
     # tolerating a trailing unit qualifier that comes AFTER the reagent name,
     # e.g. "10% PEG 8000 (w/v)", and a range before the reagent, e.g.
     # "15-25% PEG 8000" or "15% - 25% PEG 8000" (see _RANGE_SUFFIX).
     _PATTERN_NUM_FIRST = re.compile(
-        rf"(?P<amount>{_NUMBER}){_RANGE_SUFFIX}\s*(?P<unit>{_CONC_UNIT})\s*(?P<reagent>{reagent_alternation})"
+        rf"(?P<amount>{_NUMBER}){_RANGE_SUFFIX}\s*(?P<unit>{_CONC_UNIT})\s*{reagent_group}"
         rf"(?:\s*\(?(?P<trailing_unit>w/v|v/v)\)?)?",
         re.IGNORECASE,
     )
     # Pattern B: "REAGENT NUMBER UNIT" e.g. "PEG 3350 20%" (less common, but seen)
     _PATTERN_REAGENT_FIRST = re.compile(
-        rf"(?P<reagent>{reagent_alternation})\D{{0,3}}(?P<amount>{_NUMBER}){_RANGE_SUFFIX}\s*(?P<unit>{_CONC_UNIT})",
+        rf"{reagent_group}\D{{0,3}}(?P<amount>{_NUMBER}){_RANGE_SUFFIX}\s*(?P<unit>{_CONC_UNIT})",
         re.IGNORECASE,
     )
     # Pattern C: bare reagent name with no concentration nearby at all, e.g.
     # a clause that's just "DMSO" or "ATP added" -- used as a last-resort
     # fallback so a known compound mentioned without a stated concentration
     # is still reported (with concentration "nan") instead of being dropped.
-    _PATTERN_REAGENT_ONLY = re.compile(
-        rf"(?P<reagent>{reagent_alternation})",
-        re.IGNORECASE,
-    )
+    _PATTERN_REAGENT_ONLY = re.compile(reagent_group, re.IGNORECASE)
 
 
 def _normalize_unit(unit: str) -> str:

@@ -480,6 +480,30 @@ def get_polymer_type_from_mmcif(block):
         print(f"Failed to determine polymer type: {e}")
         return None
 
+def _struct_ref_unp_rows(block):
+    """(entity_id, accession) for every `_struct_ref` row with db_name ==
+    "UNP", de-duplicated by accession. Shared by get_uniprot_from_mmcif()
+    and get_query_uniprot_from_mmcif() so both read the same underlying
+    cross-references."""
+    try:
+        entity_ids = block.find_values("_struct_ref.entity_id")
+        db_names = block.find_values("_struct_ref.db_name")
+        accessions = block.find_values("_struct_ref.pdbx_db_accession")
+    except Exception:
+        return []
+
+    seen = set()
+    rows = []
+    for entity_id, db_name, accession in zip(entity_ids, db_names, accessions):
+        if str(db_name).strip().upper() != "UNP":
+            continue
+        accession = str(accession).strip()
+        if accession and accession not in (".", "?") and accession not in seen:
+            seen.add(accession)
+            rows.append((str(entity_id).strip(), accession))
+    return rows
+
+
 def get_uniprot_from_mmcif(block):
     """UniProt accession(s) cross-referenced for this entry, from
     `_struct_ref` (db_name == "UNP"). A complex with several distinct
@@ -487,24 +511,26 @@ def get_uniprot_from_mmcif(block):
     ", "-joined, de-duplicated string, mirroring how PDB_ID itself gets
     merged for entries sharing a crystallization condition (see
     all_conditions_with_merged_pdb in plot.py)."""
-    try:
-        db_names = block.find_values("_struct_ref.db_name")
-        accessions = block.find_values("_struct_ref.pdbx_db_accession")
-    except Exception:
+    rows = _struct_ref_unp_rows(block)
+    return ", ".join(accession for _, accession in rows) if rows else None
+
+
+def get_query_uniprot_from_mmcif(block, query_entity_id):
+    """The UniProt accession for the specific polymer entity that matched
+    the *query* sequence in the RCSB search (as opposed to a bound
+    partner's accession, for a complex). `query_entity_id` is the entity
+    number the sequence search hit against (e.g. "1"), from
+    parse_hit_ids(). None if not available/not found -- older cached
+    results predate this and won't have it."""
+    if not query_entity_id:
         return None
-
-    seen = []
-    for db_name, accession in zip(db_names, accessions):
-        if str(db_name).strip().upper() != "UNP":
-            continue
-        accession = str(accession).strip()
-        if accession and accession not in (".", "?") and accession not in seen:
-            seen.append(accession)
-
-    return ", ".join(seen) if seen else None
+    for entity_id, accession in _struct_ref_unp_rows(block):
+        if entity_id == str(query_entity_id).strip():
+            return accession
+    return None
 
 
-def extract_mmcif_info(pdb_id):
+def extract_mmcif_info(pdb_id, query_entity_id=None):
     """
     Extract mmCIF info for a PDB entry and compute sequence identity
     with the provided query sequence.
@@ -547,6 +573,7 @@ def extract_mmcif_info(pdb_id):
         "Resolution": block.find_value("_refine.ls_d_res_high"),
         "Pubmed_id": pubmed,
         "UniProt": get_uniprot_from_mmcif(block),
+        "UniProt_query": get_query_uniprot_from_mmcif(block, query_entity_id),
         "Polymer": polymer_type, 
         "Assembly": assembly_detail,
         "Method": get_method_from_mmcif_or_details(block),
@@ -713,7 +740,7 @@ def find_homologs_with_conditions(
             "score": round(hit.get("score", 0.0), 4),}
 
        
-        info = extract_mmcif_info(pdb_id)
+        info = extract_mmcif_info(pdb_id, query_entity_id=hit.get("entity_id"))
         
         if info:
             rows.append({**base_row, **info})

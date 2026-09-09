@@ -32,7 +32,7 @@ import pandas as pd
 import plotly.graph_objects as go
 
 REQUIRED_COLUMNS = [
-    "row_id", "PDB_ID", "UniProt", "Score", "Seq_id", "Pubmed_id", "Polymer", "Assembly",
+    "row_id", "PDB_ID", "UniProt", "UniProt_query", "Score", "Seq_id", "Pubmed_id", "Polymer", "Assembly",
     "Method", "Non_polymers", "plot_pH_numeric", "Temp", "PEG_con_plot", "compound",
 ]
 
@@ -330,9 +330,13 @@ def build_table_rows(df: pd.DataFrame):
     rows = []
     for rec in df.to_dict("records"):
         pdb_ids = _split_merged_ids(rec["PDB_ID"])
+        query_uniprot_ids = set(_split_merged_ids(rec["UniProt_query"]))
         values = {
             "PDB_ID": pdb_ids,
-            "UniProt": _split_merged_ids(rec["UniProt"]),
+            "UniProt": [
+                {"accession": acc, "is_query_match": acc in query_uniprot_ids}
+                for acc in _split_merged_ids(rec["UniProt"])
+            ],
             "Score": f"{rec['Score']:.3f}" if pd.notna(rec["Score"]) else "",
             "Seq_id": f"{rec['Seq_id']:.1f}" if pd.notna(rec["Seq_id"]) else "",
             "Pubmed_id": _format_pubmed(rec["Pubmed_id"]),

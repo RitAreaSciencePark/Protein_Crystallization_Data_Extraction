@@ -115,7 +115,7 @@ def run_plot(protein_dir, protein_name, compounds_csv_name="Output_compounds.csv
     }
     df = df.rename(columns={k: v for k, v in rename_map.items() if k in df.columns})
 
-    for required in ["PDB_ID", "UniProt", "Score", "Seq_id", "Pubmed_id", "Polymer", "Assembly",
+    for required in ["PDB_ID", "UniProt", "UniProt_query", "Score", "Seq_id", "Pubmed_id", "Polymer", "Assembly",
                       "Method", "pH", "Temp", "pdbx_pH_range", "compound"]:
         if required not in df.columns:
             df[required] = np.nan
@@ -285,6 +285,8 @@ def run_plot(protein_dir, protein_name, compounds_csv_name="Output_compounds.csv
             row["PDB_ID"] = ", ".join(group["PDB_ID"].astype(str).tolist())
             if "UniProt" in group.columns:
                 row["UniProt"] = _merge_unique(group["UniProt"])
+            if "UniProt_query" in group.columns:
+                row["UniProt_query"] = _merge_unique(group["UniProt_query"])
             merged_rows.append(row)
 
         merged_df = pd.DataFrame(merged_rows)
