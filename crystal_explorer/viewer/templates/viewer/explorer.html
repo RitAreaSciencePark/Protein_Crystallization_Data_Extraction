@@ -289,6 +289,11 @@
   a.ligand-box:hover { background: #EAF1F2; border-color: var(--accent); }
   a.ligand-box + a.ligand-box { margin-left: 0.35rem; }
 
+  /* For a complex (multiple UniProt accessions in one row), the accession
+     for the chain that actually matched the search sequence -- as opposed
+     to a bound partner's -- is marked so it's not ambiguous which is which. */
+  a.uniprot-query-match { font-weight: 700; text-decoration-style: dotted; }
+
   .viewer-3d-frame-wrap {
     border: 1px solid var(--line);
     border-radius: 4px;
@@ -433,6 +438,7 @@
         Crystallization conditions ({{ table_rows|length }} entries)
         {% if run_runtime_seconds %}<span class="hint" style="margin-left: 0.75rem;">Completed in {{ run_runtime_seconds|floatformat:1 }}s</span>{% endif %}
       </p>
+      <p class="hint">For a complex, the <strong>bold, underlined</strong> UniProt ID is the chain that matched your search sequence -- others are bound partners.</p>
       <div class="table-scroll">
         <table>
           <thead><tr>{% for key, label in table_columns %}<th>{{ label }}</th>{% endfor %}</tr></thead>
@@ -448,7 +454,7 @@
                     {% elif key == "PDB_ID" and value %}
                       {% for pdb in value %}<a href="https://www.rcsb.org/structure/{{ pdb }}" target="_blank" rel="noopener">{{ pdb }}</a>{% if not forloop.last %}, {% endif %}{% endfor %}
                     {% elif key == "UniProt" %}
-                      {% for acc in value %}<a href="https://www.uniprot.org/uniprotkb/{{ acc }}" target="_blank" rel="noopener">{{ acc }}</a>{% if not forloop.last %}, {% endif %}{% endfor %}
+                      {% for u in value %}<a href="https://www.uniprot.org/uniprotkb/{{ u.accession }}" target="_blank" rel="noopener"{% if u.is_query_match %} class="uniprot-query-match" title="Matches your search sequence"{% endif %}>{{ u.accession }}</a>{% if not forloop.last %}, {% endif %}{% endfor %}
                     {% elif key == "Pubmed_id" and value %}
                       <a href="https://pubmed.ncbi.nlm.nih.gov/{{ value }}/" target="_blank" rel="noopener">{{ value }}</a>
                     {% elif key == "compound" %}
