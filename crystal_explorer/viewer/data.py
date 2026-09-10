@@ -214,6 +214,165 @@ def build_temp_plot(df: pd.DataFrame) -> go.Figure:
                                 "Temp", "{:.0f}K")
 
 
+# Buffer / Salt / Precipitant / Additive -- kept in this fixed order
+# everywhere (legend, subplot grid) so the four categories always land in
+# the same place regardless of which one happens to be biggest that run.
+CATEGORY_ORDER = ["Buffer", "Salt", "Precipitant", "Additive"]
+CATEGORY_COLORS = {
+    "Buffer": "#0B6E7D",       # matches the app's --accent teal
+    "Salt": "#E69F00",
+    "Precipitant": "#0072B2",
+    "Additive": "#8A94A6",
+}
+
+
+def build_reagent_frequency(df: pd.DataFrame) -> list:
+    """Aggregate reagent frequency and typical concentration across every
+    row's parsed 'compound' cell.
+
+    Returns a list of dicts, one per distinct reagent -- {"name",
+    "category", "count", "total", "top_concentration",
+    "top_concentration_count"} -- sorted by count descending. `count` is
+    the number of *conditions* (rows) the reagent appears in, not total
+    mentions, so a reagent occurring twice within one row's clause list
+    (rare, but possible) still counts once. `top_concentration` is the
+    single most common exact concentration string seen for that reagent
+    (the mode) rather than a numeric average, since different rows can
+    report the same reagent in different units (%, M, mM) that can't be
+    meaningfully averaged together -- the mode stays an exact, directly
+    reproducible value instead."""
+    from collections import Counter
+    from pipeline.compound_extraction import get_reagent_category
+
+    total = len(df)
+    hit_counts = Counter()
+    concentration_counts = {}
+
+    for cell in df.get("compound", pd.Series(dtype=str)):
+        seen_in_row = set()
+        for entry in _parse_compound_cell(cell):
+            name = entry["name"]
+            if name not in seen_in_row:
+                hit_counts[name] += 1
+                seen_in_row.add(name)
+            concentration_counts.setdefault(name, Counter())[entry["concentration"]] += 1
+
+    results = []
+    for name, count in hit_counts.items():
+        top_conc, top_conc_count = concentration_counts[name].most_common(1)[0]
+        results.append({
+            "name": name,
+            "category": get_reagent_category(name),
+            "count": count,
+            "total": total,
+            "top_concentration": top_conc,
+            "top_concentration_count": top_conc_count,
+        })
+    results.sort(key=lambda r: r["count"], reverse=True)
+    return results
+
+
+def _reagent_hover_text(entries: list) -> list:
+    return [
+        f"<b>{e['name']}</b><br>"
+        f"{e['count']}/{e['total']} conditions ({100 * e['count'] / e['total']:.0f}%)<br>"
+        f"Most common: {e['top_concentration']} "
+        f"({e['top_concentration_count']} of {e['count']})"
+        for e in entries
+    ]
+
+
+def build_reagent_frequency_plot(freq: list, top_n: int = 15) -> go.Figure:
+    """Flat, ranked-by-frequency horizontal bar chart across all reagents
+    (top `top_n`), colored by category so the buffer/salt/precipitant/
+    additive split is still visible even in the combined view."""
+    fig = go.Figure()
+
+    if not freq:
+        fig.update_layout(title="No compounds extracted", template="plotly_white")
+        return fig
+
+    top = freq[:top_n]
+    # Plotly lists horizontal bars bottom-to-top, so reverse to put the
+    # highest count at the top of the chart, matching reading order.
+    top = list(reversed(top))
+
+    for category in CATEGORY_ORDER:
+        entries = [e for e in top if e["category"] == category]
+        if not entries:
+            continue
+        fig.add_trace(go.Bar(
+            x=[e["count"] for e in entries],
+            y=[e["name"] for e in entries],
+            orientation="h",
+            name=category,
+            marker=dict(color=CATEGORY_COLORS[category]),
+            hovertext=_reagent_hover_text(entries),
+            hoverinfo="text",
+        ))
+
+    fig.update_layout(
+        barmode="overlay",
+        xaxis_title="Conditions",
+        template="plotly_white",
+        font=dict(family="IBM Plex Sans, sans-serif", size=13, color="#14181B"),
+        margin=dict(l=180, r=20, t=20, b=40),
+        legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="left", x=0),
+        autosize=True,
+    )
+    fig.update_xaxes(zeroline=False, gridcolor="#E1E5E8")
+    fig.update_yaxes(zeroline=False)
+    return fig
+
+
+def build_reagent_frequency_by_category_plot(freq: list, top_n: int = 8) -> go.Figure:
+    """2x2 grid -- one horizontal bar chart per Buffer/Salt/Precipitant/
+    Additive category, each showing its own top `top_n` reagents. Mirrors
+    how a crystallization cocktail actually gets assembled (one buffer +
+    one salt + one precipitant, plus optional additives), so this is the
+    more directly "what should I pick" view versus the flat overall one."""
+    from plotly.subplots import make_subplots
+
+    fig = make_subplots(
+        rows=2, cols=2, subplot_titles=CATEGORY_ORDER,
+        horizontal_spacing=0.15, vertical_spacing=0.18,
+    )
+    positions = {"Buffer": (1, 1), "Salt": (1, 2), "Precipitant": (2, 1), "Additive": (2, 2)}
+
+    has_any = False
+    for category in CATEGORY_ORDER:
+        entries = [e for e in freq if e["category"] == category][:top_n]
+        if not entries:
+            continue
+        has_any = True
+        entries = list(reversed(entries))
+        row, col = positions[category]
+        fig.add_trace(go.Bar(
+            x=[e["count"] for e in entries],
+            y=[e["name"] for e in entries],
+            orientation="h",
+            marker=dict(color=CATEGORY_COLORS[category]),
+            hovertext=_reagent_hover_text(entries),
+            hoverinfo="text",
+            showlegend=False,
+        ), row=row, col=col)
+
+    if not has_any:
+        fig.update_layout(title="No compounds extracted", template="plotly_white")
+        return fig
+
+    fig.update_layout(
+        template="plotly_white",
+        font=dict(family="IBM Plex Sans, sans-serif", size=13, color="#14181B"),
+        margin=dict(l=20, r=20, t=40, b=20),
+        autosize=True,
+        height=560,
+    )
+    fig.update_xaxes(zeroline=False, gridcolor="#E1E5E8", title_text="Conditions")
+    fig.update_yaxes(zeroline=False)
+    return fig
+
+
 # Kept for backward compatibility with any existing callers.
 build_plot = build_peg_plot
 
@@ -293,6 +452,26 @@ def _split_merged_ids(value) -> list:
     return [pid.strip() for pid in str(value).split(",") if pid.strip()]
 
 
+# Small colorblind-safe categorical palette (Okabe-Ito), cycled by index.
+# Only ever used to link a specific merged PDB_ID to its own UniProt
+# accession(s) within one row -- meaningless across rows, so 6 colors is
+# plenty even though a row could in principle merge more PDB_IDs than that.
+_UNIPROT_COLORS = ["#E69F00", "#56B4E9", "#009E73", "#CC79A7", "#D55E00", "#0072B2"]
+
+
+def _split_per_pdb(value) -> list:
+    """UniProt/UniProt_query cells hold plot.py's " | "-joined string --
+    one segment per merged PDB_ID, in the same order as the PDB_ID cell,
+    each segment itself a ", "-joined list of accessions for that one
+    PDB_ID (e.g. "P0DTD1, P05161 | P0DTD1, J3QS39" for two merged
+    complexes). Returns a list of per-PDB_ID accession lists. A row from
+    before this format existed has no "|" at all -- comes back as a
+    single segment, which build_table_rows() treats as unaligned/legacy."""
+    if pd.isna(value) or not str(value).strip():
+        return []
+    return [_split_merged_ids(segment) for segment in str(value).split("|")]
+
+
 def _build_3d_view(pdb_ids, non_polymers_value):
     """Every row has at least one PDB ID, so every row gets 3D-view link(s)
     -- unlike the old ligand-only link, this doesn't depend on the entry
@@ -330,13 +509,57 @@ def build_table_rows(df: pd.DataFrame):
     rows = []
     for rec in df.to_dict("records"):
         pdb_ids = _split_merged_ids(rec["PDB_ID"])
-        query_uniprot_ids = set(_split_merged_ids(rec["UniProt_query"]))
+        uniprot_per_pdb = _split_per_pdb(rec["UniProt"])
+        # UniProt_query is also " | "-joined per PDB_ID now (see plot.py) --
+        # flattened into one set since a match against *any* merged PDB
+        # entry's query-matched accession is what "is_query_match" means.
+        query_uniprot_ids = {acc for segment in _split_per_pdb(rec["UniProt_query"]) for acc in segment}
+
+        # Only color-code PDB_ID <-> UniProt when there's real ambiguity to
+        # resolve: more than one merged PDB_ID, the per-PDB_ID accession
+        # data actually lines up with them (older rows predate the " | "
+        # format and come back as one unaligned segment), and the
+        # accessions genuinely differ between at least two of them -- a
+        # uniform row (every PDB_ID -> the same single UniProt) has
+        # nothing to disambiguate, so it renders exactly as before.
+        aligned = len(uniprot_per_pdb) == len(pdb_ids)
+        distinct_sets = {tuple(seg) for seg in uniprot_per_pdb} if aligned else set()
+        use_colors = len(pdb_ids) > 1 and aligned and len(distinct_sets) > 1
+
+        if use_colors:
+            pdb_id_cells = [
+                {"id": pid, "color": _UNIPROT_COLORS[i % len(_UNIPROT_COLORS)]}
+                for i, pid in enumerate(pdb_ids)
+            ]
+            uniprot_groups = [
+                {
+                    "color": _UNIPROT_COLORS[i % len(_UNIPROT_COLORS)],
+                    "accessions": [
+                        {"accession": acc, "is_query_match": acc in query_uniprot_ids}
+                        for acc in uniprot_per_pdb[i]
+                    ],
+                }
+                for i in range(len(pdb_ids))
+                if uniprot_per_pdb[i]
+            ]
+        else:
+            pdb_id_cells = [{"id": pid, "color": None} for pid in pdb_ids]
+            seen = []
+            for segment in uniprot_per_pdb:
+                for acc in segment:
+                    if acc not in seen:
+                        seen.append(acc)
+            uniprot_groups = [{
+                "color": None,
+                "accessions": [
+                    {"accession": acc, "is_query_match": acc in query_uniprot_ids}
+                    for acc in seen
+                ],
+            }] if seen else []
+
         values = {
-            "PDB_ID": pdb_ids,
-            "UniProt": [
-                {"accession": acc, "is_query_match": acc in query_uniprot_ids}
-                for acc in _split_merged_ids(rec["UniProt"])
-            ],
+            "PDB_ID": pdb_id_cells,
+            "UniProt": uniprot_groups,
             "Score": f"{rec['Score']:.3f}" if pd.notna(rec["Score"]) else "",
             "Seq_id": f"{rec['Seq_id']:.1f}" if pd.notna(rec["Seq_id"]) else "",
             "Pubmed_id": _format_pubmed(rec["Pubmed_id"]),

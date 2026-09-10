@@ -267,26 +267,25 @@ def run_plot(protein_dir, protein_name, compounds_csv_name="Output_compounds.csv
         df_with_key = df.copy()
         df_with_key["_condition_key"] = condition_key
 
-        def _merge_unique(series):
-            """", "-joined de-duplicated values from a group's column --
-            each cell may already itself be a ", "-joined list (e.g. a
-            multi-entity complex's several UniProt accessions)."""
-            seen = []
-            for cell in series.dropna().astype(str):
-                for part in cell.split(","):
-                    part = part.strip()
-                    if part and part not in seen:
-                        seen.append(part)
-            return ", ".join(seen)
+        def _join_per_pdb(series):
+            """" | "-joined, one segment per PDB_ID in the group, in the
+            same order as PDB_ID itself -- so segment i is that PDB_ID's
+            own value (a segment may itself hold several ", "-joined
+            accessions, e.g. a multi-entity complex's several UniProt
+            IDs). Kept positionally aligned with PDB_ID (rather than
+            globally deduplicated) so the web app can tell which
+            accession(s) belong to which PDB entry -- see build_table_rows
+            in viewer/data.py."""
+            return " | ".join(str(v) if pd.notna(v) else "" for v in series)
 
         merged_rows = []
         for _, group in df_with_key.groupby("_condition_key"):
             row = group.iloc[0].copy()
             row["PDB_ID"] = ", ".join(group["PDB_ID"].astype(str).tolist())
             if "UniProt" in group.columns:
-                row["UniProt"] = _merge_unique(group["UniProt"])
+                row["UniProt"] = _join_per_pdb(group["UniProt"])
             if "UniProt_query" in group.columns:
-                row["UniProt_query"] = _merge_unique(group["UniProt_query"])
+                row["UniProt_query"] = _join_per_pdb(group["UniProt_query"])
             merged_rows.append(row)
 
         merged_df = pd.DataFrame(merged_rows)

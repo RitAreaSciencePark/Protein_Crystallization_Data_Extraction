@@ -294,6 +294,45 @@
      to a bound partner's -- is marked so it's not ambiguous which is which. */
   a.uniprot-query-match { font-weight: 700; text-decoration-style: dotted; }
 
+  /* For a row merging several PDB_IDs that map to *different* UniProt
+     accessions (a complex where one partner varies between entries), a
+     small color dot next to each PDB_ID and a matching border on its
+     UniProt group make it clear which accession(s) belong to which
+     entry. Rows with no such ambiguity render with no dot/border at all. */
+  .color-dot {
+    display: inline-block;
+    width: 0.6rem;
+    height: 0.6rem;
+    border-radius: 50%;
+    margin-right: 0.3rem;
+    vertical-align: middle;
+  }
+  .uniprot-group {
+    display: inline-block;
+    border-left: 3px solid;
+    padding-left: 0.35rem;
+    margin-right: 0.5rem;
+  }
+
+  .reagent-tabs {
+    display: flex;
+    gap: 1.5rem;
+    border-bottom: 1px solid var(--line);
+    margin-bottom: 1rem;
+  }
+  .reagent-tab {
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    padding: 0.4rem 0.1rem 0.6rem;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.82rem;
+    color: var(--ink-muted);
+    cursor: pointer;
+  }
+  .reagent-tab:hover { color: var(--ink); }
+  .reagent-tab.active { color: var(--accent); border-bottom-color: var(--accent); font-weight: 600; }
+
   .viewer-3d-frame-wrap {
     border: 1px solid var(--line);
     border-radius: 4px;
@@ -438,7 +477,7 @@
         Crystallization conditions ({{ table_rows|length }} entries)
         {% if run_runtime_seconds %}<span class="hint" style="margin-left: 0.75rem;">Completed in {{ run_runtime_seconds|floatformat:1 }}s</span>{% endif %}
       </p>
-      <p class="hint">For a complex, the <strong>bold, underlined</strong> UniProt ID is the chain that matched your search sequence -- others are bound partners.</p>
+      <p class="hint">For a complex, the <strong>bold, underlined</strong> UniProt ID is the chain that matched your search sequence -- others are bound partners. When merged PDB IDs map to different UniProt accessions, a matching color dot/border ties each PDB ID to its own accession(s).</p>
       <div class="table-scroll">
         <table>
           <thead><tr>{% for key, label in table_columns %}<th>{{ label }}</th>{% endfor %}</tr></thead>
@@ -452,9 +491,9 @@
                         {% if value|length > 1 %}{{ v.pdb_id }}{% elif v.codes %}{{ v.codes }}{% else %}3D View{% endif %}
                       </a>{% endfor %}
                     {% elif key == "PDB_ID" and value %}
-                      {% for pdb in value %}<a href="https://www.rcsb.org/structure/{{ pdb }}" target="_blank" rel="noopener">{{ pdb }}</a>{% if not forloop.last %}, {% endif %}{% endfor %}
+                      {% for p in value %}{% if p.color %}<span class="color-dot" style="background:{{ p.color }};" title="See matching UniProt below"></span>{% endif %}<a href="https://www.rcsb.org/structure/{{ p.id }}" target="_blank" rel="noopener">{{ p.id }}</a>{% if not forloop.last %}, {% endif %}{% endfor %}
                     {% elif key == "UniProt" %}
-                      {% for u in value %}<a href="https://www.uniprot.org/uniprotkb/{{ u.accession }}" target="_blank" rel="noopener"{% if u.is_query_match %} class="uniprot-query-match" title="Matches your search sequence"{% endif %}>{{ u.accession }}</a>{% if not forloop.last %}, {% endif %}{% endfor %}
+                      {% for g in value %}<span{% if g.color %} class="uniprot-group" style="border-left-color:{{ g.color }};"{% endif %}>{% for u in g.accessions %}<a href="https://www.uniprot.org/uniprotkb/{{ u.accession }}" target="_blank" rel="noopener"{% if u.is_query_match %} class="uniprot-query-match" title="Matches your search sequence"{% endif %}>{{ u.accession }}</a>{% if not forloop.last %}, {% endif %}{% endfor %}</span>{% endfor %}
                     {% elif key == "Pubmed_id" and value %}
                       <a href="https://pubmed.ncbi.nlm.nih.gov/{{ value }}/" target="_blank" rel="noopener">{{ value }}</a>
                     {% elif key == "compound" %}
@@ -469,6 +508,17 @@
           </tbody>
         </table>
       </div>
+    </div>
+
+    <div class="panel panel-fullwidth">
+      <p class="panel-label">Reagent frequency</p>
+      <p class="hint">How often each reagent appears across the matched conditions, with its most common concentration. A cocktail is typically one buffer + one salt + one precipitant, plus optional additives.</p>
+      <div class="reagent-tabs">
+        <button type="button" class="reagent-tab active" id="reagent-tab-overall" onclick="showReagentView('overall')">Overall</button>
+        <button type="button" class="reagent-tab" id="reagent-tab-category" onclick="showReagentView('category')">By category</button>
+      </div>
+      <div id="reagent-view-overall">{{ reagent_plot_div|safe }}</div>
+      <div id="reagent-view-category" hidden>{{ reagent_category_plot_div|safe }}</div>
     </div>
 
     <div class="panel panel-fullwidth" id="viewer-3d" hidden>
@@ -516,6 +566,29 @@
     panel.classList.add('viewer-highlight');
     panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
     return false;
+  }
+
+  // Toggles between the flat "Overall" reagent-frequency chart and the
+  // "By category" 2x2 grid. Plotly sizes a chart at render time, and the
+  // "By category" div starts hidden -- a chart rendered into a
+  // display:none container ends up zero-size, so nudge it to recompute
+  // its layout each time its tab is shown (harmless if already sized).
+  function showReagentView(which) {
+    var overall = document.getElementById('reagent-view-overall');
+    var category = document.getElementById('reagent-view-category');
+    if (!overall || !category) return;
+
+    overall.hidden = which !== 'overall';
+    category.hidden = which !== 'category';
+    document.getElementById('reagent-tab-overall').classList.toggle('active', which === 'overall');
+    document.getElementById('reagent-tab-category').classList.toggle('active', which === 'category');
+
+    var shown = which === 'overall' ? overall : category;
+    if (window.Plotly) {
+      shown.querySelectorAll('.plotly-graph-div').forEach(function (el) {
+        Plotly.Plots.resize(el);
+      });
+    }
   }
 
   function wireClickToHighlight(containerId) {

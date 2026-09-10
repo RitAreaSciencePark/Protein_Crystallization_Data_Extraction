@@ -19,6 +19,7 @@ from .forms import SequenceSearchForm
 from .models import SearchRun
 from .data import (
     build_peg_plot, build_temp_plot, build_table_rows, build_method_legend,
+    build_reagent_frequency, build_reagent_frequency_plot, build_reagent_frequency_by_category_plot,
     load_conditions, score_gradient_stops, TABLE_COLUMNS, SCORE_MIN, SCORE_MAX, SCORE_TICKS,
 )
 
@@ -73,6 +74,21 @@ def _build_search_signature(protein_name: str, sequence: str, sequence_type: str
         str(float(evalue)),
         str(int(max_hits)),
         "1" if llm_fallback else "0",
+    ])
+    return hashlib.sha256(payload.encode("utf-8")).hexdigest()
+
+
+def _build_sequence_signature(protein_name: str, sequence: str, sequence_type: str) -> str:
+    """Signature of just the search *subject* -- protein name, sequence,
+    and sequence type -- deliberately excluding the identity/E-value/
+    max-hits thresholds and the LLM-fallback flag. Two searches sharing
+    this signature are "the same search with different parameters": the
+    later one reuses and overwrites the earlier run's history row and
+    output folder instead of getting its own (see index())."""
+    payload = "|".join([
+        (protein_name or "").strip(),
+        _normalize_sequence(sequence),
+        (sequence_type or "").strip(),
     ])
     return hashlib.sha256(payload.encode("utf-8")).hexdigest()
 
@@ -146,10 +162,16 @@ def index(request):
     -> search -> filter -> compound extraction -> plots/table)
     synchronously, then redirect to the results page for that protein.
 
-    Repeated searches with the same protein sequence and threshold settings
-    are now deduplicated against SearchRun.search_signature: the existing
-    history row is reused, and the app redirects straight to that result
-    instead of inserting a second row.
+    Repeated searches are deduplicated at two levels:
+      - Same protein/sequence/type AND same thresholds/flags (full
+        search_signature match): the existing completed run is reused
+        outright -- redirect straight to it, no re-run.
+      - Same protein/sequence/type but different thresholds/flags
+        (sequence_signature match only): treated as "redo this search
+        with different parameters" -- the existing history row and output
+        folder are reused and overwritten in place, rather than piling up
+        a separate history entry per parameter tweak.
+      - No match at all: a brand-new history row and output folder.
     """
     if request.method == "POST":
         form = SequenceSearchForm(request.POST)
@@ -157,10 +179,11 @@ def index(request):
             protein_name = form.cleaned_data["protein_name"]
             sequence = form.cleaned_data["sequence"]
             normalized_sequence = _normalize_sequence(sequence)
+            sequence_type = form.cleaned_data["sequence_type"]
             signature = _build_search_signature(
                 protein_name,
                 normalized_sequence,
-                form.cleaned_data["sequence_type"],
+                sequence_type,
                 form.cleaned_data["identity"],
                 form.cleaned_data["evalue"],
                 form.cleaned_data["max_hits"],
@@ -171,23 +194,34 @@ def index(request):
             if existing_run:
                 return redirect(reverse("viewer:results", args=[existing_run.folder_name]))
 
-            folder_name = unique_folder_name(protein_name)
-            output_dir = os.path.join(settings.PIPELINE_OUTPUT_DIR, folder_name)
-            os.makedirs(output_dir, exist_ok=True)
-            started_at = timezone.now()
+            sequence_signature = _build_sequence_signature(protein_name, normalized_sequence, sequence_type)
+            reusable_run = SearchRun.objects.filter(sequence_signature=sequence_signature).first()
 
-            run = SearchRun.objects.create(
-                protein_name=protein_name,
-                folder_name=folder_name,
-                sequence=normalized_sequence,
-                search_signature=signature,
-                sequence_type=form.cleaned_data["sequence_type"],
-                identity=form.cleaned_data["identity"],
-                evalue=form.cleaned_data["evalue"],
-                max_hits=form.cleaned_data["max_hits"],
-                llm_fallback=form.cleaned_data["llm_fallback"],
-                sequence_preview=normalized_sequence[:80],
-            )
+            if reusable_run:
+                run = reusable_run
+                folder_name = run.folder_name
+                output_dir = os.path.join(settings.PIPELINE_OUTPUT_DIR, folder_name)
+                os.makedirs(output_dir, exist_ok=True)
+                run.search_signature = signature
+                run.status = SearchRun.STATUS_RUNNING
+            else:
+                folder_name = unique_folder_name(protein_name)
+                output_dir = os.path.join(settings.PIPELINE_OUTPUT_DIR, folder_name)
+                os.makedirs(output_dir, exist_ok=True)
+                run = SearchRun(folder_name=folder_name, search_signature=signature)
+
+            started_at = timezone.now()
+            run.protein_name = protein_name
+            run.sequence = normalized_sequence
+            run.sequence_signature = sequence_signature
+            run.sequence_type = sequence_type
+            run.identity = form.cleaned_data["identity"]
+            run.evalue = form.cleaned_data["evalue"]
+            run.max_hits = form.cleaned_data["max_hits"]
+            run.llm_fallback = form.cleaned_data["llm_fallback"]
+            run.sequence_preview = normalized_sequence[:80]
+            run.error_message = ""
+            run.save()
 
             try:
                 # Save the input sequence as a FASTA file in the protein's
@@ -305,6 +339,8 @@ def results(request, protein_name):
     no_hits = False
     peg_plot_div = None
     temp_plot_div = None
+    reagent_plot_div = None
+    reagent_category_plot_div = None
     table_rows = []
     method_legend = []
     run_runtime_seconds = run_record.runtime_seconds if run_record else None
@@ -339,6 +375,16 @@ def results(request, protein_name):
                     temp_fig, output_type="div", include_plotlyjs=False, config=plot_config
                 )
 
+                reagent_freq = build_reagent_frequency(df)
+                reagent_plot_div = pyo.plot(
+                    build_reagent_frequency_plot(reagent_freq),
+                    output_type="div", include_plotlyjs=False, config=plot_config
+                )
+                reagent_category_plot_div = pyo.plot(
+                    build_reagent_frequency_by_category_plot(reagent_freq),
+                    output_type="div", include_plotlyjs=False, config=plot_config
+                )
+
                 table_rows = build_table_rows(df)
         except Exception as e:
             error = f"Could not load or process {grouped_csv_path}: {e}"
@@ -357,6 +403,8 @@ def results(request, protein_name):
         "run_runtime_seconds": run_runtime_seconds,
         "peg_plot_div": peg_plot_div,
         "temp_plot_div": temp_plot_div,
+        "reagent_plot_div": reagent_plot_div,
+        "reagent_category_plot_div": reagent_category_plot_div,
         "method_legend": method_legend,
         "score_gradient_stops": score_gradient_stops(),
         "score_min": SCORE_MIN,
