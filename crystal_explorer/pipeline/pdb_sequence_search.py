@@ -38,6 +38,7 @@ Notes
 """
 import os
 import argparse
+import concurrent.futures
 import gemmi
 import json
 import re
@@ -697,11 +698,21 @@ def find_homologs_with_conditions(
     sequence_type: str = "protein",
     max_hits: int = 1000,
     sleep: float = 0.2,
+    max_workers: int = 6,
     verbose: bool = True,
 ) -> List[Dict]:
     """Run the full pipeline and return a list of row-dicts, one per
     (pdb_id, compound) pair. Entries with no parsed compounds still get a
-    single row with empty compound fields, so no hit is silently dropped."""
+    single row with empty compound fields, so no hit is silently dropped.
+
+    Per-hit metadata (mmCIF download, PubMed lookup, non-polymer fetch) is
+    fetched concurrently across up to `max_workers` hits at once -- this is
+    pure network-I/O-bound work, and fetching hits one at a time with a
+    `sleep` after each was the dominant cost for anything but a fully
+    cached search. Each hit still only touches its own pdb_id's cache
+    files, so this is safe to parallelize without locking. `max_workers`
+    is kept modest (mirrors the old CLI pipeline's own worker count) so a
+    search still doesn't hammer RCSB with an unbounded burst of requests."""
 
     query = build_sequence_query(
         sequence,
@@ -721,31 +732,35 @@ def find_homologs_with_conditions(
     if verbose:
         print(f"Found {len(hits)} matching PDB entries.", file=sys.stderr)
 
-    rows: List[Dict] = []
-
-    for i, hit in enumerate(hits, 1):
+    def _fetch_one(hit: dict) -> Optional[Dict]:
         pdb_id = hit["pdb_id"]
         identity = hit.get("sequence_identity")
-        evalue = hit.get("evalue")
-        if verbose:
-            identity_pct = f"{identity * 100:.1f}%" if identity is not None else "n/a"
-            print(f"  [{i}/{len(hits)}] {pdb_id} (identity={identity_pct}, "
-                  f"e-value={evalue})", file=sys.stderr)
-    
         base_row = {
             "pdb_id": pdb_id,
             "entity_id": hit.get("entity_id"),
             "sequence_identity": round(identity * 100, 2) if identity is not None else None,
-            "evalue": evalue,
-            "score": round(hit.get("score", 0.0), 4),}
-
-       
+            "evalue": hit.get("evalue"),
+            "score": round(hit.get("score", 0.0), 4),
+        }
+        if sleep:
+            time.sleep(sleep)
         info = extract_mmcif_info(pdb_id, query_entity_id=hit.get("entity_id"))
-        
-        if info:
-            rows.append({**base_row, **info})
+        return {**base_row, **info} if info else None
 
-        time.sleep(sleep)  # be polite to the API
+    rows: List[Dict] = []
+    total = len(hits)
+    with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
+        future_to_hit = {executor.submit(_fetch_one, hit): hit for hit in hits}
+        for completed, future in enumerate(concurrent.futures.as_completed(future_to_hit), 1):
+            hit = future_to_hit[future]
+            if verbose:
+                identity = hit.get("sequence_identity")
+                identity_pct = f"{identity * 100:.1f}%" if identity is not None else "n/a"
+                print(f"  [{completed}/{total}] {hit['pdb_id']} (identity={identity_pct}, "
+                      f"e-value={hit.get('evalue')})", file=sys.stderr)
+            row = future.result()
+            if row:
+                rows.append(row)
 
     return rows
 

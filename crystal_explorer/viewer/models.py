@@ -28,6 +28,18 @@ class SearchRun(models.Model):
         blank=True,
         help_text="Canonical signature for deduplicating repeated searches.",
     )
+    sequence_signature = models.CharField(
+        max_length=128,
+        unique=False,
+        db_index=True,
+        blank=True,
+        help_text=(
+            "Signature of protein name + sequence + sequence type only "
+            "(no thresholds/flags) -- a rerun with the same subject but "
+            "different parameters reuses and overwrites this row instead "
+            "of creating a new history entry."
+        ),
+    )
     sequence_type = models.CharField(max_length=10)
     identity = models.FloatField()
     evalue = models.FloatField()
