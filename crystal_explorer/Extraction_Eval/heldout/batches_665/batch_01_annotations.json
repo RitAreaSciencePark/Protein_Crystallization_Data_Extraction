@@ -1,0 +1,402 @@
+[
+  {
+    "pdb_id": "1B2F",
+    "protein": "insulin_human",
+    "ground_truth_notes": "GT: none (pH only statement, no reagents).",
+    "tp": 0,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "3T2A",
+    "protein": "insulin_human",
+    "ground_truth_notes": "GT: CAPS (protein buffer, 50mM), TMAO (1.2M, well), malate/malic acid (0.1M, well). All 3 correctly extracted.",
+    "tp": 3,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "3RTO",
+    "protein": "insulin_human",
+    "ground_truth_notes": "GT: sodium citrate (0.2M), acetone, zinc sulfate (0.12M), and 0.02M HCl (explicit quantified component of crystallizing solution, used as acid). Extractor got sodium citrate/acetone/zinc sulfate but missed HCl entirely (fn). Note: acetone concentration mislabeled as 20.0 M (volume mL misread as molarity) but compound identity still correct so counted tp.",
+    "tp": 3,
+    "fp": 0,
+    "fn": 1
+  },
+  {
+    "pdb_id": "1B2E",
+    "protein": "insulin_human",
+    "ground_truth_notes": "GT: none (pH only).",
+    "tp": 0,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "1B86",
+    "protein": "hemoglobin_human",
+    "ground_truth_notes": "GT: none (pH only).",
+    "tp": 0,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "1XXT",
+    "protein": "hemoglobin_human",
+    "ground_truth_notes": "GT: PEG 6000, potassium phosphate, potassium chloride, sodium dithionite (hemoglobin itself excluded as protein). All 4 correctly extracted.",
+    "tp": 4,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "1Y09",
+    "protein": "hemoglobin_human",
+    "ground_truth_notes": "GT: same as 1XXT - PEG 6000, potassium phosphate, potassium chloride, sodium dithionite (Hb excluded as protein). All 4 correctly extracted.",
+    "tp": 4,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "2D5Z",
+    "protein": "hemoglobin_human",
+    "ground_truth_notes": "GT: PEG 6000, sodium cacodylate, and L35 (0.1mM) - a specific small-molecule hemoglobin allosteric effector/ligand, counted as a GT compound (not a protein). Extractor missed L35 entirely (fn).",
+    "tp": 2,
+    "fp": 0,
+    "fn": 1
+  },
+  {
+    "pdb_id": "28OD",
+    "protein": "hemoglobin_human",
+    "ground_truth_notes": "GT: ammonium sulfate (3.0M), MPD (1% wv). Both correctly extracted.",
+    "tp": 2,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "1EX3",
+    "protein": "chymotrypsin",
+    "ground_truth_notes": "GT: sodium chloride, sodium citrate, sodium azide, and phenylmethanesulfonyl fluoride (PMSF) - a small-molecule protease inhibitor reagent. Extractor missed PMSF entirely (fn).",
+    "tp": 3,
+    "fp": 0,
+    "fn": 1
+  },
+  {
+    "pdb_id": "1CBW",
+    "protein": "chymotrypsin",
+    "ground_truth_notes": "GT: none (pH only).",
+    "tp": 0,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "2GCT",
+    "protein": "chymotrypsin",
+    "ground_truth_notes": "GT: none (pH only).",
+    "tp": 0,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "2VGC",
+    "protein": "chymotrypsin",
+    "ground_truth_notes": "GT: ammonium sulfate (65%), sodium cacodylate (100mM, written as 'CACODYLATE'). Both correctly extracted.",
+    "tp": 2,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "1TM7",
+    "protein": "subtilisin",
+    "ground_truth_notes": "GT: sodium citrate, isopropanol, PEG 750 monomethyl ether. Extractor output 'PEG 750' (dropped the MME qualifier) - treated as same entity/family as PEG 750 MME, counted tp (borderline: loses specificity but not a different hallucinated compound).",
+    "tp": 3,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "1TM3",
+    "protein": "subtilisin",
+    "ground_truth_notes": "GT: sodium citrate, isopropanol, PEG 4000, xylitol. All 4 correctly extracted.",
+    "tp": 4,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "1Y3D",
+    "protein": "subtilisin",
+    "ground_truth_notes": "GT: sodium citrate, isopropanol, PEG MME 750. All 3 correctly extracted.",
+    "tp": 3,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "1Y4D",
+    "protein": "subtilisin",
+    "ground_truth_notes": "GT: potassium phosphate, PEG 8000. Both correctly extracted.",
+    "tp": 2,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "1TMG",
+    "protein": "subtilisin",
+    "ground_truth_notes": "GT: sodium citrate, isopropanol, PEG 400. All 3 correctly extracted.",
+    "tp": 3,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "1BP4",
+    "protein": "papain",
+    "ground_truth_notes": "GT: none (pH only).",
+    "tp": 0,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "3LFY",
+    "protein": "papain",
+    "ground_truth_notes": "GT: HEPES, MPD. Both correctly extracted.",
+    "tp": 2,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "6K9J",
+    "protein": "cytochrome_c",
+    "ground_truth_notes": "GT: sodium chloride, ammonium sulfate, sodium phosphate. All 3 correctly extracted.",
+    "tp": 3,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "4RSZ",
+    "protein": "cytochrome_c",
+    "ground_truth_notes": "GT (entity-level, collapsing duplicate mentions): ammonium sulfate, sodium nitrate, sodium acetate, and cisplatin (0.005M, used in soak solution - a small-molecule metal-complex reagent). Extractor correctly got ammonium sulfate/sodium nitrate/sodium acetate but missed cisplatin entirely (fn).",
+    "tp": 3,
+    "fp": 0,
+    "fn": 1
+  },
+  {
+    "pdb_id": "6SUV",
+    "protein": "cytochrome_c",
+    "ground_truth_notes": "GT: PEG 3350, sodium cacodylate, gadolinium chloride (0.0017M, heavy-atom salt additive). Extractor missed gadolinium chloride entirely (fn).",
+    "tp": 2,
+    "fp": 0,
+    "fn": 1
+  },
+  {
+    "pdb_id": "5IY5",
+    "protein": "cytochrome_c",
+    "ground_truth_notes": "GT: sodium phosphate, fluorinated octylmaltoside, decylmaltoside, ethylene glycol, PEG 4000 (detergents counted as small-molecule additives). All 5 correctly extracted.",
+    "tp": 5,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "3NBT",
+    "protein": "cytochrome_c",
+    "ground_truth_notes": "GT: PEG 200, Tris-HCl, ammonium phosphate. All 3 correctly extracted.",
+    "tp": 3,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "8DVX",
+    "protein": "cytochrome_c",
+    "ground_truth_notes": "GT (entity-level): PEG 4000 (mentioned twice as 'PEG 4K'), isopropanol ('iso propanol'), potassium ferricyanide. 'JBS3A2' is a screen-kit label, not a reagent, correctly ignored. Extractor labeled isopropanol generically as 'propanol' (borderline - same alcohol family/role, not a different hallucinated compound) - counted tp.",
+    "tp": 3,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "3ZCF",
+    "protein": "cytochrome_c",
+    "ground_truth_notes": "GT: PEG 1000, potassium phosphate (KH2PO4). Both correctly extracted.",
+    "tp": 2,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "2AIU",
+    "protein": "cytochrome_c",
+    "ground_truth_notes": "GT: PEG 1000, potassium phosphate. Both correctly extracted.",
+    "tp": 2,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "3ZOO",
+    "protein": "cytochrome_c",
+    "ground_truth_notes": "GT: PEG 1000, potassium phosphate (KH2PO4). Both correctly extracted.",
+    "tp": 2,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "2D3G",
+    "protein": "ubiquitin",
+    "ground_truth_notes": "GT: PEG 400, CHES. Both correctly extracted.",
+    "tp": 2,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "1NBF",
+    "protein": "ubiquitin",
+    "ground_truth_notes": "GT: PEG 3000, citrate (buffer). Both correctly extracted.",
+    "tp": 2,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "2G45",
+    "protein": "ubiquitin",
+    "ground_truth_notes": "GT: PEG 8000, sodium cacodylate, ethylene glycol, and both magnesium acetate AND calcium acetate (explicitly stated as alternatives 'magnesium or calcium acetate' - borderline, counted as two distinct named GT salts since both are explicitly named). Extractor only captured calcium acetate, missing magnesium acetate (fn).",
+    "tp": 4,
+    "fp": 0,
+    "fn": 1
+  },
+  {
+    "pdb_id": "2XK5",
+    "protein": "ubiquitin",
+    "ground_truth_notes": "GT: PEG 3350, zinc acetate. Both correctly extracted.",
+    "tp": 2,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "2ZVO",
+    "protein": "ubiquitin",
+    "ground_truth_notes": "GT: none (method description only, no reagents named).",
+    "tp": 0,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "3HM3",
+    "protein": "ubiquitin",
+    "ground_truth_notes": "GT: sodium acetate, PEG 3000, zinc acetate. All 3 correctly extracted.",
+    "tp": 3,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "3DVN",
+    "protein": "ubiquitin",
+    "ground_truth_notes": "GT (entity-level, collapsing protein-buffer and well mentions of same chemical): Tris/Tris-HCl buffer, sodium chloride (NaCl, two mentions), citrate. All 3 correctly extracted.",
+    "tp": 3,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "3M3J",
+    "protein": "ubiquitin",
+    "ground_truth_notes": "GT: PEG 4000, lithium sulfate, Tris-HCl. All 3 correctly extracted.",
+    "tp": 3,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "3OFI",
+    "protein": "ubiquitin",
+    "ground_truth_notes": "GT: PEG MME 5000, HEPES, Tacsimate (named commercial precipitant blend), dioxane. All 4 correctly extracted.",
+    "tp": 4,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "1CM4",
+    "protein": "calmodulin",
+    "ground_truth_notes": "GT (entity-level): sodium acetate, PEG 6000 (collapsing the 'poly-ethylene glycol 6000 (PEG 6000)' and the later '30% PEG' stock-mixing mention into one entity), calcium chloride, sodium azide. Bovine brain calmodulin and CaMKII-alpha peptide are proteins, excluded. Extractor hallucinated a separate 'ethylene glycol' compound (fp) by matching the substring inside 'poly-ethylene glycol 6000' - not an actual distinct reagent in the text.",
+    "tp": 4,
+    "fp": 1,
+    "fn": 0
+  },
+  {
+    "pdb_id": "1NIW",
+    "protein": "calmodulin",
+    "ground_truth_notes": "GT: PEG (unqualified MW, borderline but counted since explicitly named as a reagent), ammonium sulfate. Both correctly extracted.",
+    "tp": 2,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "1LVC",
+    "protein": "calmodulin",
+    "ground_truth_notes": "GT: PEG 8000, ammonium sulfate, glycerol. All 3 correctly extracted.",
+    "tp": 3,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "2V01",
+    "protein": "calmodulin",
+    "ground_truth_notes": "GT: MPD. Correctly extracted.",
+    "tp": 1,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "3G43",
+    "protein": "calmodulin",
+    "ground_truth_notes": "GT: PEG 6000, lithium chloride (LiCl), MPD, MES. All 4 correctly extracted.",
+    "tp": 4,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "3SJQ",
+    "protein": "calmodulin",
+    "ground_truth_notes": "GT: lithium sulfate (Li2SO4), ammonium sulfate ((NH4)2SO4), sodium citrate. 'Silver Bullets 22 reagent 70' is an opaque commercial additive-screen product code with no disclosed chemical identity in the text - excluded from GT (borderline, documented). All 3 named salts correctly extracted.",
+    "tp": 3,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "5K8Q",
+    "protein": "calmodulin",
+    "ground_truth_notes": "GT: imidazole (0.1M), PEG MME 550 (28% v/v, written as 'PEGMME 550' with no space). Extractor correctly got imidazole but missed PEGMME 550 entirely (fn) - likely a tokenization/spacing miss.",
+    "tp": 1,
+    "fp": 0,
+    "fn": 1
+  },
+  {
+    "pdb_id": "6B8Q",
+    "protein": "calmodulin",
+    "ground_truth_notes": "GT: magnesium formate, PEG 3350. Both correctly extracted.",
+    "tp": 2,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "1RF7",
+    "protein": "dihydrofolate_reductase",
+    "ground_truth_notes": "GT: none (pH only).",
+    "tp": 0,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "1RB2",
+    "protein": "dihydrofolate_reductase",
+    "ground_truth_notes": "GT: none (pH only).",
+    "tp": 0,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "1RB3",
+    "protein": "dihydrofolate_reductase",
+    "ground_truth_notes": "GT: none (pH only).",
+    "tp": 0,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "1RX8",
+    "protein": "dihydrofolate_reductase",
+    "ground_truth_notes": "GT: none (pH only).",
+    "tp": 0,
+    "fp": 0,
+    "fn": 0
+  }
+]

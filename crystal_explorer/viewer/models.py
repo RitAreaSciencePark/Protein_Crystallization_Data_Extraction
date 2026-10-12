@@ -40,6 +40,19 @@ class SearchRun(models.Model):
             "of creating a new history entry."
         ),
     )
+    session_key = models.CharField(
+        max_length=40, blank=True, default="", db_index=True,
+        help_text=(
+            "Django anonymous session key of whoever (most recently) ran "
+            "this search -- not an account, just a per-browser cookie. "
+            "Used to scope the history list to the current visitor and to "
+            "gate deletion to the browser that ran the search; the "
+            "dedup/reuse logic in index() still checks every row "
+            "regardless of this field, so a repeated search is reused "
+            "across visitors even though each visitor's history list "
+            "shows only their own rows."
+        ),
+    )
     sequence_type = models.CharField(max_length=10)
     identity = models.FloatField()
     evalue = models.FloatField()

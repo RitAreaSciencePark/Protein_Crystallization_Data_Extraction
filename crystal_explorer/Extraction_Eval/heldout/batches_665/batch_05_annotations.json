@@ -1,0 +1,402 @@
+[
+  {
+    "pdb_id": "5IRW",
+    "protein": "avidin",
+    "ground_truth_notes": "GT: imidazole, MES, PEG 20000, PEG MME 500, magnesium chloride, calcium chloride (6). Extractor found all 6 exactly.",
+    "tp": 6,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "5MYQ",
+    "protein": "avidin",
+    "ground_truth_notes": "GT: ammonium iodide, PEG 3350 (2). Extractor matched both.",
+    "tp": 2,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "2A5B",
+    "protein": "avidin",
+    "ground_truth_notes": "GT: PEG 8000, sodium citrate (2). Extractor matched both.",
+    "tp": 2,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "3VGW",
+    "protein": "avidin",
+    "ground_truth_notes": "GT: ammonium sulfate, sodium citrate (2). Extractor matched both.",
+    "tp": 2,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "3VHM",
+    "protein": "avidin",
+    "ground_truth_notes": "GT: ammonium sulfate, sodium citrate (2). Extractor matched both.",
+    "tp": 2,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "3VHH",
+    "protein": "avidin",
+    "ground_truth_notes": "GT: ammonium sulfate, sodium citrate (2). Extractor matched both.",
+    "tp": 2,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "7P4Z",
+    "protein": "avidin",
+    "ground_truth_notes": "GT: PEG 8000, ethylene glycol, MES, imidazole (4). 'Anaesthetic alkaloid' is an unnamed generic class, not a specific compound, so excluded from GT. Extractor matched the 4 real reagents and correctly skipped the generic phrase.",
+    "tp": 4,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "5WBC",
+    "protein": "streptavidin",
+    "ground_truth_notes": "GT: sodium acetate, ammonium sulfate (2). Extractor matched both.",
+    "tp": 2,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "8AQY",
+    "protein": "streptavidin",
+    "ground_truth_notes": "GT: HEPES, PEG 8000, ethylene glycol (EG) (3). Extractor matched all 3.",
+    "tp": 3,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "6Y2T",
+    "protein": "streptavidin",
+    "ground_truth_notes": "GT: ammonium sulfate ((NH4)2SO4), sodium acetate (2). Extractor matched both.",
+    "tp": 2,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "3PK2",
+    "protein": "streptavidin",
+    "ground_truth_notes": "GT: ammonium sulfate, sodium acetate (2); 26 mg/mL figure is the protein itself, excluded. Extractor matched both.",
+    "tp": 2,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "5VL5",
+    "protein": "streptavidin",
+    "ground_truth_notes": "GT: ammonium sulfate, sodium acetate (2). Extractor matched both.",
+    "tp": 2,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "1N92",
+    "protein": "alcohol_dehydrogenase_horse",
+    "ground_truth_notes": "GT: MPD (1). Extractor matched.",
+    "tp": 1,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "1P1R",
+    "protein": "alcohol_dehydrogenase_horse",
+    "ground_truth_notes": "GT: MPD, TES (the text's 'ammonium tris-[(hydroxymethyl)methyl]-2-aminosulfonate buffer' is TES/ammonium-TES, matching the same buffer spelled out fully in sibling entry 4DXH, just missing the word 'ethane'), EDTA (3). Extractor mislabeled the TES buffer as 'Tris-HCl' -> fp for Tris-HCl, fn for TES; MPD and EDTA correct.",
+    "tp": 2,
+    "fp": 1,
+    "fn": 1
+  },
+  {
+    "pdb_id": "4DXH",
+    "protein": "alcohol_dehydrogenase_horse",
+    "ground_truth_notes": "GT: TES (ammonium N-[tris(hydroxymethyl)methyl]-2-aminoethane sulfonate), EDTA, NAD+, 2,2,2-trifluoroethanol, MPD (5); 10 mg/mL protein excluded. Extractor found TES, EDTA, NAD, MPD but missed trifluoroethanol entirely.",
+    "tp": 4,
+    "fp": 0,
+    "fn": 1
+  },
+  {
+    "pdb_id": "7UTW",
+    "protein": "alcohol_dehydrogenase_horse",
+    "ground_truth_notes": "GT: PEG 400, NADH, N-cyclohexylformamide (small-molecule additive, not a protein), Tris buffer (4). Extractor only found PEG 400 and Tris-HCl, missed NADH and N-cyclohexylformamide.",
+    "tp": 2,
+    "fp": 0,
+    "fn": 2
+  },
+  {
+    "pdb_id": "5CDS",
+    "protein": "alcohol_dehydrogenase_horse",
+    "ground_truth_notes": "GT: TES, EDTA, NAD+, pentafluorobenzyl alcohol, MPD (5; '2-METHYL-,4-PENTANEDIOL' is a typo'd MPD, still counted); 10 mg/mL protein excluded. Extractor found TES, EDTA, NAD, pentafluorobenzyl alcohol but missed MPD, likely due to the missing digit in the typo breaking the MPD regex.",
+    "tp": 4,
+    "fp": 0,
+    "fn": 1
+  },
+  {
+    "pdb_id": "5VJG",
+    "protein": "alcohol_dehydrogenase_horse",
+    "ground_truth_notes": "GT: Tris-HCl, MPD (2-methyl-2,4-pentanediol), 2,2'-bipyridine (soaked ligand) (3); 10 mg/mL protein excluded. Extractor only found Tris-HCl, missed MPD and bipyridine (likely because they appear later in a free-text sentence rather than a standard clause).",
+    "tp": 1,
+    "fp": 0,
+    "fn": 2
+  },
+  {
+    "pdb_id": "1MTC",
+    "protein": "glutathione_S_transferase",
+    "ground_truth_notes": "GT: ammonium sulfate (1; text has typo 'ammonoium sulfate'). Extractor returned nothing -- the typo broke the match.",
+    "tp": 0,
+    "fp": 0,
+    "fn": 1
+  },
+  {
+    "pdb_id": "1XW6",
+    "protein": "glutathione_S_transferase",
+    "ground_truth_notes": "GT: PEG 4000 (1). Extractor matched.",
+    "tp": 1,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "7BEU",
+    "protein": "glutathione_S_transferase",
+    "ground_truth_notes": "GT: HEPES, PEG 6000, ammonium chloride (3). Extractor matched all 3.",
+    "tp": 3,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "3GUR",
+    "protein": "glutathione_S_transferase",
+    "ground_truth_notes": "GT: PEG 8000, sodium chloride, MES (3). Extractor matched all 3.",
+    "tp": 3,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "1G4I",
+    "protein": "phospholipase_A2",
+    "ground_truth_notes": "GT: MPD, calcium chloride, Tris buffer (3). Extractor matched all 3.",
+    "tp": 3,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "1MKV",
+    "protein": "phospholipase_A2",
+    "ground_truth_notes": "GT: calcium chloride, Tris-HCl, MPD (3; MPD named twice at different concentrations (droplet/reservoir) = one entity). The unlabeled '(2mM)' component has no chemical name given, excluded. 20 mg/mL protein excluded. Extractor matched calcium chloride, Tris-HCl, and MPD (counted once despite two mentions).",
+    "tp": 3,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "2ZP4",
+    "protein": "phospholipase_A2",
+    "ground_truth_notes": "GT: calcium chloride, Tris-HCl, MPD (3). Extractor matched all 3.",
+    "tp": 3,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "1KVW",
+    "protein": "phospholipase_A2",
+    "ground_truth_notes": "GT: calcium chloride, Tris-HCl, MPD (3; MPD at two concentrations = one entity); 15 mg/mL protein excluded. Extractor matched all 3 (MPD counted once).",
+    "tp": 3,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "1VKQ",
+    "protein": "phospholipase_A2",
+    "ground_truth_notes": "GT: Tris-HCl, MPD (named at two concentrations = one entity), calcium chloride (3); 17-20 mg/mL protein excluded. Extractor matched all 3 (MPD counted once).",
+    "tp": 3,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "1IL9",
+    "protein": "ricin",
+    "ground_truth_notes": "GT: PEG 8000, Tris-HCl, beta-mercaptoethanol, EDTA, 8-methyl-9-oxoguanine (small-molecule ligand) (5). Extractor found PEG 8000, Tris-HCl, BME, EDTA but missed 8-methyl-9-oxoguanine.",
+    "tp": 4,
+    "fp": 0,
+    "fn": 1
+  },
+  {
+    "pdb_id": "6URW",
+    "protein": "ricin",
+    "ground_truth_notes": "GT: sodium acetate, PEG 3350 (2). Extractor matched both.",
+    "tp": 2,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "6CWG",
+    "protein": "ricin",
+    "ground_truth_notes": "GT: lithium sulfate (text typo 'Lithiuim sulfate'), CAPS, ammonium sulfate (3). Extractor found CAPS and ammonium sulfate but missed lithium sulfate due to the typo.",
+    "tp": 2,
+    "fp": 0,
+    "fn": 1
+  },
+  {
+    "pdb_id": "7XZU",
+    "protein": "ricin",
+    "ground_truth_notes": "GT: PEG 2000, lithium sulfate, sodium acetate (3). Extractor matched all 3.",
+    "tp": 3,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "8I7P",
+    "protein": "ricin",
+    "ground_truth_notes": "GT: PEG 2000, lithium sulfate, sodium acetate (3). Extractor matched all 3.",
+    "tp": 3,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "2P8N",
+    "protein": "ricin",
+    "ground_truth_notes": "GT: ammonium sulfate, sodium acetate (2). Extractor matched both.",
+    "tp": 2,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "2R3D",
+    "protein": "ricin",
+    "ground_truth_notes": "GT: ammonium sulfate, sodium acetate (2). Extractor matched both.",
+    "tp": 2,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "3HIO",
+    "protein": "ricin",
+    "ground_truth_notes": "GT: PEG 2000, lithium sulfate, sodium acetate (3). Extractor matched all 3.",
+    "tp": 3,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "4HV3",
+    "protein": "ricin",
+    "ground_truth_notes": "GT: ammonium sulfate, sodium malonate (2). Extractor matched both.",
+    "tp": 2,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "3RTI",
+    "protein": "ricin",
+    "ground_truth_notes": "GT: PEG 8000, sodium acetate, lactose (small-molecule additive, not a protein/peptide) (3). Extractor matched all 3.",
+    "tp": 3,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "1INX",
+    "protein": "neuraminidase_influenza",
+    "ground_truth_notes": "GT: EPANA (1) -- a named small-molecule neuraminidase-inhibitor soak compound, borderline since it's only an abbreviation, but it is a defined chemical reagent and not a protein, so counted. Extractor returned nothing.",
+    "tp": 0,
+    "fp": 0,
+    "fn": 1
+  },
+  {
+    "pdb_id": "1IVC",
+    "protein": "neuraminidase_influenza",
+    "ground_truth_notes": "GT: BANA106 (1) -- same reasoning as EPANA above, a named small-molecule soak compound, counted as borderline GT. Extractor returned nothing.",
+    "tp": 0,
+    "fp": 0,
+    "fn": 1
+  },
+  {
+    "pdb_id": "1INH",
+    "protein": "neuraminidase_influenza",
+    "ground_truth_notes": "GT: none -- text only states pH, no reagent named. Extractor correctly returned nothing.",
+    "tp": 0,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "4K1K",
+    "protein": "neuraminidase_influenza",
+    "ground_truth_notes": "GT: bis-tris propane, Jeffamine ED-2001 (2). Extractor matched both.",
+    "tp": 2,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "4K1J",
+    "protein": "neuraminidase_influenza",
+    "ground_truth_notes": "GT: imidazole, Jeffamine ED-2001 (2). Extractor matched both.",
+    "tp": 2,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "4K1H",
+    "protein": "neuraminidase_influenza",
+    "ground_truth_notes": "GT: bis-tris propane, Jeffamine ED-2001 (2). Extractor matched both.",
+    "tp": 2,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "7U4E",
+    "protein": "neuraminidase_influenza",
+    "ground_truth_notes": "GT: PEG 6000, MPD, HEPES (3). Extractor matched all 3.",
+    "tp": 3,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "2AEP",
+    "protein": "neuraminidase_influenza",
+    "ground_truth_notes": "GT: ammonium sulfate, Tris (2). Extractor matched both.",
+    "tp": 2,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "6N6B",
+    "protein": "neuraminidase_influenza",
+    "ground_truth_notes": "GT: Tris-HCl, ammonium sulfate (2). Extractor matched both.",
+    "tp": 2,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "2ZAW",
+    "protein": "cytochrome_P450cam",
+    "ground_truth_notes": "GT: PEG 8000, Tris-HCl, potassium chloride, camphor, dithioerythritol/DTE (5; full name + abbreviation counted once). Extractor matched all 5 (DTE mentioned twice, counted as one tp).",
+    "tp": 5,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "5CP4",
+    "protein": "cytochrome_P450cam",
+    "ground_truth_notes": "GT: none -- text only states pH. Extractor correctly returned nothing.",
+    "tp": 0,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "1GEM",
+    "protein": "cytochrome_P450cam",
+    "ground_truth_notes": "GT: ammonium sulfate ((NH4)2SO4) (1). Extractor matched.",
+    "tp": 1,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "3WRJ",
+    "protein": "cytochrome_P450cam",
+    "ground_truth_notes": "GT: Tris-HCl, potassium chloride, PEG 4000, camphor (4). Extractor matched all 4.",
+    "tp": 4,
+    "fp": 0,
+    "fn": 0
+  }
+]

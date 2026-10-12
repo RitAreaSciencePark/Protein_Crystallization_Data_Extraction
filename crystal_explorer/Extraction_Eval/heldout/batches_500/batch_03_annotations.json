@@ -1,0 +1,402 @@
+[
+  {
+    "pdb_id": "4AHN",
+    "protein": "angiogenin",
+    "ground_truth_notes": "PEG 4000 20%, sodium/potassium tartrate 0.05M (missed, no dict entry), NaCl 0.1M, HEPES 0.1M",
+    "tp": 3,
+    "fp": 0,
+    "fn": 1
+  },
+  {
+    "pdb_id": "1HQE",
+    "protein": "reverse_transcriptase_HIV",
+    "ground_truth_notes": "Bis-Tris propane, ammonium sulfate (missed), glycerol, PEG 8000; extractor mislabeled Bis-Tris propane as plain 'Bis-Tris' (a different, distinct buffer)",
+    "tp": 2,
+    "fp": 1,
+    "fn": 2
+  },
+  {
+    "pdb_id": "2D1K",
+    "protein": "DNase_I",
+    "ground_truth_notes": "sodium formate, PEG 3350",
+    "tp": 2,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "2GT9",
+    "protein": "MHC_class_I",
+    "ground_truth_notes": "PEG 3350 24%, MES 0.025M, NaCl 0.1M",
+    "tp": 3,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "1YSA",
+    "protein": "leucine_zipper_GCN4",
+    "ground_truth_notes": "no reagents in the crystallization conditions proper; text does name PEG (polyethylene glycol) MW 400, 35% v/v, used to soak crystals before freezing - borderline call, counted as a named reagent that the extractor missed",
+    "tp": 0,
+    "fp": 0,
+    "fn": 1
+  },
+  {
+    "pdb_id": "2BN1",
+    "protein": "insulin_human",
+    "ground_truth_notes": "sodium phosphate buffer (NaPO4/Na2HPO4) 0.4M, EDTA 0.001M, ethylene glycol 30%; extractor split the phosphate buffer into two outputs and hallucinated a potassium component ('sodium/potassium phosphate') not present in the text - counted as one TP (Disodium phosphate) + one FP (the erroneous duplicate)",
+    "tp": 3,
+    "fp": 1,
+    "fn": 0
+  },
+  {
+    "pdb_id": "4Z1M",
+    "protein": "ATP_synthase_F1",
+    "ground_truth_notes": "Tris-HCl, MgCl2, EDTA, sodium monothiophosphate (missed, no dict entry), ATP, NaCl, spermidine, PEG 4000",
+    "tp": 7,
+    "fp": 0,
+    "fn": 1
+  },
+  {
+    "pdb_id": "3QYA",
+    "protein": "firefly_luciferase",
+    "ground_truth_notes": "PEG 8000 4%, ethylene glycol 14% (missed - spelled 'Ethylenglycol' in text), Na-HEPES 100mM",
+    "tp": 2,
+    "fp": 0,
+    "fn": 1
+  },
+  {
+    "pdb_id": "1EA5",
+    "protein": "acetylcholinesterase",
+    "ground_truth_notes": "PEG 200 35%, MES 100mM",
+    "tp": 2,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "4XXJ",
+    "protein": "bacteriorhodopsin",
+    "ground_truth_notes": "no reagents named, only crystallization method (in meso/lipid cubic phase)",
+    "tp": 0,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "1LDY",
+    "protein": "alcohol_dehydrogenase_horse",
+    "ground_truth_notes": "MPD (precipitant), ammonium TES buffer 50mM (spelled out as 'ammonium N-[tris(hydroxymethyl)methyl]-2-aminoethanesulfonate' = TES, missed), NADH 0.66mM (missed), 3-butylthiolane 1-oxide 0.76mM (missed); extractor mislabeled the TES buffer as 'Tris-HCl' (wrong match on 'TRIS' substring)",
+    "tp": 1,
+    "fp": 1,
+    "fn": 3
+  },
+  {
+    "pdb_id": "8FMR",
+    "protein": "troponin_C",
+    "ground_truth_notes": "sodium acetate 0.2M, PEG 3350 20%",
+    "tp": 2,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "2BUV",
+    "protein": "urokinase",
+    "ground_truth_notes": "ammonium sulfate 1.8M, Tris-maleate 100mM, PEG 4000 0.08%; extractor mislabeled Tris-maleate as Tris-HCl (different buffer salt/counterion)",
+    "tp": 2,
+    "fp": 1,
+    "fn": 1
+  },
+  {
+    "pdb_id": "3WUI",
+    "protein": "cytochrome_c",
+    "ground_truth_notes": "Tris-HCl 100mM, (NH4)2HPO4 200mM (diammonium phosphate, missed), PEG 200 40%",
+    "tp": 2,
+    "fp": 0,
+    "fn": 1
+  },
+  {
+    "pdb_id": "2XW0",
+    "protein": "serum_albumin_human",
+    "ground_truth_notes": "no reagents named, only pH ('SEE PAPER')",
+    "tp": 0,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "1J7C",
+    "protein": "ferredoxin",
+    "ground_truth_notes": "ammonium sulfate, potassium succinate, MPD (2-methyl-2,4-pentanediol)",
+    "tp": 3,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "1DQ1",
+    "protein": "concanavalin_A",
+    "ground_truth_notes": "ammonium sulfate 2.1M, sodium acetate 120mM, calcium 100mM (bare ion, no specific salt named - missed, borderline)",
+    "tp": 2,
+    "fp": 0,
+    "fn": 1
+  },
+  {
+    "pdb_id": "7QNK",
+    "protein": "beta_lactamase_TEM1",
+    "ground_truth_notes": "PEG 4000, calcium acetate 0.2M, Tris-HCl 0.1M",
+    "tp": 3,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "1MG0",
+    "protein": "alcohol_dehydrogenase_horse",
+    "ground_truth_notes": "MPD",
+    "tp": 1,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "1QN3",
+    "protein": "TATA_binding_protein",
+    "ground_truth_notes": "no reagents named, only pH",
+    "tp": 0,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "4H03",
+    "protein": "actin",
+    "ground_truth_notes": "PEG 1500 18%, MES 0.1M",
+    "tp": 2,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "2B5J",
+    "protein": "reverse_transcriptase_HIV",
+    "ground_truth_notes": "PEG 8000, ammonium sulfate (missed, misspelled 'AMMINIUM' in text), NaCl, manganese chloride",
+    "tp": 3,
+    "fp": 0,
+    "fn": 1
+  },
+  {
+    "pdb_id": "1H8E",
+    "protein": "ATP_synthase_F1",
+    "ground_truth_notes": "azide (sodium azide) explicitly named as present during crystal growth as an inhibitor - missed entirely by extractor",
+    "tp": 0,
+    "fp": 0,
+    "fn": 1
+  },
+  {
+    "pdb_id": "2BUT",
+    "protein": "urokinase",
+    "ground_truth_notes": "ammonium sulfate 1.8M, Tris-maleate 100mM, PEG 4000 0.08%; extractor mislabeled Tris-maleate as Tris-HCl",
+    "tp": 2,
+    "fp": 1,
+    "fn": 1
+  },
+  {
+    "pdb_id": "1G2D",
+    "protein": "zinc_finger_Zif268",
+    "ground_truth_notes": "PEG 400, NaCl, Bis-Tris Propane, CoCl2",
+    "tp": 4,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "2GMI",
+    "protein": "ubiquitin",
+    "ground_truth_notes": "PEG 1000 17%, Na/K phosphate 100mM, NaCl 25mM",
+    "tp": 3,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "1U9U",
+    "protein": "cytochrome_b5",
+    "ground_truth_notes": "phosphate buffer (generic, no specific salt or concentration given)",
+    "tp": 1,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "8CK7",
+    "protein": "avidin",
+    "ground_truth_notes": "Bis-Tris-Propane 0.1M, ammonium sulfate 1.7-2.3M, MPD 1-5%; extractor mislabeled Bis-Tris-Propane as plain 'Bis-Tris'",
+    "tp": 2,
+    "fp": 1,
+    "fn": 1
+  },
+  {
+    "pdb_id": "4CEX",
+    "protein": "urease",
+    "ground_truth_notes": "ammonium sulfate 1.8M, sodium sulfite 50mM (missed), sodium citrate 50mM, sodium fluoride 100mM",
+    "tp": 3,
+    "fp": 0,
+    "fn": 1
+  },
+  {
+    "pdb_id": "1SPQ",
+    "protein": "triosephosphate_isomerase",
+    "ground_truth_notes": "PEG 6000, Tris (matched to Tris-HCl, reasonable default), 2-phosphoglycolate (missed, no dict entry)",
+    "tp": 2,
+    "fp": 0,
+    "fn": 1
+  },
+  {
+    "pdb_id": "1SW0",
+    "protein": "triosephosphate_isomerase",
+    "ground_truth_notes": "sodium citrate 1.4M, TEA (triethanolamine) 0.1M (missed)",
+    "tp": 1,
+    "fp": 0,
+    "fn": 1
+  },
+  {
+    "pdb_id": "5U8Q",
+    "protein": "insulin_like_growth_factor",
+    "ground_truth_notes": "ammonium sulfate 1.2M, imidazole-malate buffer 0.1M (single buffer system - imidazole base titrated with malic acid, analogous to Tris-HCl); extractor split it into two separate outputs ('imidazole' + 'Malic acid') - counted as one TP plus one duplicate FP",
+    "tp": 2,
+    "fp": 1,
+    "fn": 0
+  },
+  {
+    "pdb_id": "2H4E",
+    "protein": "transthyretin",
+    "ground_truth_notes": "sodium acetate 0.2M, ammonium sulfate 2.0M, glycerol 6%",
+    "tp": 3,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "1DQ5",
+    "protein": "concanavalin_A",
+    "ground_truth_notes": "ammonium sulfate 2.0M, sodium acetate 100mM, PEG 4000 3%, Mn2+ 5mM (bare ion, missed, borderline)",
+    "tp": 3,
+    "fp": 0,
+    "fn": 1
+  },
+  {
+    "pdb_id": "3VZK",
+    "protein": "xylanase",
+    "ground_truth_notes": "ammonium sulfate 13-20%, Tris-HCl 40mM",
+    "tp": 2,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "2B96",
+    "protein": "phospholipase_A2",
+    "ground_truth_notes": "Tris buffer 50mM, MPD 70%, CaCl2 5mM, anisic acid (~1 microlitre, missed, no dict entry)",
+    "tp": 3,
+    "fp": 0,
+    "fn": 1
+  },
+  {
+    "pdb_id": "1W0K",
+    "protein": "F1_ATPase_beta",
+    "ground_truth_notes": "azide (sodium azide) explicitly named as present during crystal growth as an inhibitor - missed entirely by extractor",
+    "tp": 0,
+    "fp": 0,
+    "fn": 1
+  },
+  {
+    "pdb_id": "2CK3",
+    "protein": "F1_ATPase_beta",
+    "ground_truth_notes": "Tris-HCl 50mM, NaCl 200mM, MgSO4 20mM, AMP-PNP 250uM, ADP 5uM, NaN3 (sodium azide) 3mM (missed), PMSF 0.004%, PEG 6000 9%; extractor mislabeled AMP-PNP as plain 'AMP' (a chemically distinct, non-hydrolyzable ATP analog)",
+    "tp": 6,
+    "fp": 1,
+    "fn": 2
+  },
+  {
+    "pdb_id": "8H8R",
+    "protein": "cytochrome_c_oxidase_subunit",
+    "ground_truth_notes": "sodium phosphate 40mM, decyl-maltoside 0.2% (detergent, missed, no dict entry), PEG 4000 1%",
+    "tp": 2,
+    "fp": 0,
+    "fn": 1
+  },
+  {
+    "pdb_id": "9CKW",
+    "protein": "papain",
+    "ground_truth_notes": "methanol (66% in drop / 59% in reservoir - same compound, counted once), NaCl 889mM; extractor's repeated methanol entry not penalized as duplicate",
+    "tp": 2,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "6I0J",
+    "protein": "carbonic_anhydrase_I",
+    "ground_truth_notes": "PEG 4000 28%, sodium acetate 0.2M, Tris 100mM",
+    "tp": 3,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "1OHH",
+    "protein": "ATP_synthase_F1",
+    "ground_truth_notes": "PIPES-NaOH 100mM, MgSO4 40mM, sodium azide 0.04% (missed), glycerol 10%, PMSF 0.002%, AMP-PNP 10mM, NaCl 300mM, PEG 4000 16%, spermidine 5mM; extractor mislabeled AMP-PNP as plain 'AMP'",
+    "tp": 7,
+    "fp": 1,
+    "fn": 2
+  },
+  {
+    "pdb_id": "5HLM",
+    "protein": "avidin",
+    "ground_truth_notes": "potassium thiocyanate 0.2M, Bis-Tris 0.1M, PEG 3350 22%",
+    "tp": 3,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "5FB6",
+    "protein": "insulin_human",
+    "ground_truth_notes": "Na2HPO4 (disodium phosphate) 0.6M, EDTA 0.01M",
+    "tp": 2,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "1PZZ",
+    "protein": "fibroblast_growth_factor",
+    "ground_truth_notes": "formate (unspecified salt, sole named reagent) - missed entirely",
+    "tp": 0,
+    "fp": 0,
+    "fn": 1
+  },
+  {
+    "pdb_id": "3C3C",
+    "protein": "phosphoglycerate_kinase",
+    "ground_truth_notes": "NaKPO4 (sodium/potassium phosphate) 2.6M - compact notation missed entirely, no dict match",
+    "tp": 0,
+    "fp": 0,
+    "fn": 1
+  },
+  {
+    "pdb_id": "2OT1",
+    "protein": "aldolase",
+    "ground_truth_notes": "HEPES, PEG 4000",
+    "tp": 2,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "6YQB",
+    "protein": "alpha_amylase_TAKA",
+    "ground_truth_notes": "sodium citrate 0.1M, 2-propanol (isopropanol) 18%",
+    "tp": 2,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "1AXB",
+    "protein": "beta_lactamase_TEM1",
+    "ground_truth_notes": "Na/K-phosphate buffer 20mM, ammonium sulfate 45% saturation, acetone 4%",
+    "tp": 3,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "6AC3",
+    "protein": "firefly_luciferase",
+    "ground_truth_notes": "PEG 3350 19-21%, Bis-tris propane 0.1M, ammonium sulfate 0.2M",
+    "tp": 3,
+    "fp": 0,
+    "fn": 0
+  }
+]

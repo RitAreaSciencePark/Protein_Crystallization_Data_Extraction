@@ -1,0 +1,122 @@
+[
+  {
+    "pdb_id": "2W6I",
+    "protein": "F1_ATPase_beta",
+    "ground_truth_notes": "GT: Tris-HCl, NaCl, MgSO4, ADP, AlCl3, NaF, PMSF, PEG 6000 (8 reagents). ADP counted as a small-molecule ligand/reagent. Extractor found all 8 exactly.",
+    "tp": 8,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "2W6J",
+    "protein": "F1_ATPase_beta",
+    "ground_truth_notes": "Identical text to 2W6I. GT: Tris-HCl, NaCl, MgSO4, ADP, AlCl3, NaF, PMSF, PEG 6000 (8 reagents). All 8 found.",
+    "tp": 8,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "1QO1",
+    "protein": "F1_ATPase_beta",
+    "ground_truth_notes": "GT: Tris/Cl, PEG 6000, NaCl, AMP-PNP, ADP, DTT, NaN3 (7 reagents). AMP-PNP and ADP are nucleotide ligands counted as reagents. Paraffin oil is a mounting medium, not a crystallization reagent, excluded. All 7 found.",
+    "tp": 7,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "4Z1M",
+    "protein": "F1_ATPase_beta",
+    "ground_truth_notes": "GT: Tris.HCl, MgCl2, EDTA, sodium monothiophosphate, ATP, NaCl, spermidine, PEG 4000 (8 reagents, no concentrations given). All 8 found.",
+    "tp": 8,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "2JJ1",
+    "protein": "F1_ATPase_beta",
+    "ground_truth_notes": "Text is only 'pH 8.2' - no reagents named. Correctly empty output.",
+    "tp": 0,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "3E76",
+    "protein": "chaperonin_GroEL",
+    "ground_truth_notes": "Text only gives pH and crystallization method/temperature metadata - no reagents named. Correctly empty output.",
+    "tp": 0,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "1XCK",
+    "protein": "chaperonin_GroEL",
+    "ground_truth_notes": "GT: PEG 4000, ammonium sulphate, HEPES (3 reagents). All 3 found (ammonium sulphate normalized to ammonium sulfate).",
+    "tp": 3,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "4KI8",
+    "protein": "chaperonin_GroEL",
+    "ground_truth_notes": "GT: MPD, acetic acid (acetate buffer), CaCl2 (3 reagents). All 3 found.",
+    "tp": 3,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "4WSC",
+    "protein": "chaperonin_GroEL",
+    "ground_truth_notes": "GT: PEG 4000, HEPES (2 reagents). Both found.",
+    "tp": 2,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "4PKN",
+    "protein": "chaperonin_GroEL",
+    "ground_truth_notes": "GT: PEG 550 MME, acetic acid-KCl buffer (treated as acetic acid/acetate buffer component + KCl component) = 3 reagents: PEG MME 550, acetate buffer, KCl. All 3 found.",
+    "tp": 3,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "3WVL",
+    "protein": "chaperonin_GroEL",
+    "ground_truth_notes": "GT: PEG 550 MME, HEPES, ATP (3 reagents, ATP counted as nucleotide ligand/reagent). All 3 found.",
+    "tp": 3,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "5OPW",
+    "protein": "chaperonin_GroEL",
+    "ground_truth_notes": "GT: sodium citrate, PEG 6000 (2 reagents). Both found.",
+    "tp": 2,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "1SX3",
+    "protein": "chaperonin_GroEL",
+    "ground_truth_notes": "GT: PEG 8000, bis-tris propane, ethylene glycol, glycerol, KCl, CaCl2, ATPgammaS (7 reagents; ATPgammaS is a non-hydrolyzable ATP analog counted as a small-molecule reagent, not a macromolecule). Extractor found the first 6 but missed ATPgammaS entirely (1 fn).",
+    "tp": 6,
+    "fp": 0,
+    "fn": 1
+  },
+  {
+    "pdb_id": "4HEL",
+    "protein": "chaperonin_GroEL",
+    "ground_truth_notes": "GT: MPD, Tris-HCl, MgCl2, glycerol, PEG 6000 (5 reagents). All 5 found.",
+    "tp": 5,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "1SX4",
+    "protein": "chaperonin_GroEL",
+    "ground_truth_notes": "GT: PEG 3000, cacodylic acid, sodium glutamate (3 reagents). Extractor normalized cacodylic acid to sodium cacodylate (same buffer family, counted as tp) and sodium glutamate to glutamic acid (same compound family, counted as tp). All 3 counted as tp.",
+    "tp": 3,
+    "fp": 0,
+    "fn": 0
+  }
+]

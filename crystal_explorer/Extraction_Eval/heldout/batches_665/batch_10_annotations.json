@@ -1,0 +1,402 @@
+[
+  {
+    "pdb_id": "2OVG",
+    "protein": "cro_repressor",
+    "ground_truth_notes": "GT: lithium sulfate, HEPES (Na Hepes). Extractor matched both.",
+    "tp": 2,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "3ORC",
+    "protein": "cro_repressor",
+    "ground_truth_notes": "GT: ammonium acetate, PEG 3350, acetate buffer. 7BP DNA fragment and CRO K56-[DGEVK] peptide excluded as macromolecules. Extractor matched all 3.",
+    "tp": 3,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "9RJ6",
+    "protein": "zinc_finger_Zif268",
+    "ground_truth_notes": "GT: calcium acetate, MES, PEG 400. Extractor matched all 3.",
+    "tp": 3,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "4R2A",
+    "protein": "zinc_finger_Zif268",
+    "ground_truth_notes": "GT: PEG 3350, Tacsimate (commercial precipitant cocktail counted as reagent). Extractor matched both.",
+    "tp": 2,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "4R2C",
+    "protein": "zinc_finger_Zif268",
+    "ground_truth_notes": "GT: pentaerythritol propoxylate (precipitant), KCl, Hepes-NaOH. Extractor missed pentaerythritol propoxylate (no dictionary entry); matched KCl and HEPES.",
+    "tp": 2,
+    "fp": 0,
+    "fn": 1
+  },
+  {
+    "pdb_id": "1A1G",
+    "protein": "zinc_finger_Zif268",
+    "ground_truth_notes": "GT: PEG 1450, NaCl, Bis-Tris propane. Extractor matched all 3.",
+    "tp": 3,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "1A1F",
+    "protein": "zinc_finger_Zif268",
+    "ground_truth_notes": "GT: PEG 400, MgCl2, HEPES. Extractor matched all 3.",
+    "tp": 3,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "5KL7",
+    "protein": "zinc_finger_Zif268",
+    "ground_truth_notes": "GT: PEG 3350, citric acid, bis-tris-propane. Borderline call: extractor mislabeled 'bistris-propane' as plain 'Bis-Tris', a chemically distinct buffer (different pKa range) -- treated as a wrong/hallucinated compound (fp) plus a missed true compound (fn), not a tp. Citric acid matched via 'citrate buffer' family counted as tp.",
+    "tp": 2,
+    "fp": 1,
+    "fn": 1
+  },
+  {
+    "pdb_id": "6B0O",
+    "protein": "zinc_finger_Zif268",
+    "ground_truth_notes": "GT: PEG 3350, ammonium acetate, Bis-Tris. Extractor matched all 3.",
+    "tp": 3,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "6B0R",
+    "protein": "zinc_finger_Zif268",
+    "ground_truth_notes": "GT: PEG MME 2000, potassium cyanide (KCN; 'o.1M' is a typo for 0.1M). Extractor missed KCN (no dictionary entry); matched PEG MME 2000.",
+    "tp": 1,
+    "fp": 0,
+    "fn": 1
+  },
+  {
+    "pdb_id": "2DGC",
+    "protein": "leucine_zipper_GCN4",
+    "ground_truth_notes": "GT: none -- text only states pH and method, no reagents. Extractor correctly returned empty.",
+    "tp": 0,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "4DME",
+    "protein": "leucine_zipper_GCN4",
+    "ground_truth_notes": "GT: ammonium sulfate, MES, PEG MME 5000. Extractor matched all 3.",
+    "tp": 3,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "4NJ2",
+    "protein": "leucine_zipper_GCN4",
+    "ground_truth_notes": "GT: sodium citrate, 2-propanol (isopropanol), PEG 4000. Extractor matched all 3.",
+    "tp": 3,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "4NJ1",
+    "protein": "leucine_zipper_GCN4",
+    "ground_truth_notes": "GT: sodium acetate (text misspelled 'soduim aceteate'), sodium citrate, PEG 4000. Extractor missed sodium acetate due to the misspelling; matched sodium citrate and PEG 4000.",
+    "tp": 2,
+    "fp": 0,
+    "fn": 1
+  },
+  {
+    "pdb_id": "3BAS",
+    "protein": "leucine_zipper_GCN4",
+    "ground_truth_notes": "GT (entity-level across protein stock, drop, and reservoir solutions): MOPS, NaCl, sodium azide (NaN3), PEG 3350, MPD. Each appears multiple times but scored once per entity. Extractor matched all 5 (with repeats collapsed).",
+    "tp": 5,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "3BAT",
+    "protein": "leucine_zipper_GCN4",
+    "ground_truth_notes": "GT entities: MOPS, NaCl, sodium azide, PEG 3350, ammonium iodide (NH4I), glycerol (cryoprotectant step counted as reagent). Extractor matched all 6 (repeats collapsed).",
+    "tp": 6,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "1IJ2",
+    "protein": "leucine_zipper_GCN4",
+    "ground_truth_notes": "GT: HEPES, cadmium sulfate, sodium acetate. Extractor matched all 3.",
+    "tp": 3,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "1RB4",
+    "protein": "leucine_zipper_GCN4",
+    "ground_truth_notes": "GT: phosphate buffer, NaCl, PEG 8000. Extractor matched all 3.",
+    "tp": 3,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "1RB6",
+    "protein": "leucine_zipper_GCN4",
+    "ground_truth_notes": "GT: phosphate buffer, NaCl, PEG 8000. Extractor matched all 3.",
+    "tp": 3,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "7XVM",
+    "protein": "histone_H5",
+    "ground_truth_notes": "GT: CaCl2, KCl, sodium acetate. Extractor matched all 3.",
+    "tp": 3,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "7COW",
+    "protein": "histone_H5",
+    "ground_truth_notes": "GT: potassium acetate, CaCl2, KCl. Extractor matched all 3.",
+    "tp": 3,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "7C0J",
+    "protein": "histone_H5",
+    "ground_truth_notes": "GT: MES, PEG 4000, ethylene glycol. Extractor matched all 3.",
+    "tp": 3,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "7XX6",
+    "protein": "histone_H5",
+    "ground_truth_notes": "GT: CaCl2, KCl, sodium acetate. Extractor matched all 3.",
+    "tp": 3,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "1JFI",
+    "protein": "TATA_binding_protein",
+    "ground_truth_notes": "GT: PEG 4000, sodium citrate, KCl, MgCl2, DTT. Extractor matched all 5.",
+    "tp": 5,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "1TGH",
+    "protein": "TATA_binding_protein",
+    "ground_truth_notes": "GT: none -- pH only. Extractor correctly returned empty.",
+    "tp": 0,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "4ROE",
+    "protein": "TATA_binding_protein",
+    "ground_truth_notes": "GT: PEG 3350, MgCl2, DTT. Extractor matched all 3.",
+    "tp": 3,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "1C9B",
+    "protein": "TATA_binding_protein",
+    "ground_truth_notes": "GT: PEG 8000, Tris-HCl, ammonium acetate, MgCl2, KCl, sodium citrate, DTT, glycerol. Extractor matched all 8.",
+    "tp": 8,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "1QN5",
+    "protein": "TATA_binding_protein",
+    "ground_truth_notes": "GT: none -- pH only. Extractor correctly returned empty.",
+    "tp": 0,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "1QN9",
+    "protein": "TATA_binding_protein",
+    "ground_truth_notes": "GT: none -- pH only. Extractor correctly returned empty.",
+    "tp": 0,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "1QNC",
+    "protein": "TATA_binding_protein",
+    "ground_truth_notes": "GT: none -- pH only. Extractor correctly returned empty.",
+    "tp": 0,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "1QN7",
+    "protein": "TATA_binding_protein",
+    "ground_truth_notes": "GT: none -- pH only. Extractor correctly returned empty.",
+    "tp": 0,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "6UER",
+    "protein": "TATA_binding_protein",
+    "ground_truth_notes": "GT: HEPES, sodium formate. Extractor matched both.",
+    "tp": 2,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "9OWZ",
+    "protein": "TATA_binding_protein",
+    "ground_truth_notes": "GT: PEG 8000, CHES. Extractor matched both.",
+    "tp": 2,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "1QNE",
+    "protein": "TATA_binding_protein",
+    "ground_truth_notes": "GT: none -- pH only. Extractor correctly returned empty.",
+    "tp": 0,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "1VTO",
+    "protein": "TATA_binding_protein",
+    "ground_truth_notes": "GT: none -- pH/method/temperature only. Extractor correctly returned empty.",
+    "tp": 0,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "6UEP",
+    "protein": "TATA_binding_protein",
+    "ground_truth_notes": "GT: sodium acetate, sodium formate. Extractor matched both.",
+    "tp": 2,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "9OW8",
+    "protein": "TATA_binding_protein",
+    "ground_truth_notes": "GT: PEG 3350, citric acid, sodium citrate (text names both citrate species separately). Extractor matched all 3.",
+    "tp": 3,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "9OWI",
+    "protein": "TATA_binding_protein",
+    "ground_truth_notes": "GT: PEG 3350, citric acid, sodium citrate. Extractor matched all 3.",
+    "tp": 3,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "1GZ8",
+    "protein": "cyclin_dependent_kinase_2",
+    "ground_truth_notes": "GT: NaCl, HEPES, ammonium acetate, PEG 4000 (PEG4K), NU2058 (CDK2 inhibitor small molecule, counted as ligand), DMSO. Extractor missed NU2058 (no dictionary entry for the named inhibitor); matched the other 5.",
+    "tp": 5,
+    "fp": 0,
+    "fn": 1
+  },
+  {
+    "pdb_id": "1OIR",
+    "protein": "cyclin_dependent_kinase_2",
+    "ground_truth_notes": "GT: PEG 3350, HEPES, ammonium acetate. Extractor matched all 3.",
+    "tp": 3,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "1OIQ",
+    "protein": "cyclin_dependent_kinase_2",
+    "ground_truth_notes": "GT: PEG 3350, HEPES, ammonium acetate. Extractor matched all 3.",
+    "tp": 3,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "1KE9",
+    "protein": "cyclin_dependent_kinase_2",
+    "ground_truth_notes": "GT: PEG 3350 (text reads 'PEG3340', treated as a typo for PEG 3350, consistent with extractor's own normalization). Extractor matched.",
+    "tp": 1,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "1OIY",
+    "protein": "cyclin_dependent_kinase_2",
+    "ground_truth_notes": "GT: KCl, ammonium sulfate, HEPES, DTT, sodium formate (10 mg/ml protein mention excluded as macromolecule). Extractor matched all 5.",
+    "tp": 5,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "2BPM",
+    "protein": "cyclin_dependent_kinase_2",
+    "ground_truth_notes": "GT: ammonium sulfate, KCl, HEPES. Extractor matched all 3.",
+    "tp": 3,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "2BKZ",
+    "protein": "cyclin_dependent_kinase_2",
+    "ground_truth_notes": "GT: ammonium sulfate, KCl, HEPES. Extractor matched all 3.",
+    "tp": 3,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "1BKX",
+    "protein": "protein_kinase_A",
+    "ground_truth_notes": "GT: adenosine (small-molecule ligand co-crystallized, counted per ligand-inclusion rule), MPD, Bicine, ammonium sulfate. Extractor matched all 4 (repeats across droplet/well solution collapsed).",
+    "tp": 4,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "3OW3",
+    "protein": "protein_kinase_A",
+    "ground_truth_notes": "GT: Bicine, ammonium acetate, DTT, PEG 400, methanol. PKI (protein kinase inhibitor peptide) excluded as a peptide macromolecule. Extractor matched all 5.",
+    "tp": 5,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "3O7L",
+    "protein": "protein_kinase_A",
+    "ground_truth_notes": "GT: MgCl2, AMP-PNP (non-hydrolyzable ATP analog, small-molecule ligand), sodium acetate, KCl, DTT. PLN1-19 (phospholamban peptide) excluded as macromolecule. Extractor matched all 5.",
+    "tp": 5,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "1J3H",
+    "protein": "protein_kinase_A",
+    "ground_truth_notes": "GT: Tris-HCl, MPD, Bicine, ammonium acetate. Extractor matched all 4.",
+    "tp": 4,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "3TNQ",
+    "protein": "protein_kinase_A",
+    "ground_truth_notes": "GT: PEG 8000, ethylene glycol, HEPES. Extractor matched all 3.",
+    "tp": 3,
+    "fp": 0,
+    "fn": 0
+  }
+]

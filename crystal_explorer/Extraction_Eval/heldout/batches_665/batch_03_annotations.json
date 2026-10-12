@@ -1,0 +1,402 @@
+[
+  {
+    "pdb_id": "4BU4",
+    "protein": "ribonuclease_T1",
+    "ground_truth_notes": "GT: sodium acetate, calcium chloride, MPD (3). Extractor got all 3.",
+    "tp": 3,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "1I0V",
+    "protein": "ribonuclease_T1",
+    "ground_truth_notes": "GT: MPD, acetate (typo 'acetaate'), calcium chloride (3). Extractor missed acetate (typo broke match) - got MPD, calcium chloride.",
+    "tp": 2,
+    "fp": 0,
+    "fn": 1
+  },
+  {
+    "pdb_id": "2GUY",
+    "protein": "alpha_amylase_TAKA",
+    "ground_truth_notes": "GT: PEG 8000, sodium acetate, sodium cacodylate (3). Extractor got all 3.",
+    "tp": 3,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "6XSJ",
+    "protein": "alpha_amylase_TAKA",
+    "ground_truth_notes": "GT: PEG 3350, MES (2); 30 mg/ml is protein, excluded. Extractor got both.",
+    "tp": 2,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "1BXH",
+    "protein": "concanavalin_A",
+    "ground_truth_notes": "GT: PEG 6000, LiCl, Tris (3). Extractor got all 3 (Tris matched as Tris-HCl, same family).",
+    "tp": 3,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "1DQ4",
+    "protein": "concanavalin_A",
+    "ground_truth_notes": "GT: ammonium sulfate, sodium acetate, PEG 4000, manganese chloride (4); 'soaked with Mn2+' is same Mn species as MnCl2, not a separate compound. Extractor got all 4.",
+    "tp": 4,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "1DQ6",
+    "protein": "concanavalin_A",
+    "ground_truth_notes": "GT: ammonium sulfate, sodium acetate, PEGMe 5000 (PEG monomethyl ether), manganese chloride (4). Extractor missed 'PEGMe 5000' (unrecognized abbreviation) - got ammonium sulfate, sodium acetate, manganese chloride.",
+    "tp": 3,
+    "fp": 0,
+    "fn": 1
+  },
+  {
+    "pdb_id": "1ENS",
+    "protein": "concanavalin_A",
+    "ground_truth_notes": "GT: none - text is only 'pH 5.'. Extractor returned empty.",
+    "tp": 0,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "5Z5N",
+    "protein": "concanavalin_A",
+    "ground_truth_notes": "GT: PEG 6000, HEPES, NaCl, CaCl2, MnCl2 (5). Extractor got all 5.",
+    "tp": 5,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "7MG1",
+    "protein": "concanavalin_A",
+    "ground_truth_notes": "GT: KCl, BaCl2 (dihydrate), Bis-Tris, PEG 8000 (4); Concanavalin A concentration is the protein, excluded. Extractor got all 4.",
+    "tp": 4,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "5Z5L",
+    "protein": "concanavalin_A",
+    "ground_truth_notes": "GT: PEG 6000, HEPES, NaCl, CaCl2, MnCl2 (5) - identical condition to 5Z5N. Extractor got all 5.",
+    "tp": 5,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "1B2X",
+    "protein": "barnase",
+    "ground_truth_notes": "GT: zinc sulfate, ammonium sulfate, ammonium phosphate buffer, ammonium hydroxide (NH4OH) (4 distinct entities; drop/well repeats of ZnSO4 and (NH4)2SO4 dedup to one each). Protein mg/mL excluded. Extractor got zinc sulfate, ammonium sulfate, ammonium phosphate but missed NH4OH.",
+    "tp": 3,
+    "fp": 0,
+    "fn": 1
+  },
+  {
+    "pdb_id": "1BNJ",
+    "protein": "barnase",
+    "ground_truth_notes": "GT: none - text is only 'pH 9.0'. Extractor returned empty.",
+    "tp": 0,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "1X1U",
+    "protein": "barnase",
+    "ground_truth_notes": "GT: none - text is only method/apparatus description. Extractor returned empty.",
+    "tp": 0,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "1B20",
+    "protein": "barnase",
+    "ground_truth_notes": "GT: same condition text as 1B2X - zinc sulfate, ammonium sulfate, ammonium phosphate, ammonium hydroxide (4). Extractor missed NH4OH again.",
+    "tp": 3,
+    "fp": 0,
+    "fn": 1
+  },
+  {
+    "pdb_id": "1B2U",
+    "protein": "barnase",
+    "ground_truth_notes": "GT: PEG 8000 (text says 'PEG-8K'), ammonium sulfate, sodium cacodylate (3). Extractor output generic 'PEG' (21%) without resolving the 8K grade - borderline, counted as tp since same PEG family/identity; ammonium sulfate and sodium cacodylate matched correctly.",
+    "tp": 3,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "1BOX",
+    "protein": "barstar",
+    "ground_truth_notes": "GT: Tris-HCl, PEG 6000 (2 distinct entities; PEG 6000 named twice at different drop/reservoir concentrations, dedup to one). Extractor got both (PEG 6000 reported twice, counted as one tp).",
+    "tp": 2,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "1AY7",
+    "protein": "barstar",
+    "ground_truth_notes": "GT: none - text is only 'pH 7.0'. Extractor returned empty.",
+    "tp": 0,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "1LNI",
+    "protein": "barstar",
+    "ground_truth_notes": "GT: ammonium sulfate (1). Extractor got it.",
+    "tp": 1,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "1T2H",
+    "protein": "barstar",
+    "ground_truth_notes": "GT: ammonium sulfate, disodium phosphate, monosodium phosphate (3 distinct salts of the phosphate buffer system, both named explicitly). Extractor got all 3 (disodium phosphate, NaH2PO4).",
+    "tp": 3,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "1UCJ",
+    "protein": "barstar",
+    "ground_truth_notes": "GT: ammonium sulfate, MES, dioxane (3). Extractor got all 3.",
+    "tp": 3,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "1UCK",
+    "protein": "barstar",
+    "ground_truth_notes": "GT: ammonium sulfate, MES, dioxane (3) - identical condition text to 1UCJ. Extractor got all 3.",
+    "tp": 3,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "4J5G",
+    "protein": "barstar",
+    "ground_truth_notes": "GT: ammonium sulfate, cacodylate buffer (2). Extractor got both (sodium cacodylate, no concentration needed to match).",
+    "tp": 2,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "3D4A",
+    "protein": "barstar",
+    "ground_truth_notes": "GT: ammonium sulfate, phosphate buffer (2). Extractor got both.",
+    "tp": 2,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "4R69",
+    "protein": "lactate_dehydrogenase",
+    "ground_truth_notes": "GT: PEG 3350 (1). Extractor got it.",
+    "tp": 1,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "4M49",
+    "protein": "lactate_dehydrogenase",
+    "ground_truth_notes": "GT: PEG 3350, HEPES (2). Extractor got both.",
+    "tp": 2,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "4OJN",
+    "protein": "lactate_dehydrogenase",
+    "ground_truth_notes": "GT: Bis-Tris propane, PEG 400, lithium chloride (3). Extractor got all 3.",
+    "tp": 3,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "6MV8",
+    "protein": "lactate_dehydrogenase",
+    "ground_truth_notes": "GT: PEG 3350, HEPES (2). Extractor got both.",
+    "tp": 2,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "6BB1",
+    "protein": "lactate_dehydrogenase",
+    "ground_truth_notes": "GT: PEG 3350, sodium malonate (2). Extractor got both.",
+    "tp": 2,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "4RLS",
+    "protein": "lactate_dehydrogenase",
+    "ground_truth_notes": "GT: PEG 3350, sodium malonate (2). Extractor got both.",
+    "tp": 2,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "5IXS",
+    "protein": "lactate_dehydrogenase",
+    "ground_truth_notes": "GT: PEG 3350, sodium malonate (2). Extractor got both.",
+    "tp": 2,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "5ZJE",
+    "protein": "lactate_dehydrogenase",
+    "ground_truth_notes": "GT: sodium malonate (typo 'soduim malonnate'), PEG 3350 (2). Extractor missed sodium malonate due to the double typo - only got PEG 3350.",
+    "tp": 1,
+    "fp": 0,
+    "fn": 1
+  },
+  {
+    "pdb_id": "1SQ7",
+    "protein": "triosephosphate_isomerase",
+    "ground_truth_notes": "GT: PEG 6000, citrate (buffer), t-butanol (3). Extractor got all 3 (citrate buffer, tert-butanol).",
+    "tp": 3,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "2VOM",
+    "protein": "triosephosphate_isomerase",
+    "ground_truth_notes": "GT: Tris, PEG MME 2000 (text 'PEG MME2000'), PPG (polypropylene glycol) P400, NiCl2 (4). Extractor got all 4.",
+    "tp": 4,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "1R2S",
+    "protein": "triosephosphate_isomerase",
+    "ground_truth_notes": "GT: PEG 4000, MgCl2, Tris-HCl (3). Extractor got all 3.",
+    "tp": 3,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "6F7U",
+    "protein": "adenylate_kinase",
+    "ground_truth_notes": "GT: PEG 8000, sodium acetate, sodium cacodylate (3). Extractor got all 3.",
+    "tp": 3,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "2ECK",
+    "protein": "adenylate_kinase",
+    "ground_truth_notes": "GT: none - text is only 'pH 6.7'. Extractor returned empty.",
+    "tp": 0,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "6S36",
+    "protein": "adenylate_kinase",
+    "ground_truth_notes": "GT: MES, NaCl, PEG 4000, MgCl2, Tris-HCl, Ap5A (P1,P5-di(adenosine-5')pentaphosphate - a small-molecule bisubstrate inhibitor, not a protein, counted as a reagent) (6). Protein mg/ml excluded. Extractor got the 5 buffer/precipitant components but missed Ap5A (no dictionary entry for it).",
+    "tp": 5,
+    "fp": 0,
+    "fn": 1
+  },
+  {
+    "pdb_id": "4X8O",
+    "protein": "adenylate_kinase",
+    "ground_truth_notes": "GT: PEG 4000, sodium citrate (NaCit.), ammonium acetate (AmAc) (3). Extractor missed the 'AmAc' abbreviation for ammonium acetate - only got PEG 4000, sodium citrate.",
+    "tp": 2,
+    "fp": 0,
+    "fn": 1
+  },
+  {
+    "pdb_id": "8Q2B",
+    "protein": "adenylate_kinase",
+    "ground_truth_notes": "GT: PEG 8000, ammonium sulfate (AmSO4), sodium cacodylate, Ap5A (small-molecule inhibitor, see 6S36 note) (4). Protein mg/ml excluded. Extractor got the 3 buffer/precipitant components but missed Ap5A.",
+    "tp": 3,
+    "fp": 0,
+    "fn": 1
+  },
+  {
+    "pdb_id": "1E4V",
+    "protein": "adenylate_kinase",
+    "ground_truth_notes": "GT: none - text is only 'pH 6.70'. Extractor returned empty.",
+    "tp": 0,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "8RJ9",
+    "protein": "adenylate_kinase",
+    "ground_truth_notes": "GT: PEG 3350, Bis-Tris propane (2). Extractor got both.",
+    "tp": 2,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "4X8L",
+    "protein": "adenylate_kinase",
+    "ground_truth_notes": "GT: PEG 4000, ammonium acetate (AmAc), Tris-HCl, Ap5a (small-molecule inhibitor, see 6S36 note) (4). Extractor missed AmAc and Ap5a - only got PEG 4000, Tris-HCl.",
+    "tp": 2,
+    "fp": 0,
+    "fn": 2
+  },
+  {
+    "pdb_id": "6HAP",
+    "protein": "adenylate_kinase",
+    "ground_truth_notes": "GT: PEG 3350, Tris (2). Extractor got both.",
+    "tp": 2,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "2XE8",
+    "protein": "phosphoglycerate_kinase",
+    "ground_truth_notes": "GT: PEG 4000, Tris (2). Extractor got both.",
+    "tp": 2,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "2YBE",
+    "protein": "phosphoglycerate_kinase",
+    "ground_truth_notes": "GT: PEG 2000 MME (text 'PEG 2000MME', no space before MME), Bis-Tris (2). Extractor only got Bis-Tris - missed the PEG due to the no-space-before-MME spelling variant.",
+    "tp": 1,
+    "fp": 0,
+    "fn": 1
+  },
+  {
+    "pdb_id": "2WZC",
+    "protein": "phosphoglycerate_kinase",
+    "ground_truth_notes": "GT: PEG 2000 MME (text 'PEG2000MME', no spaces), Bis-Tris (2). Extractor only got Bis-Tris - same no-space PEG spelling miss.",
+    "tp": 1,
+    "fp": 0,
+    "fn": 1
+  },
+  {
+    "pdb_id": "2ZGV",
+    "protein": "phosphoglycerate_kinase",
+    "ground_truth_notes": "GT: sodium/potassium phosphate (NaKPO4) (1). Extractor got it.",
+    "tp": 1,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "9FDF",
+    "protein": "phosphoglycerate_kinase",
+    "ground_truth_notes": "GT: Tris, DTT, MgCl2, 3-phosphoglycerate (3PG, substrate small molecule, counted as reagent), ADP (nucleotide, counted as reagent), ammonium fluoride (NH4F), deferoxamine, PEG 2000 MME, Bis-Tris (9 distinct entities; several repeated across initial/cross-soak conditions, deduped). Extractor got all 9 (with repeats correctly deduped to one tp each).",
+    "tp": 9,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "3ZOZ",
+    "protein": "phosphoglycerate_kinase",
+    "ground_truth_notes": "GT: PEG 2000 MME (text 'PEG2000MME', no spaces), Bis-Tris (2). Extractor only got Bis-Tris - same no-space PEG spelling miss as 2YBE/2WZC.",
+    "tp": 1,
+    "fp": 0,
+    "fn": 1
+  }
+]

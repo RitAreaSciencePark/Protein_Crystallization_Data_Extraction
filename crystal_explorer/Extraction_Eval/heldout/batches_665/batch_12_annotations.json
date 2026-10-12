@@ -1,0 +1,402 @@
+[
+  {
+    "pdb_id": "4D5Q",
+    "protein": "cellulase",
+    "ground_truth_notes": "GT: MES, PEG MME 5000, CoCl2, glycerol. Extractor found all 4 correctly.",
+    "tp": 4,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "3CEL",
+    "protein": "cellulase",
+    "ground_truth_notes": "GT: MES, PEG MME 5000, CdCl2, cellobiose (small-molecule substrate/ligand added at 1mM, counted as reagent). Extractor found MES/PEG MME 5000/CdCl2 but missed cellobiose.",
+    "tp": 3,
+    "fp": 0,
+    "fn": 1
+  },
+  {
+    "pdb_id": "4C4D",
+    "protein": "cellulase",
+    "ground_truth_notes": "GT: MES (mentioned twice, counted once), DNP-2F-G3 ligand (2,4-dinitrophenyl-cellotrioside inhibitor, small molecule), PEG MME 5000, CoCl2, glycerol = 5. Extractor found MES/PEG MME 5000/CoCl2/glycerol but missed the DNP-2F-G3 ligand.",
+    "tp": 4,
+    "fp": 0,
+    "fn": 1
+  },
+  {
+    "pdb_id": "5CEL",
+    "protein": "cellulase",
+    "ground_truth_notes": "GT (reservoir+soak, dedup): MES, PEG MME 5000, CoCl2, sodium azide, glycerol, cellotetraose (sugar ligand) = 6. Extractor labeled the PEG as plain 'PEG 5000' (dropped MME tag) but it's the same reagent, counted as tp; missed cellotetraose.",
+    "tp": 5,
+    "fp": 0,
+    "fn": 1
+  },
+  {
+    "pdb_id": "4CEL",
+    "protein": "cellulase",
+    "ground_truth_notes": "GT: MES, PEG 6000, CaCl2. Exact match.",
+    "tp": 3,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "1Q2B",
+    "protein": "cellulase",
+    "ground_truth_notes": "GT: PEG MME 5000, MES (sodium morpholine-ethanesulfonic acid), glycerol, cobalt chloride, sodium acetate. Exact match.",
+    "tp": 5,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "6RWF",
+    "protein": "cellulase",
+    "ground_truth_notes": "GT: sodium acetate, PEG MME 5000, MES, cobalt chloride, glycerol. Exact match.",
+    "tp": 5,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "7CEL",
+    "protein": "cellulase",
+    "ground_truth_notes": "GT: MES, PEG MME 5000, CoCl2, sodium azide. Exact match.",
+    "tp": 4,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "8W96",
+    "protein": "chitinase",
+    "ground_truth_notes": "GT: sodium citrate, methanol, glycerol. Exact match.",
+    "tp": 3,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "2WK2",
+    "protein": "chitinase",
+    "ground_truth_notes": "GT: sodium citrate, sodium borate, dioxane. Extractor's 'borate' treated as same entity as sodium borate (buffer salt) - counted as tp.",
+    "tp": 3,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "1NH6",
+    "protein": "chitinase",
+    "ground_truth_notes": "GT: ethanol, NaCl, HEPES. Exact match.",
+    "tp": 3,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "1X6L",
+    "protein": "chitinase",
+    "ground_truth_notes": "GT: methanol, HEPES. Exact match.",
+    "tp": 2,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "7FD6",
+    "protein": "chitinase",
+    "ground_truth_notes": "GT: sodium citrate, methanol. Exact match.",
+    "tp": 2,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "1RD6",
+    "protein": "chitinase",
+    "ground_truth_notes": "GT: Tris (buffer), PEG 3350, (NH4)2HPO4 (ammonium phosphate). Extractor found Tris-HCl/PEG 3350 (Tris->Tris-HCl treated as same entity) but missed (NH4)2HPO4.",
+    "tp": 2,
+    "fp": 0,
+    "fn": 1
+  },
+  {
+    "pdb_id": "5GPR",
+    "protein": "chitinase",
+    "ground_truth_notes": "GT: HEPES, Jeffamine ED-2001. Exact match.",
+    "tp": 2,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "5GQB",
+    "protein": "chitinase",
+    "ground_truth_notes": "GT: HEPES, Jeffamine ED-2001. Exact match.",
+    "tp": 2,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "7VRG",
+    "protein": "chitinase",
+    "ground_truth_notes": "GT: HEPES, Jeffamine ED-2001. Exact match.",
+    "tp": 2,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "6JMN",
+    "protein": "chitinase",
+    "ground_truth_notes": "GT: HEPES, Jeffamine ED-2001. Exact match.",
+    "tp": 2,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "6TP8",
+    "protein": "lipase_candida",
+    "ground_truth_notes": "GT: sodium acetate (20mM incubation / 200mM precipitant, dedup), paraoxon-ethyl (small-molecule organophosphate ligand, 30mM), PEG 4000, glyceryl tributyrate (small-molecule substrate additive) = 4. CALB excluded as the protein itself. Extractor found only PEG 4000, missing sodium acetate, paraoxon-ethyl, and glyceryl tributyrate.",
+    "tp": 1,
+    "fp": 0,
+    "fn": 3
+  },
+  {
+    "pdb_id": "9FDE",
+    "protein": "lipase_candida",
+    "ground_truth_notes": "GT: propan-2-ol (isopropanol), PEG 8000, imidazole. Extractor found PEG 8000/imidazole but missed propan-2-ol.",
+    "tp": 2,
+    "fp": 0,
+    "fn": 1
+  },
+  {
+    "pdb_id": "9EVI",
+    "protein": "lipase_candida",
+    "ground_truth_notes": "GT: potassium sodium tartrate, bis-tris propane, PEG 3350. Exact match.",
+    "tp": 3,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "6ISQ",
+    "protein": "lipase_candida",
+    "ground_truth_notes": "GT: sodium acetate, PEG 4000, isopropanol, DDAO (detergent). Exact match.",
+    "tp": 4,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "6ISP",
+    "protein": "lipase_candida",
+    "ground_truth_notes": "GT: calcium acetate, HEPES, PEG 8000, Deoxy-BigCHAP (detergent). Extractor found calcium acetate/HEPES/PEG 8000 but missed Deoxy-BigCHAP.",
+    "tp": 3,
+    "fp": 0,
+    "fn": 1
+  },
+  {
+    "pdb_id": "2UBP",
+    "protein": "urease",
+    "ground_truth_notes": "GT: ammonium sulfate, lithium chloride, sodium citrate. Exact match.",
+    "tp": 3,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "1IE7",
+    "protein": "urease",
+    "ground_truth_notes": "GT: ammonium sulfate (abbreviated 'AMS' in text), sodium phosphate. Extractor found sodium phosphate but missed the 'AMS' abbreviation for ammonium sulfate.",
+    "tp": 1,
+    "fp": 0,
+    "fn": 1
+  },
+  {
+    "pdb_id": "3UBP",
+    "protein": "urease",
+    "ground_truth_notes": "GT: ammonium sulfate, phenylphosphorodiamidate (small-molecule urease inhibitor, appears twice, counted once), sodium citrate, Tris-HCl. Extractor found the first three but missed phenylphosphorodiamidate.",
+    "tp": 3,
+    "fp": 0,
+    "fn": 1
+  },
+  {
+    "pdb_id": "7P7O",
+    "protein": "urease",
+    "ground_truth_notes": "GT: HEPES, DMSO (appears twice, counted once), ammonium sulfate. 'LIGAND' is unnamed/generic, not counted since no specific compound is named. Exact match on named reagents.",
+    "tp": 3,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "5G4H",
+    "protein": "urease",
+    "ground_truth_notes": "GT: ammonium sulfate, sodium citrate buffer. Exact match.",
+    "tp": 2,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "6G48",
+    "protein": "urease",
+    "ground_truth_notes": "GT: citrate buffer, ammonium sulfate, silver nitrate (3e-4 M metal salt additive). Extractor found citrate buffer/ammonium sulfate but missed silver nitrate.",
+    "tp": 2,
+    "fp": 0,
+    "fn": 1
+  },
+  {
+    "pdb_id": "8JPZ",
+    "protein": "glucose_oxidase",
+    "ground_truth_notes": "GT: sodium chloride, HEPES, PEG MME 2000. Exact match.",
+    "tp": 3,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "9H7Z",
+    "protein": "glucose_oxidase",
+    "ground_truth_notes": "GT: PEG 4000, sodium bromide, barium chloride, sodium acetate. Exact match.",
+    "tp": 4,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "1GPE",
+    "protein": "glucose_oxidase",
+    "ground_truth_notes": "GT: ammonium sulfate, citrate-phosphate buffer. Extractor labeled it 'citrate buffer' (dropped phosphate component) - treated as same buffer entity, counted as tp.",
+    "tp": 2,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "1H5H",
+    "protein": "horseradish_peroxidase",
+    "ground_truth_notes": "GT: PEG 4000, calcium acetate, cacodylate buffer (sodium cacodylate). Exact match.",
+    "tp": 3,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "1H5C",
+    "protein": "horseradish_peroxidase",
+    "ground_truth_notes": "GT: PEG 4000, calcium acetate, cacodylate buffer. Exact match.",
+    "tp": 3,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "7ATJ",
+    "protein": "horseradish_peroxidase",
+    "ground_truth_notes": "GT: PEG 4000, calcium acetate, cacodylate buffer. Exact match.",
+    "tp": 3,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "1H5A",
+    "protein": "horseradish_peroxidase",
+    "ground_truth_notes": "GT: PEG 4000, calcium acetate, cacodylate buffer. Exact match.",
+    "tp": 3,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "1H5K",
+    "protein": "horseradish_peroxidase",
+    "ground_truth_notes": "GT: PEG 4000, calcium acetate, cacodylate buffer. Exact match.",
+    "tp": 3,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "1H5F",
+    "protein": "horseradish_peroxidase",
+    "ground_truth_notes": "GT: PEG 4000, calcium acetate, cacodylate buffer. Exact match.",
+    "tp": 3,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "1H5L",
+    "protein": "horseradish_peroxidase",
+    "ground_truth_notes": "GT: PEG 4000, calcium acetate, cacodylate buffer. Exact match.",
+    "tp": 3,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "2YLJ",
+    "protein": "horseradish_peroxidase",
+    "ground_truth_notes": "Text is only 'pH 7' - no reagents named. GT is empty. Extractor correctly output nothing.",
+    "tp": 0,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "6ATJ",
+    "protein": "horseradish_peroxidase",
+    "ground_truth_notes": "GT: PEG 4000, calcium acetate, cacodylate buffer. Exact match.",
+    "tp": 3,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "1GWO",
+    "protein": "horseradish_peroxidase",
+    "ground_truth_notes": "GT: PEG 4000, calcium acetate, cacodylate buffer. Exact match.",
+    "tp": 3,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "1H5J",
+    "protein": "horseradish_peroxidase",
+    "ground_truth_notes": "GT: PEG 4000, calcium acetate, cacodylate buffer. Exact match.",
+    "tp": 3,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "1MMM",
+    "protein": "superoxide_dismutase_Mn",
+    "ground_truth_notes": "Text is only 'pH 8.75' - no reagents named. GT is empty. Extractor correctly output nothing.",
+    "tp": 0,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "1EN4",
+    "protein": "superoxide_dismutase_Mn",
+    "ground_truth_notes": "GT: PEG 6000, Bicine. Exact match.",
+    "tp": 2,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "3K9S",
+    "protein": "superoxide_dismutase_Mn",
+    "ground_truth_notes": "GT: Bicine, PEG 6000. Exact match.",
+    "tp": 2,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "8KB3",
+    "protein": "superoxide_dismutase_Mn",
+    "ground_truth_notes": "GT: sodium chloride, Bis-Tris, PEG 3350. Exact match.",
+    "tp": 3,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "2CE4",
+    "protein": "superoxide_dismutase_Mn",
+    "ground_truth_notes": "GT: Tris-HCl, manganese chloride, PEG 4000. Exact match.",
+    "tp": 3,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "5X2J",
+    "protein": "superoxide_dismutase_Mn",
+    "ground_truth_notes": "GT: magnesium chloride, HEPES, PEG 3350 (all bare, no concentrations given in text). Exact match.",
+    "tp": 3,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "1M20",
+    "protein": "cytochrome_b5",
+    "ground_truth_notes": "GT: phosphate buffer. Exact match.",
+    "tp": 1,
+    "fp": 0,
+    "fn": 0
+  }
+]

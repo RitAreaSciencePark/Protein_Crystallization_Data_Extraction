@@ -1,0 +1,302 @@
+[
+  {
+    "pdb_id": "3KFY",
+    "protein": "dihydrofolate_reductase",
+    "ground_truth_notes": "GT: imidazole, calcium chloride, PEG 6000. Unnamed 'inhibitor' and DHFR excluded (not a named small molecule / is a protein). Extractor got all 3.",
+    "tp": 3, "fp": 0, "fn": 0
+  },
+  {
+    "pdb_id": "7D3Z",
+    "protein": "dihydrofolate_reductase",
+    "ground_truth_notes": "GT: folate, NADP+, PEG 400, manganese chloride, sodium acetate. Folate and NADP+ are small-molecule ligands of the co-crystallized ternary complex, counted as reagents (consistent with extractor already recognizing NADP). Extractor missed folate (fn); DHFR protein correctly excluded.",
+    "tp": 4, "fp": 0, "fn": 1
+  },
+  {
+    "pdb_id": "7D49",
+    "protein": "dihydrofolate_reductase",
+    "ground_truth_notes": "Identical text to 7D3Z. GT: folate, NADP+, PEG 400, manganese chloride, sodium acetate. Extractor missed folate.",
+    "tp": 4, "fp": 0, "fn": 1
+  },
+  {
+    "pdb_id": "1RA1",
+    "protein": "dihydrofolate_reductase",
+    "ground_truth_notes": "GT: none (text is only 'pH 7.0').",
+    "tp": 0, "fp": 0, "fn": 0
+  },
+  {
+    "pdb_id": "1RE7",
+    "protein": "dihydrofolate_reductase",
+    "ground_truth_notes": "GT: none (text is only 'pH 8.0').",
+    "tp": 0, "fp": 0, "fn": 0
+  },
+  {
+    "pdb_id": "7MQP",
+    "protein": "dihydrofolate_reductase",
+    "ground_truth_notes": "GT: lithium sulfate, PEG 6000. Extractor got both.",
+    "tp": 2, "fp": 0, "fn": 0
+  },
+  {
+    "pdb_id": "1EBZ",
+    "protein": "HIV1_protease",
+    "ground_truth_notes": "GT: sodium chloride, MES, sodium azide. Extractor got all 3.",
+    "tp": 3, "fp": 0, "fn": 0
+  },
+  {
+    "pdb_id": "1D4H",
+    "protein": "HIV1_protease",
+    "ground_truth_notes": "GT: sodium chloride, MES. Extractor got both.",
+    "tp": 2, "fp": 0, "fn": 0
+  },
+  {
+    "pdb_id": "1IIQ",
+    "protein": "HIV1_protease",
+    "ground_truth_notes": "GT: ammonium phosphate, sodium citrate. Extractor got both.",
+    "tp": 2, "fp": 0, "fn": 0
+  },
+  {
+    "pdb_id": "2A4F",
+    "protein": "HIV1_protease",
+    "ground_truth_notes": "GT: acetate buffer (generic, no counter-ion specified). Extractor got it.",
+    "tp": 1, "fp": 0, "fn": 0
+  },
+  {
+    "pdb_id": "2BQV",
+    "protein": "HIV1_protease",
+    "ground_truth_notes": "GT: none (text is only 'pH 5.50').",
+    "tp": 0, "fp": 0, "fn": 0
+  },
+  {
+    "pdb_id": "2QNP",
+    "protein": "HIV1_protease",
+    "ground_truth_notes": "GT: sodium chloride, Bis-Tris. Extractor got both.",
+    "tp": 2, "fp": 0, "fn": 0
+  },
+  {
+    "pdb_id": "1BT5",
+    "protein": "beta_lactamase_TEM1",
+    "ground_truth_notes": "GT: none (text is only 'pH 7.8').",
+    "tp": 0, "fp": 0, "fn": 0
+  },
+  {
+    "pdb_id": "1ZG4",
+    "protein": "beta_lactamase_TEM1",
+    "ground_truth_notes": "GT: none (pH/temperature only).",
+    "tp": 0, "fp": 0, "fn": 0
+  },
+  {
+    "pdb_id": "1JTG",
+    "protein": "beta_lactamase_TEM1",
+    "ground_truth_notes": "GT: none (text is only 'pH 8.8').",
+    "tp": 0, "fp": 0, "fn": 0
+  },
+  {
+    "pdb_id": "3C7U",
+    "protein": "beta_lactamase_TEM1",
+    "ground_truth_notes": "GT: PEG 8000, phosphate-citrate buffer, sodium chloride. Extractor got all 3.",
+    "tp": 3, "fp": 0, "fn": 0
+  },
+  {
+    "pdb_id": "4ZJ1",
+    "protein": "beta_lactamase_TEM1",
+    "ground_truth_notes": "GT: MES, PEG 20000 (text 'PEG 20.000' uses European dot-as-thousands-separator for 20,000 MW), PEG MME 550. Extractor correctly got MES and PEG MME 550, but mis-parsed 'PEG 20.000' as 'PEG 20' - a distinct, much lower-MW compound not actually in the text, so counted as one fp (wrong compound) plus one fn (true PEG 20000 never correctly reported).",
+    "tp": 2, "fp": 1, "fn": 1
+  },
+  {
+    "pdb_id": "1ERM",
+    "protein": "beta_lactamase_TEM1",
+    "ground_truth_notes": "GT: phosphate buffer. Extractor got it.",
+    "tp": 1, "fp": 0, "fn": 0
+  },
+  {
+    "pdb_id": "3C7V",
+    "protein": "beta_lactamase_TEM1",
+    "ground_truth_notes": "GT: PEG 8000, phosphate-citrate buffer, sodium chloride. Extractor got all 3.",
+    "tp": 3, "fp": 0, "fn": 0
+  },
+  {
+    "pdb_id": "1ERO",
+    "protein": "beta_lactamase_TEM1",
+    "ground_truth_notes": "GT: phosphate buffer. Extractor got it.",
+    "tp": 1, "fp": 0, "fn": 0
+  },
+  {
+    "pdb_id": "1ERQ",
+    "protein": "beta_lactamase_TEM1",
+    "ground_truth_notes": "GT: phosphate buffer. Extractor got it.",
+    "tp": 1, "fp": 0, "fn": 0
+  },
+  {
+    "pdb_id": "1S0W",
+    "protein": "beta_lactamase_TEM1",
+    "ground_truth_notes": "GT: PEG 8000, dioxane. Extractor got both.",
+    "tp": 2, "fp": 0, "fn": 0
+  },
+  {
+    "pdb_id": "1ESU",
+    "protein": "beta_lactamase_TEM1",
+    "ground_truth_notes": "GT: imidazole, ammonium sulfate. Extractor got both.",
+    "tp": 2, "fp": 0, "fn": 0
+  },
+  {
+    "pdb_id": "1TGU",
+    "protein": "catalase_bovine",
+    "ground_truth_notes": "GT: Tris-HCl buffer. Extractor got it.",
+    "tp": 1, "fp": 0, "fn": 0
+  },
+  {
+    "pdb_id": "1TH3",
+    "protein": "catalase_bovine",
+    "ground_truth_notes": "GT: none (pH/temperature only).",
+    "tp": 0, "fp": 0, "fn": 0
+  },
+  {
+    "pdb_id": "1TH2",
+    "protein": "catalase_bovine",
+    "ground_truth_notes": "GT: none (pH/temperature only).",
+    "tp": 0, "fp": 0, "fn": 0
+  },
+  {
+    "pdb_id": "4BLC",
+    "protein": "catalase_bovine",
+    "ground_truth_notes": "GT: n-propanol, sodium phosphate (NA-PO4) buffer, sodium chloride; '40 mg/ml protein' excluded as macromolecule. Extractor got propanol and sodium chloride but missed the NA-PO4 buffer entirely (fn).",
+    "tp": 2, "fp": 0, "fn": 1
+  },
+  {
+    "pdb_id": "3RGP",
+    "protein": "catalase_bovine",
+    "ground_truth_notes": "GT: magnesium formate, ammonium hydroxide (NH4OH), Bis-Tris, DEANO (nitric-oxide-donor additive). Extractor caught magnesium formate (both mentions = one entity) and Bis-Tris, but missed NH4OH and DEANO (2 fn).",
+    "tp": 2, "fp": 0, "fn": 2
+  },
+  {
+    "pdb_id": "1SXS",
+    "protein": "superoxide_dismutase_CuZn",
+    "ground_truth_notes": "GT: PEG 6000, HEPES, sodium thiocyanate, sodium dithionite. Extractor got all 4.",
+    "tp": 4, "fp": 0, "fn": 0
+  },
+  {
+    "pdb_id": "2AEO",
+    "protein": "superoxide_dismutase_CuZn",
+    "ground_truth_notes": "GT: Tris-HCl, PEG 4000, isopropanol (2-propanol). Extractor got all 3.",
+    "tp": 3, "fp": 0, "fn": 0
+  },
+  {
+    "pdb_id": "1CB4",
+    "protein": "superoxide_dismutase_CuZn",
+    "ground_truth_notes": "GT: none (pH/temperature only).",
+    "tp": 0, "fp": 0, "fn": 0
+  },
+  {
+    "pdb_id": "1E9O",
+    "protein": "superoxide_dismutase_CuZn",
+    "ground_truth_notes": "GT: PEG 4000, sodium chloride. Extractor got both.",
+    "tp": 2, "fp": 0, "fn": 0
+  },
+  {
+    "pdb_id": "3GTT",
+    "protein": "superoxide_dismutase_CuZn",
+    "ground_truth_notes": "GT: Tris buffer, PEG 1000. Text says bare 'Tris'; extractor normalizes to 'Tris-HCl', accepted as same buffer entity (borderline, decided as match since Tris is conventionally used/titrated as its HCl salt in crystallization buffers).",
+    "tp": 2, "fp": 0, "fn": 0
+  },
+  {
+    "pdb_id": "1SL1",
+    "protein": "thioredoxin_ecoli",
+    "ground_truth_notes": "GT: none (pH/method only).",
+    "tp": 0, "fp": 0, "fn": 0
+  },
+  {
+    "pdb_id": "1T7P",
+    "protein": "thioredoxin_ecoli",
+    "ground_truth_notes": "GT: none (text is only 'pH 6.5').",
+    "tp": 0, "fp": 0, "fn": 0
+  },
+  {
+    "pdb_id": "1SL2",
+    "protein": "thioredoxin_ecoli",
+    "ground_truth_notes": "GT: none (pH/method only).",
+    "tp": 0, "fp": 0, "fn": 0
+  },
+  {
+    "pdb_id": "1X9M",
+    "protein": "thioredoxin_ecoli",
+    "ground_truth_notes": "GT: PEG 8000, ammonium sulfate, magnesium chloride. Extractor got all 3.",
+    "tp": 3, "fp": 0, "fn": 0
+  },
+  {
+    "pdb_id": "1X9S",
+    "protein": "thioredoxin_ecoli",
+    "ground_truth_notes": "GT: PEG 8000, ammonium sulfate, magnesium chloride. Extractor got all 3.",
+    "tp": 3, "fp": 0, "fn": 0
+  },
+  {
+    "pdb_id": "2AJQ",
+    "protein": "thioredoxin_ecoli",
+    "ground_truth_notes": "GT (entity-level, dedup repeats across the multi-stage protocol): HEPES, magnesium chloride, DTT, ddTTP (small-molecule nucleotide substrate), PEG 8000, ACES, ammonium sulfate, PEG 400 = 8 entities. T7 DNA polymerase, thioredoxin, and DNA substrate excluded as macromolecules. Extractor correctly captured HEPES, MgCl2, DTT, PEG 8000, ammonium sulfate, PEG 400 (6, each counted once despite repeat mentions) but missed ACES and ddTTP entirely (2 fn).",
+    "tp": 6, "fp": 0, "fn": 2
+  },
+  {
+    "pdb_id": "6GD1",
+    "protein": "thioredoxin_ecoli",
+    "ground_truth_notes": "GT: PEG 2000 MME, potassium thiocyanate. Extractor got both.",
+    "tp": 2, "fp": 0, "fn": 0
+  },
+  {
+    "pdb_id": "1TK5",
+    "protein": "thioredoxin_ecoli",
+    "ground_truth_notes": "GT: PEG 8000, ammonium sulfate, PEG 400, ethylene glycol (source text misspells it 'Etylen Glyco', so dictionary match fails). Extractor got the first 3 but missed ethylene glycol (fn) due to the typo.",
+    "tp": 3, "fp": 0, "fn": 1
+  },
+  {
+    "pdb_id": "1SKS",
+    "protein": "thioredoxin_ecoli",
+    "ground_truth_notes": "GT: none (pH/method only).",
+    "tp": 0, "fp": 0, "fn": 0
+  },
+  {
+    "pdb_id": "1RFK",
+    "protein": "ferredoxin",
+    "ground_truth_notes": "GT: PEG 4000, magnesium nitrate, Tris-HCl. Extractor got all 3.",
+    "tp": 3, "fp": 0, "fn": 0
+  },
+  {
+    "pdb_id": "2PVO",
+    "protein": "ferredoxin",
+    "ground_truth_notes": "GT: none (pH/temperature only).",
+    "tp": 0, "fp": 0, "fn": 0
+  },
+  {
+    "pdb_id": "3B2G",
+    "protein": "ferredoxin",
+    "ground_truth_notes": "GT: ammonium sulfate, sodium citrate. Extractor got both.",
+    "tp": 2, "fp": 0, "fn": 0
+  },
+  {
+    "pdb_id": "6KV0",
+    "protein": "ferredoxin",
+    "ground_truth_notes": "GT: ammonium sulfate, sodium citrate, sodium thiocyanate, benzamidine hydrochloride. Extractor got all 4.",
+    "tp": 4, "fp": 0, "fn": 0
+  },
+  {
+    "pdb_id": "1CZP",
+    "protein": "ferredoxin",
+    "ground_truth_notes": "GT: sodium succinate, ammonium sulfate, MPD. Extractor got all 3.",
+    "tp": 3, "fp": 0, "fn": 0
+  },
+  {
+    "pdb_id": "7AKT",
+    "protein": "ferredoxin",
+    "ground_truth_notes": "GT: benzamidine hydrochloride, ammonium sulfate, sodium thiocyanate, sodium citrate buffer. Extractor got all 4.",
+    "tp": 4, "fp": 0, "fn": 0
+  },
+  {
+    "pdb_id": "2BU4",
+    "protein": "ribonuclease_T1",
+    "ground_truth_notes": "GT: sodium acetate, calcium chloride, MPD. Extractor got all 3.",
+    "tp": 3, "fp": 0, "fn": 0
+  },
+  {
+    "pdb_id": "1GSP",
+    "protein": "ribonuclease_T1",
+    "ground_truth_notes": "GT: sodium acetate, calcium chloride, MPD (same condition as 2BU4, different abbreviation 'NAAC'). Extractor got all 3.",
+    "tp": 3, "fp": 0, "fn": 0
+  }
+]

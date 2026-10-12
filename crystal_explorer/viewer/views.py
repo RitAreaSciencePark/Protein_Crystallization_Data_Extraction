@@ -8,6 +8,7 @@ import traceback
 import requests
 
 from django.conf import settings
+from django.contrib import messages
 from django.core.paginator import Paginator
 from django.http import FileResponse, Http404
 from django.shortcuts import get_object_or_404, render, redirect
@@ -137,6 +138,16 @@ def sanitize_folder_name(name: str) -> str:
     return name or "protein_output"
 
 
+def _current_session_key(request) -> str:
+    """The visitor's anonymous Django session key, creating the session
+    (and its cookie) on the spot if this is their first request -- Django
+    doesn't allocate a key until something is stored in the session. No
+    login, no IP: just the same per-browser cookie Django already sets."""
+    if not request.session.session_key:
+        request.session.save()
+    return request.session.session_key
+
+
 def unique_folder_name(protein_name: str) -> str:
     """Timestamp-suffixed output folder name for one search run.
 
@@ -212,6 +223,7 @@ def index(request):
 
             started_at = timezone.now()
             run.protein_name = protein_name
+            run.session_key = _current_session_key(request)
             run.sequence = normalized_sequence
             run.sequence_signature = sequence_signature
             run.sequence_type = sequence_type
@@ -296,14 +308,23 @@ def _grouped_row_count(output_dir: str):
 
 
 def history(request):
-    """Past searches, newest first, so a lab can revisit a run (or see why
-    one failed) without re-submitting the form."""
-    runs = SearchRun.objects.all()
+    """This visitor's own past searches, newest first, so they can revisit
+    a run (or see why one failed) without re-submitting the form. Scoped
+    to the current anonymous session -- not an account, just the same
+    cookie used for the delete-ownership check below. This is independent
+    of the dedup in index(), which still checks every SearchRun regardless
+    of session, so a repeated search still reuses the existing run instead
+    of re-running the pipeline even though this list only shows one
+    visitor's slice of that shared data."""
+    runs = SearchRun.objects.filter(session_key=_current_session_key(request))
     paginator = Paginator(runs, 25)
     page_number = request.GET.get("page")
     page_obj = paginator.get_page(page_number)
 
-    return render(request, "viewer/history.html", {"page_obj": page_obj, "active_nav": "history"})
+    return render(request, "viewer/history.html", {
+        "page_obj": page_obj,
+        "active_nav": "history",
+    })
 
 
 @require_POST
@@ -311,18 +332,34 @@ def delete_run(request, run_id):
     """Remove one history entry -- POST-only (the template's delete button
     confirms first) so it can't be triggered by a stray GET/crawler. Also
     removes the run's output folder, since a history row with no files
-    behind it is more confusing than useful."""
+    behind it is more confusing than useful.
+
+    Only the browser session that (most recently) ran a search may delete
+    it -- the history list itself stays visible to everyone, but deleting
+    someone else's row is blocked. A row with no session_key at all (from
+    before this check existed) has no owner to enforce, so it stays
+    deletable by anyone rather than becoming permanently stuck."""
     run = get_object_or_404(SearchRun, id=run_id)
+
+    page = request.POST.get("page")
+    redirect_url = reverse("viewer:history")
+    if page:
+        redirect_url += f"?page={page}"
+
+    if run.session_key and run.session_key != _current_session_key(request):
+        messages.error(
+            request,
+            f"“{run.protein_name}” was submitted from a different "
+            "browser session, so it can only be deleted from the browser "
+            "that ran it.",
+        )
+        return redirect(redirect_url)
 
     output_dir = os.path.join(settings.PIPELINE_OUTPUT_DIR, run.folder_name)
     if os.path.isdir(output_dir):
         shutil.rmtree(output_dir, ignore_errors=True)
     run.delete()
 
-    page = request.POST.get("page")
-    redirect_url = reverse("viewer:history")
-    if page:
-        redirect_url += f"?page={page}"
     return redirect(redirect_url)
 
 

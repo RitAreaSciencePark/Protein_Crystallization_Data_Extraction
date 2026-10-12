@@ -1,0 +1,402 @@
+[
+  {
+    "pdb_id": "6FSA",
+    "protein": "myosin_motor_domain",
+    "ground_truth_notes": "GT: PEG (mix of MW variants), glycerol, Sodium Tacsimate, TCEP (4). All 4 correctly extracted.",
+    "tp": 4,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "5N6A",
+    "protein": "myosin_motor_domain",
+    "ground_truth_notes": "GT: PEG 3350, Tacsimate, TCEP, glycerol, DMSO (5). All 5 correctly extracted.",
+    "tp": 5,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "9HTG",
+    "protein": "myosin_motor_domain",
+    "ground_truth_notes": "GT: PEG 3350, lithium sulfate, Tris-HCl, Mg.ADP.Vanadate complex (4, treating Mg-ADP-vanadate as one additive). Extractor split the vanadate complex into 'MgADP' + 'vanadate' as two separate hits; counted as 1 tp (complex identified via MgADP) + 1 fp (redundant 'vanadate' split-out, not a distinct extra reagent).",
+    "tp": 4,
+    "fp": 1,
+    "fn": 0
+  },
+  {
+    "pdb_id": "4PA0",
+    "protein": "myosin_motor_domain",
+    "ground_truth_notes": "GT: Tacsimate, PEG 3350, glycerol, MgCl2, TCEP, omecamtiv mecarbil (small-molecule ligand/drug, not a protein) (6). Extractor found 5, missed omecamtiv mecarbil entirely.",
+    "tp": 5,
+    "fp": 0,
+    "fn": 1
+  },
+  {
+    "pdb_id": "8QYP",
+    "protein": "myosin_motor_domain",
+    "ground_truth_notes": "GT: lithium sulfate, Tris-HCl, PEG 3350, Mg.ADP.Vanadate complex (4). Same split behavior as 9HTG: 'MgADP' counted as tp for the complex, 'vanadate' as redundant fp.",
+    "tp": 4,
+    "fp": 1,
+    "fn": 0
+  },
+  {
+    "pdb_id": "1DFK",
+    "protein": "myosin_motor_domain",
+    "ground_truth_notes": "GT: PEG 8000, ammonium sulfate, cacodylate (sodium cacodylate buffer), glycerol (4). All 4 correctly extracted.",
+    "tp": 4,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "2EC6",
+    "protein": "myosin_motor_domain",
+    "ground_truth_notes": "GT: CaCl2, PEG 6000, HEPES (3). All 3 correctly extracted.",
+    "tp": 3,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "1DFL",
+    "protein": "myosin_motor_domain",
+    "ground_truth_notes": "GT: PEG 8000, MES (2). Both correctly extracted.",
+    "tp": 2,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "2OTG",
+    "protein": "myosin_motor_domain",
+    "ground_truth_notes": "GT: PEG 2000, MgCl2, SrCl2 (3). All 3 correctly extracted.",
+    "tp": 3,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "2GAB",
+    "protein": "transthyretin",
+    "ground_truth_notes": "GT entities (dedup): KCl, phosphate buffer, ammonium sulfate (ammonium sulfate named twice, at 1M in protein stock and 2M reservoir -- counted once as one entity) (3). 'ten-fold molar excess' ligand is unnamed, not countable. All 3 unique entities correctly extracted (ammonium sulfate reported twice by extractor counts as single tp per entity-level scoring).",
+    "tp": 3,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "1U21",
+    "protein": "transthyretin",
+    "ground_truth_notes": "GT: PEG 4000, calcium chloride (2). Both correctly extracted.",
+    "tp": 2,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "1BM7",
+    "protein": "transthyretin",
+    "ground_truth_notes": "GT: none (text is only 'pH 7.4', no reagents named). Extractor found none.",
+    "tp": 0,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "3GS0",
+    "protein": "transthyretin",
+    "ground_truth_notes": "GT entities (dedup): KCl, EDTA, sodium phosphate, ammonium sulfate (named at 0.3M and 2M -- same entity, counted once) (4). All 4 correctly extracted.",
+    "tp": 4,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "3W3B",
+    "protein": "transthyretin",
+    "ground_truth_notes": "GT: none (text only states pH/method/temperature). Extractor found none.",
+    "tp": 0,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "4FI7",
+    "protein": "transthyretin",
+    "ground_truth_notes": "GT entities (dedup): sodium phosphate (NaPi), KCl, sodium citrate (stated twice, same entity), glycerol (stated twice at different %, same entity) (4). Generic 'inhibitors' unnamed, not countable. All 4 correctly extracted.",
+    "tp": 4,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "4HJU",
+    "protein": "transthyretin",
+    "ground_truth_notes": "Same text/content as 4FI7 (all-caps). GT: sodium phosphate, KCl, sodium citrate, glycerol (4). All 4 correctly extracted.",
+    "tp": 4,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "4MAS",
+    "protein": "transthyretin",
+    "ground_truth_notes": "Same reagents as 4FI7/4HJU. GT: sodium phosphate, potassium chloride, sodium citrate, glycerol (4). All 4 correctly extracted.",
+    "tp": 4,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "4PSQ",
+    "protein": "retinol_binding_protein",
+    "ground_truth_notes": "GT: ammonium phosphate (dibasic), imidazole, sodium chloride (3). All 3 correctly extracted.",
+    "tp": 3,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "13AH",
+    "protein": "retinol_binding_protein",
+    "ground_truth_notes": "GT: ammonium sulfate, HEPES-NaOH buffer (2). Both correctly extracted.",
+    "tp": 2,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "5NUB",
+    "protein": "retinol_binding_protein",
+    "ground_truth_notes": "GT: NaCl, HEPES (2). Both correctly extracted.",
+    "tp": 2,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "2WQ9",
+    "protein": "retinol_binding_protein",
+    "ground_truth_notes": "GT: NaCl (range 3.5-4.2M, extractor took upper bound 4.2M -- fine for entity match), HEPES (2). Both correctly extracted.",
+    "tp": 2,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "2WR6",
+    "protein": "retinol_binding_protein",
+    "ground_truth_notes": "GT: NaCl, HEPES (2). Both correctly extracted.",
+    "tp": 2,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "1KT6",
+    "protein": "retinol_binding_protein",
+    "ground_truth_notes": "GT: HEPES, NaCl (2). Both correctly extracted.",
+    "tp": 2,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "1GNI",
+    "protein": "serum_albumin_human",
+    "ground_truth_notes": "GT: none (text only 'pH 7.00'). Extractor found none.",
+    "tp": 0,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "2BXM",
+    "protein": "serum_albumin_human",
+    "ground_truth_notes": "GT: none (text only 'pH 7.00'). Extractor found none.",
+    "tp": 0,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "2BXB",
+    "protein": "serum_albumin_human",
+    "ground_truth_notes": "GT: none (text only 'pH 7.00'). Extractor found none.",
+    "tp": 0,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "2XVQ",
+    "protein": "serum_albumin_human",
+    "ground_truth_notes": "GT: none ('SEE PAPER, pH 7', no reagents named). Extractor found none.",
+    "tp": 0,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "3TDL",
+    "protein": "serum_albumin_human",
+    "ground_truth_notes": "GT: PEG 3350 (range 28-32%, w/v), potassium phosphate (2). Both correctly extracted.",
+    "tp": 2,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "2XW1",
+    "protein": "serum_albumin_human",
+    "ground_truth_notes": "GT: none ('SEE PAPER, pH 7'). Extractor found none.",
+    "tp": 0,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "3LU7",
+    "protein": "serum_albumin_human",
+    "ground_truth_notes": "GT: bare 'PEG' with no stated MW -- decided to count as a valid (if underspecified) ground-truth reagent since it is explicitly named as the crystallization condition (1). Correctly extracted as 'PEG'.",
+    "tp": 1,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "7OLY",
+    "protein": "immunoglobulin_Fab",
+    "ground_truth_notes": "GT: HEPES, NaCl, Na cacodylate, PEG 4000 (4). All 4 correctly extracted.",
+    "tp": 4,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "7STS",
+    "protein": "immunoglobulin_Fab",
+    "ground_truth_notes": "GT: calcium chloride, Tris, PEG 6000 (3). All 3 correctly extracted.",
+    "tp": 3,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "4LEX",
+    "protein": "immunoglobulin_Fab",
+    "ground_truth_notes": "GT: HEPES, Jeffamine ED-2001 (2). Both correctly extracted.",
+    "tp": 2,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "4LKX",
+    "protein": "immunoglobulin_Fab",
+    "ground_truth_notes": "GT: sodium acetate (trihydrate), PEG 4000, ammonium sulfate (3). All 3 correctly extracted.",
+    "tp": 3,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "9ZRO",
+    "protein": "immunoglobulin_Fab",
+    "ground_truth_notes": "GT: magnesium chloride (hexahydrate), PEG 3350 (2). Both correctly extracted.",
+    "tp": 2,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "7RP2",
+    "protein": "immunoglobulin_Fab",
+    "ground_truth_notes": "GT: sodium cacodylate, MPD, PEG 8000, ethyl acetate, spermine tetrahydrochloride (5). Extractor correctly found sodium cacodylate, MPD, PEG 8000, spermine tetrahydrochloride (4 tp). For '0.5% ethyl acetate' it output a bare 'acetate' hit (nan conc) which mismatches the true compound ethyl acetate (an ester solvent, distinct from an acetate salt/buffer) -- counted as 1 fp (wrong identification) plus 1 fn (true ethyl acetate missed).",
+    "tp": 4,
+    "fp": 1,
+    "fn": 1
+  },
+  {
+    "pdb_id": "7PHS",
+    "protein": "immunoglobulin_Fab",
+    "ground_truth_notes": "GT: PEG 8000, lithium sulfate (Li2SO4), acetate buffer (3; here 'acetate' at 0.1M with no other modifier correctly denotes an acetate buffer, unlike the ethyl acetate case in 7RP2). All 3 correctly extracted.",
+    "tp": 3,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "7BEL",
+    "protein": "immunoglobulin_Fab",
+    "ground_truth_notes": "GT: ammonium sulfate ((NH4)2SO4), Tris, PEG 4000 (3). All 3 correctly extracted.",
+    "tp": 3,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "7RP3",
+    "protein": "immunoglobulin_Fab",
+    "ground_truth_notes": "GT: n-Octyl-beta-D-glucoside (detergent), sodium citrate, PEG 3350 (3). Extractor found sodium citrate and PEG 3350 but missed the detergent n-Octyl-glucoside entirely (1 fn).",
+    "tp": 2,
+    "fp": 0,
+    "fn": 1
+  },
+  {
+    "pdb_id": "9MS9",
+    "protein": "immunoglobulin_Fab",
+    "ground_truth_notes": "GT: sodium acetate, lithium sulfate, PEG 8000 (3). All 3 correctly extracted.",
+    "tp": 3,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "4R7D",
+    "protein": "immunoglobulin_Fab",
+    "ground_truth_notes": "GT: PEG 3350, HEPES, ammonium formate (3). All 3 correctly extracted.",
+    "tp": 3,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "1SBB",
+    "protein": "T_cell_receptor",
+    "ground_truth_notes": "GT: PEG 8000, Tris-HCl (2). Both correctly extracted.",
+    "tp": 2,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "2CKB",
+    "protein": "T_cell_receptor",
+    "ground_truth_notes": "GT: Tris acetate buffer, sodium chloride, PEG 4000, ethylene glycol (cryoprotectant, counted as additive) (4). All 4 correctly extracted.",
+    "tp": 4,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "3C6L",
+    "protein": "T_cell_receptor",
+    "ground_truth_notes": "GT: PEG 4000, calcium acetate (2). Both correctly extracted.",
+    "tp": 2,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "5TJE",
+    "protein": "T_cell_receptor",
+    "ground_truth_notes": "GT: Tris-HCl, PEG 6000 (2). Both correctly extracted.",
+    "tp": 2,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "5TIL",
+    "protein": "T_cell_receptor",
+    "ground_truth_notes": "GT: PEG 6000, Tris-HCl (2). Both correctly extracted.",
+    "tp": 2,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "5M02",
+    "protein": "T_cell_receptor",
+    "ground_truth_notes": "GT: PEG 6000, Tris-HCl (2). Both correctly extracted.",
+    "tp": 2,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "6G9Q",
+    "protein": "T_cell_receptor",
+    "ground_truth_notes": "GT: Tris-HCl, PEG 6000 (2). Both correctly extracted.",
+    "tp": 2,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "3O8X",
+    "protein": "T_cell_receptor",
+    "ground_truth_notes": "GT: PEG 3350 (as 'polyethylene glycol 3350'), ammonium citrate dibasic (2). Both correctly extracted.",
+    "tp": 2,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "3O9W",
+    "protein": "T_cell_receptor",
+    "ground_truth_notes": "GT: PEG 3350, citrate buffer (2). Both correctly extracted.",
+    "tp": 2,
+    "fp": 0,
+    "fn": 0
+  }
+]

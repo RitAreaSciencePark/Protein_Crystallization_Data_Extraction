@@ -1,0 +1,402 @@
+[
+  {
+    "pdb_id": "5M6Z",
+    "protein": "phosphoglycerate_kinase",
+    "ground_truth_notes": "GT: Na/K phosphate buffer ('Na//KPO4'). Extractor produced nothing (double-slash 'Na//KPO4' format not recognized).",
+    "tp": 0,
+    "fp": 0,
+    "fn": 1
+  },
+  {
+    "pdb_id": "4AXX",
+    "protein": "phosphoglycerate_kinase",
+    "ground_truth_notes": "GT: PEG2000MME, Bis-Tris. Extractor got Bis-Tris but missed 'PEG2000MME' (no space/no delimiter before MME).",
+    "tp": 1,
+    "fp": 0,
+    "fn": 1
+  },
+  {
+    "pdb_id": "1VJD",
+    "protein": "phosphoglycerate_kinase",
+    "ground_truth_notes": "GT: NaK phosphate buffer, DTT, sodium azide. Extractor matched all 3 (reported 'phosphate buffer' - same family as NaK phosphate, counted TP).",
+    "tp": 3,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "1VJC",
+    "protein": "phosphoglycerate_kinase",
+    "ground_truth_notes": "GT: sodium citrate, magnesium chloride, sodium azide, DTT. Extractor matched all 4 ('citrate buffer' and bare 'magnesium' counted as same-family TP matches to sodium citrate / magnesium chloride; borderline but same intended reagent).",
+    "tp": 4,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "2X13",
+    "protein": "phosphoglycerate_kinase",
+    "ground_truth_notes": "GT: Bis-Tris, PEG MME 2000 ('P2000MME'). Extractor matched both.",
+    "tp": 2,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "8YHP",
+    "protein": "phosphoglycerate_kinase",
+    "ground_truth_notes": "GT: Na/K phosphate buffer, PEG 3350. Extractor only got PEG 3350; missed 'Na/K PO4'.",
+    "tp": 1,
+    "fp": 0,
+    "fn": 1
+  },
+  {
+    "pdb_id": "4ALD",
+    "protein": "aldolase",
+    "ground_truth_notes": "GT: none (only pH given). Extractor correctly produced nothing.",
+    "tp": 0,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "2ALD",
+    "protein": "aldolase",
+    "ground_truth_notes": "GT: none (only pH given). Extractor correctly produced nothing.",
+    "tp": 0,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "2OT0",
+    "protein": "aldolase",
+    "ground_truth_notes": "GT: HEPES, MgCl2, PEG MME 550. Extractor matched all 3.",
+    "tp": 3,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "2QUT",
+    "protein": "aldolase",
+    "ground_truth_notes": "GT: HEPES, PEG 4000. Extractor matched both.",
+    "tp": 2,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "2QUV",
+    "protein": "aldolase",
+    "ground_truth_notes": "GT: HEPES, PEG 4000. Extractor matched both.",
+    "tp": 2,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "1ZAH",
+    "protein": "aldolase",
+    "ground_truth_notes": "GT: HEPES, PEG 4000. Extractor matched both.",
+    "tp": 2,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "3TU9",
+    "protein": "aldolase",
+    "ground_truth_notes": "GT: PEG 4000, HEPES. Extractor matched both.",
+    "tp": 2,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "6SWM",
+    "protein": "carbonic_anhydrase_I",
+    "ground_truth_notes": "GT: PEG 4000, sodium acetate, Tris (buffer, no stated counter-ion). Extractor matched all 3 (reported 'Tris-HCl'; same buffer family, counted TP).",
+    "tp": 3,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "6XZE",
+    "protein": "carbonic_anhydrase_I",
+    "ground_truth_notes": "GT distinct entities: sodium acetate, PEG 4000, Tris-HCl (used twice - main buffer 100mM and inhibitor-stock buffer 50mM, same compound entity), NaCl, DMSO = 5 entities. Extractor matched all 5; the second Tris-HCl mention is the same entity already counted, not an extra FP.",
+    "tp": 5,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "7Q0D",
+    "protein": "carbonic_anhydrase_I",
+    "ground_truth_notes": "GT: Tris-HCl, ammonium acetate, PEG 4000. Extractor matched all 3.",
+    "tp": 3,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "8RLO",
+    "protein": "carbonic_anhydrase_I",
+    "ground_truth_notes": "GT: PEG 4000, sodium acetate, Tris. Extractor matched all 3.",
+    "tp": 3,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "6EVR",
+    "protein": "carbonic_anhydrase_I",
+    "ground_truth_notes": "GT: PEG 4000, sodium acetate, Tris. Extractor matched all 3.",
+    "tp": 3,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "1E36",
+    "protein": "elastase",
+    "ground_truth_notes": "GT distinct entities: sodium sulfate, sodium acetate (used twice, same entity), DMSO, and 'gamma-lactam' (20 mg/mL) - a small-molecule lactam ligand/inhibitor, not the protein itself, counted as GT despite mg/mL units (borderline). Extractor matched sodium sulfate, sodium acetate, DMSO but missed gamma-lactam entirely (not in dictionary).",
+    "tp": 3,
+    "fp": 0,
+    "fn": 1
+  },
+  {
+    "pdb_id": "1HAZ",
+    "protein": "elastase",
+    "ground_truth_notes": "GT: sodium sulfate, sodium acetate. 'PPE' (porcine pancreatic elastase, the protein) and 'BCM7' (beta-casomorphin-7, a peptide) excluded as macromolecules. Extractor matched the 2 reagents.",
+    "tp": 2,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "2BDB",
+    "protein": "elastase",
+    "ground_truth_notes": "GT distinct entities: sodium sulfate, sodium acetate (used twice, same entity). 'PPE', 'NPI' (protein/peptide inhibitors) and 'Ala-Ala' (dipeptide) excluded as macromolecules. Extractor matched both reagents.",
+    "tp": 2,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "2FOB",
+    "protein": "elastase",
+    "ground_truth_notes": "GT: sodium acetate, sodium sulfate ('15 mg/ml elastase' is the protein itself, excluded). Extractor matched both.",
+    "tp": 2,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "3MNC",
+    "protein": "elastase",
+    "ground_truth_notes": "GT distinct entities: sodium sulfate (Na2SO4, used twice, same entity), glycerol (protein mg/ml mention excluded). Extractor matched both.",
+    "tp": 2,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "3MU1",
+    "protein": "elastase",
+    "ground_truth_notes": "GT distinct entities: glycerol (used twice at different % as cryo/soak solution, same entity), sodium sulfate (protein mg/ml mention excluded). Extractor matched both.",
+    "tp": 2,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "6XD2",
+    "protein": "pepsin",
+    "ground_truth_notes": "GT: ammonium chloride, sodium acetate. Extractor matched both.",
+    "tp": 2,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "1FLH",
+    "protein": "pepsin",
+    "ground_truth_notes": "GT: HEPES, PEG 400, ammonium sulfate. Extractor matched all 3.",
+    "tp": 3,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "3BTK",
+    "protein": "BPTI",
+    "ground_truth_notes": "GT: none (only pH given). Extractor correctly produced nothing.",
+    "tp": 0,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "3LDJ",
+    "protein": "BPTI",
+    "ground_truth_notes": "GT: PEG 4000. Extractor matched it.",
+    "tp": 1,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "1F6R",
+    "protein": "alpha_lactalbumin",
+    "ground_truth_notes": "GT: ammonium sulfate, Tris-HCl. Extractor matched both.",
+    "tp": 2,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "9OZW",
+    "protein": "alpha_lactalbumin",
+    "ground_truth_notes": "GT: PEG 8000, potassium phosphate (KH2PO4). Extractor matched both.",
+    "tp": 2,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "7EKA",
+    "protein": "alpha_lactalbumin",
+    "ground_truth_notes": "GT: ammonium sulfate, sodium citrate. Extractor matched both.",
+    "tp": 2,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "7WQG",
+    "protein": "alpha_lactalbumin",
+    "ground_truth_notes": "GT: PEG 400, Tris-HCl, lithium sulfate, zinc chloride ('Zinc chlorid' truncated). Extractor matched all 4 (reported bare 'zinc' for zinc chloride, counted as same-family TP).",
+    "tp": 4,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "1FKV",
+    "protein": "alpha_lactalbumin",
+    "ground_truth_notes": "GT: PEG 8000, calcium chloride, potassium phosphate. Extractor matched all 3.",
+    "tp": 3,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "4L41",
+    "protein": "alpha_lactalbumin",
+    "ground_truth_notes": "GT: MES, PEG 4000. Extractor matched both.",
+    "tp": 2,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "1OQM",
+    "protein": "alpha_lactalbumin",
+    "ground_truth_notes": "GT: sodium citrate, PEG 4000. Extractor matched both.",
+    "tp": 2,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "1YRO",
+    "protein": "alpha_lactalbumin",
+    "ground_truth_notes": "GT: PEG 4000, MES (Mes-NaOH), sodium chloride. Extractor matched all 3.",
+    "tp": 3,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "2FYD",
+    "protein": "alpha_lactalbumin",
+    "ground_truth_notes": "GT: MES (Mes-NaOH), PEG 4000. Extractor matched both.",
+    "tp": 2,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "1NF5",
+    "protein": "alpha_lactalbumin",
+    "ground_truth_notes": "GT: PEG 4000, sodium citrate. Extractor matched both.",
+    "tp": 2,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "1GX8",
+    "protein": "beta_lactoglobulin",
+    "ground_truth_notes": "GT: Tris, sodium citrate, HEPES. 'BLG-RET complex' is the protein (beta-lactoglobulin) plus bound retinol ligand pre-formed complex, not an added crystallization reagent - excluded (borderline). Extractor matched the 3 buffers/salts.",
+    "tp": 3,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "9WNX",
+    "protein": "beta_lactoglobulin",
+    "ground_truth_notes": "GT: sodium phosphate monobasic (NaH2PO4), potassium phosphate dibasic (K2HPO4) - two distinct salts named explicitly. Extractor matched both.",
+    "tp": 2,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "6ZSQ",
+    "protein": "beta_lactoglobulin",
+    "ground_truth_notes": "GT distinct entities: ammonium sulfate (used twice, same entity), sodium/potassium phosphate buffer (used twice, same entity), CDDP (cisplatin, a small-molecule heavy-metal soak reagent). Extractor matched ammonium sulfate and the phosphate buffer but missed CDDP entirely.",
+    "tp": 2,
+    "fp": 0,
+    "fn": 1
+  },
+  {
+    "pdb_id": "3UEW",
+    "protein": "beta_lactoglobulin",
+    "ground_truth_notes": "GT: sodium citrate, Tris-HCl. Extractor matched both.",
+    "tp": 2,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "3NQ9",
+    "protein": "beta_lactoglobulin",
+    "ground_truth_notes": "GT: sodium citrate, Tris-HCl, caprylic acid (octanoic acid, a small-molecule fatty-acid ligand for beta-lactoglobulin), ethanol. Extractor matched sodium citrate, Tris-HCl, ethanol but missed caprylic acid.",
+    "tp": 3,
+    "fp": 0,
+    "fn": 1
+  },
+  {
+    "pdb_id": "3UEV",
+    "protein": "beta_lactoglobulin",
+    "ground_truth_notes": "GT: sodium citrate, Tris-HCl. Extractor matched both.",
+    "tp": 2,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "4LZV",
+    "protein": "beta_lactoglobulin",
+    "ground_truth_notes": "GT: zinc chloride. Extractor matched it.",
+    "tp": 1,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "1B0O",
+    "protein": "beta_lactoglobulin",
+    "ground_truth_notes": "GT: none (only pH given). Extractor correctly produced nothing.",
+    "tp": 0,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "6GFS",
+    "protein": "beta_lactoglobulin",
+    "ground_truth_notes": "GT: Tris, sodium citrate, HEPES. 'ligand 10mM' is an unnamed ligand with no specific chemical name given, so not countable as a GT compound. Extractor matched the 3 buffers.",
+    "tp": 3,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "3UEX",
+    "protein": "beta_lactoglobulin",
+    "ground_truth_notes": "GT: sodium citrate (spelled 'trisodium citrarte', a typo), Tris-HCl. Extractor only matched Tris-HCl; missed sodium citrate due to the misspelling 'citrarte'.",
+    "tp": 1,
+    "fp": 0,
+    "fn": 1
+  },
+  {
+    "pdb_id": "4IB9",
+    "protein": "beta_lactoglobulin",
+    "ground_truth_notes": "GT: sodium citrate, Tris-HCl. Extractor matched both.",
+    "tp": 2,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "5CHK",
+    "protein": "avidin",
+    "ground_truth_notes": "GT: sodium citrate, PEG 1000. Extractor matched both.",
+    "tp": 2,
+    "fp": 0,
+    "fn": 0
+  }
+]

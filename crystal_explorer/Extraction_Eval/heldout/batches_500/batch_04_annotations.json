@@ -1,0 +1,402 @@
+[
+  {
+    "pdb_id": "1KK7",
+    "protein": "myosin_motor_domain",
+    "ground_truth_notes": "PEG 5000, ammonium sulfate, magnesium chloride (MgCl2), glycerol (missed, no dict entry), cacodylate (matched as sodium cacodylate)",
+    "tp": 4,
+    "fp": 0,
+    "fn": 1
+  },
+  {
+    "pdb_id": "4LNU",
+    "protein": "tubulin",
+    "ground_truth_notes": "PEG (bare, no MW stated - missed, borderline), MES buffer, ammonium sulfate 0.2M",
+    "tp": 2,
+    "fp": 0,
+    "fn": 1
+  },
+  {
+    "pdb_id": "9RI6",
+    "protein": "zinc_finger_Zif268",
+    "ground_truth_notes": "magnesium acetate 0.05M, sodium cacodylate 0.05M, PEG 6000 7.5%",
+    "tp": 3,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "8CBD",
+    "protein": "immunoglobulin_Fab",
+    "ground_truth_notes": "sodium citrate 0.1M, PEG 1000 22% w/v",
+    "tp": 2,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "3RYC",
+    "protein": "tubulin",
+    "ground_truth_notes": "PEG (bare, no MW stated - missed, borderline), lithium sulfate (LiSO4), PIPES buffer",
+    "tp": 2,
+    "fp": 0,
+    "fn": 1
+  },
+  {
+    "pdb_id": "2CJI",
+    "protein": "factor_Xa",
+    "ground_truth_notes": "PEG 6000 18%, MES 100mM, CaCl2 10mM",
+    "tp": 3,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "3P3R",
+    "protein": "transthyretin",
+    "ground_truth_notes": "sodium phosphate (NaPi) 10mM (missed, abbreviation not recognized), potassium chloride 100mM, sodium citrate 1.395M (crystallization and cryo steps, same compound), glycerol 3.5% v/v (crystallization) / 10% v/v (cryoprotectant, same compound counted once)",
+    "tp": 3,
+    "fp": 0,
+    "fn": 1
+  },
+  {
+    "pdb_id": "4H53",
+    "protein": "neuraminidase_influenza",
+    "ground_truth_notes": "MES 0.1M, PEG 4000 14% w/v",
+    "tp": 2,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "1BYP",
+    "protein": "plastocyanin",
+    "ground_truth_notes": "ammonium sulfate 2.8M, potassium phosphate 100mM",
+    "tp": 2,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "6YE3",
+    "protein": "interleukin_2",
+    "ground_truth_notes": "PEG 8000 10.86% v/v, ethylene glycol 5.76% v/v, HEPES 100mM",
+    "tp": 3,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "3NBS",
+    "protein": "cytochrome_c",
+    "ground_truth_notes": "PEG 200 30%, Tris-HCl 0.1M, ammonium phosphate 0.2M",
+    "tp": 3,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "7RAA",
+    "protein": "interleukin_2",
+    "ground_truth_notes": "MgCl2 0.2M, Tris pH8.3 0.1M, PEG 3350 24%",
+    "tp": 3,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "2XC4",
+    "protein": "factor_Xa",
+    "ground_truth_notes": "no reagents named, only pH",
+    "tp": 0,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "3FYG",
+    "protein": "glutathione_S_transferase",
+    "ground_truth_notes": "no reagents named, only pH",
+    "tp": 0,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "5DEZ",
+    "protein": "chitinase",
+    "ground_truth_notes": "MES, ammonium sulfate (no concentrations given)",
+    "tp": 2,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "1SL0",
+    "protein": "thioredoxin_ecoli",
+    "ground_truth_notes": "no reagents named, only pH and method",
+    "tp": 0,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "8QY1",
+    "protein": "xylanase",
+    "ground_truth_notes": "PEGSB (proprietary PEG smear broad mixture, missed - no dict entry, borderline as not a single compound), lithium sulfate 0.2M, Bis-Tris 0.1M",
+    "tp": 2,
+    "fp": 0,
+    "fn": 1
+  },
+  {
+    "pdb_id": "1NKH",
+    "protein": "alpha_lactalbumin",
+    "ground_truth_notes": "PEG 4000, sodium citrate (no concentrations given)",
+    "tp": 2,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "1TN4",
+    "protein": "troponin_C",
+    "ground_truth_notes": "MPD 54%, HEPES 50mM, CaCl2 10mM, sodium azide (NA-AZIDE) 1mM (missed, no dict entry)",
+    "tp": 3,
+    "fp": 0,
+    "fn": 1
+  },
+  {
+    "pdb_id": "7D4X",
+    "protein": "dihydrofolate_reductase",
+    "ground_truth_notes": "folate (co-crystallized ligand, missed, no dict entry), NADP+ 1mM, PEG 400 12% v/v, MnCl2 100mM, imidazole 20mM",
+    "tp": 4,
+    "fp": 0,
+    "fn": 1
+  },
+  {
+    "pdb_id": "7OPY",
+    "protein": "glutathione_S_transferase",
+    "ground_truth_notes": "Tris-HCl 100mM, PEG 4000 24% w/v, sodium formate 0.2M, GTB ligand 2.5mM (missed, no dict entry)",
+    "tp": 3,
+    "fp": 0,
+    "fn": 1
+  },
+  {
+    "pdb_id": "3B8D",
+    "protein": "aldolase",
+    "ground_truth_notes": "ammonium sulfate 40%, EDTA 5mM, triethylamine 100mM (missed, no dict entry)",
+    "tp": 2,
+    "fp": 0,
+    "fn": 1
+  },
+  {
+    "pdb_id": "9RZP",
+    "protein": "butyrylcholinesterase",
+    "ground_truth_notes": "ammonium sulfate (no concentration given)",
+    "tp": 1,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "2J8U",
+    "protein": "T_cell_receptor",
+    "ground_truth_notes": "NaCl 1.0M, PEG 8000 20%, MES (no concentration given)",
+    "tp": 3,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "3A5E",
+    "protein": "barstar",
+    "ground_truth_notes": "PEG 4000 30%, sodium acetate 200mM, Tris 100mM",
+    "tp": 3,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "2W6I",
+    "protein": "ATP_synthase_F1",
+    "ground_truth_notes": "Tris-HCl 50mM, NaCl 200mM, MgSO4 20mM, ADP 1mM, AlCl3 1mM (missed, no dict entry), NaF 6mM, PMSF 0.004%, PEG 6000 12%",
+    "tp": 7,
+    "fp": 0,
+    "fn": 1
+  },
+  {
+    "pdb_id": "9NBJ",
+    "protein": "papain",
+    "ground_truth_notes": "NaCl 889mM, methanol 58% (reservoir) / 66% (drop, same compound counted once)",
+    "tp": 2,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "7M2G",
+    "protein": "interleukin_2",
+    "ground_truth_notes": "ammonium sulfate 1.75M, HEPES 0.1M (NaOH is pH-adjustment only, not counted as separate reagent)",
+    "tp": 2,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "6GRN",
+    "protein": "cellulase",
+    "ground_truth_notes": "mPEG 5000 18% (missed, mPEG prefix not recognized), sodium acetate 10mM, glycerol 14%, cobalt chloride 11mM",
+    "tp": 3,
+    "fp": 0,
+    "fn": 1
+  },
+  {
+    "pdb_id": "1YRC",
+    "protein": "cytochrome_P450cam",
+    "ground_truth_notes": "Tris-HCl, KCl, camphor (substrate ligand, missed, no dict entry), DTE (dithioerythritol), PEG 8000",
+    "tp": 4,
+    "fp": 0,
+    "fn": 1
+  },
+  {
+    "pdb_id": "5FWG",
+    "protein": "glutathione_S_transferase",
+    "ground_truth_notes": "no reagents named, only pH",
+    "tp": 0,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "4LSH",
+    "protein": "porin_OmpF",
+    "ground_truth_notes": "PEG 200 50%, sodium cacodylate 0.1M, magnesium chloride 0.2M, potassium bromide 0.2M (soak)",
+    "tp": 4,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "1LDO",
+    "protein": "avidin",
+    "ground_truth_notes": "PEG 1000 12%, imidazole malate buffer ~0.1M (borderline: extractor matched only the malic acid component, imidazole component missed)",
+    "tp": 2,
+    "fp": 0,
+    "fn": 1
+  },
+  {
+    "pdb_id": "5KJC",
+    "protein": "alcohol_dehydrogenase_horse",
+    "ground_truth_notes": "TES buffer, ammonium salt, 50mM (systematic name 'ammonium N-[tris(hydroxymethyl)methyl]-2-aminoethanesulfonate' misparsed by extractor as Tris-HCl - false positive; true TES buffer missed - false negative), EDTA 0.25mM, NAD+ 1mM, 2,3,4,5,6-pentafluorobenzyl alcohol 10mM (substrate, missed, no dict entry), MPD 12-35%",
+    "tp": 3,
+    "fp": 1,
+    "fn": 2
+  },
+  {
+    "pdb_id": "4XD2",
+    "protein": "alcohol_dehydrogenase_horse",
+    "ground_truth_notes": "TES buffer, ammonium salt, 50mM (systematic IUPAC name misparsed by extractor as Tris-HCl - false positive; true TES buffer missed - false negative), EDTA 0.25mM, NAD+ 1mM, MPD 12-25%",
+    "tp": 3,
+    "fp": 1,
+    "fn": 1
+  },
+  {
+    "pdb_id": "5N8E",
+    "protein": "streptavidin",
+    "ground_truth_notes": "ammonium acetate 0.2M, sodium acetate 0.1M, PEG 4000 15%",
+    "tp": 3,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "7TAA",
+    "protein": "alpha_amylase_TAKA",
+    "ground_truth_notes": "PEG 5000 18%, calcium chloride 5mM, HEPES 0.1M, acarbose 15mM (soak ligand)",
+    "tp": 4,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "2BC3",
+    "protein": "streptavidin",
+    "ground_truth_notes": "ammonium sulfate 25%, sodium acetate 0.1M",
+    "tp": 2,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "1EHB",
+    "protein": "cytochrome_b5",
+    "ground_truth_notes": "phosphate buffer (unspecified cation, no concentration)",
+    "tp": 1,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "2Y4V",
+    "protein": "calmodulin",
+    "ground_truth_notes": "HEPES 0.1M, PEG 3000 25% w/v",
+    "tp": 2,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "3A73",
+    "protein": "serum_albumin_human",
+    "ground_truth_notes": "phosphate buffer 50mM, PEG 3350 28-32%",
+    "tp": 2,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "1OEO",
+    "protein": "protein_tyrosine_phosphatase",
+    "ground_truth_notes": "HEPES 0.1M, PEG (bare, 12%, no MW stated - missed, borderline), MgCl2 0.2M, pervanadate 100 micromolar (soak ligand, missed, no dict entry)",
+    "tp": 2,
+    "fp": 0,
+    "fn": 2
+  },
+  {
+    "pdb_id": "1TGR",
+    "protein": "insulin_like_growth_factor",
+    "ground_truth_notes": "citrate (bare, no cation specified - missed, borderline), ethanol",
+    "tp": 1,
+    "fp": 0,
+    "fn": 1
+  },
+  {
+    "pdb_id": "7KD2",
+    "protein": "ricin",
+    "ground_truth_notes": "zinc acetate 200mM, MES 100mM, PEG 8000 10%",
+    "tp": 3,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "2ZOW",
+    "protein": "superoxide_dismutase_CuZn",
+    "ground_truth_notes": "PEG 4000 20%, iso-propanol 20% (matched generically as 'propanol', borderline loss of iso- specificity), MES 0.09M, EDTA 1mM",
+    "tp": 4,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "2B5I",
+    "protein": "interleukin_2",
+    "ground_truth_notes": "pentaerythritol ethoxylate 15/4 29%, ammonium sulfate 50mM, Bis-Tris 50mM",
+    "tp": 3,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "5GZ2",
+    "protein": "firefly_luciferase",
+    "ground_truth_notes": "sodium malonate, PEG 3350 (no concentrations given)",
+    "tp": 2,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "2NWC",
+    "protein": "chaperonin_GroEL",
+    "ground_truth_notes": "imidazole 0.1M, MPD 35%, MgCl2 0.2M",
+    "tp": 3,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "2W6J",
+    "protein": "ATP_synthase_F1",
+    "ground_truth_notes": "Tris-HCl 50mM, NaCl 200mM, MgSO4 20mM, ADP 1mM, AlCl3 1mM (missed, no dict entry), NaF 6mM, PMSF 0.004%, PEG 6000 12%",
+    "tp": 7,
+    "fp": 0,
+    "fn": 1
+  },
+  {
+    "pdb_id": "1RQ3",
+    "protein": "hemoglobin_human",
+    "ground_truth_notes": "no reagents named, only pH",
+    "tp": 0,
+    "fp": 0,
+    "fn": 0
+  }
+]

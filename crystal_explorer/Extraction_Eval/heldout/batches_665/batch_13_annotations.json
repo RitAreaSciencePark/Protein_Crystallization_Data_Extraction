@@ -1,0 +1,402 @@
+[
+  {
+    "pdb_id": "3X35",
+    "protein": "cytochrome_b5",
+    "ground_truth_notes": "GT: PEG 400, PEG 3350, sodium acetate. All matched.",
+    "tp": 3,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "3X33",
+    "protein": "cytochrome_b5",
+    "ground_truth_notes": "GT: PEG 400, PEG 3350, sodium acetate. All matched.",
+    "tp": 3,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "3X32",
+    "protein": "cytochrome_b5",
+    "ground_truth_notes": "GT: PEG 1500, 2-propanol/isopropanol, calcium chloride, HEPES. All matched.",
+    "tp": 4,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "1M2M",
+    "protein": "cytochrome_b5",
+    "ground_truth_notes": "GT: phosphate buffer (unspecified). Matched.",
+    "tp": 1,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "1LQX",
+    "protein": "cytochrome_b5",
+    "ground_truth_notes": "GT: phosphate buffer (unspecified). Matched.",
+    "tp": 1,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "1M59",
+    "protein": "cytochrome_b5",
+    "ground_truth_notes": "GT: phosphate buffer (unspecified). Matched.",
+    "tp": 1,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "1M2I",
+    "protein": "cytochrome_b5",
+    "ground_truth_notes": "GT: phosphate buffer (unspecified). Matched.",
+    "tp": 1,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "4HIN",
+    "protein": "cytochrome_b5",
+    "ground_truth_notes": "GT: PEG 8000, Tris, MgCl2, CuCl2. All matched (Tris matched as Tris-HCl family).",
+    "tp": 4,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "3MUS",
+    "protein": "cytochrome_b5",
+    "ground_truth_notes": "GT: PEG 8000, magnesium acetate (MgAc), HEPES. Extractor missed magnesium acetate -> fn.",
+    "tp": 2,
+    "fp": 0,
+    "fn": 1
+  },
+  {
+    "pdb_id": "1B5M",
+    "protein": "cytochrome_b5",
+    "ground_truth_notes": "GT: PEG 8000, sodium cacodylate, magnesium acetate. All matched.",
+    "tp": 3,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "2I89",
+    "protein": "cytochrome_b5",
+    "ground_truth_notes": "GT: PEG 8000, magnesium acetate (MgAc), PIPES. Extractor missed magnesium acetate -> fn.",
+    "tp": 2,
+    "fp": 0,
+    "fn": 1
+  },
+  {
+    "pdb_id": "3RIX",
+    "protein": "firefly_luciferase",
+    "ground_truth_notes": "GT: PEG 400, PEG 3350, MgCl2, Tris. All matched.",
+    "tp": 4,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "6HPS",
+    "protein": "firefly_luciferase",
+    "ground_truth_notes": "GT: ammonium sulfate, HEPES, PEG 1000. All matched.",
+    "tp": 3,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "6Q2M",
+    "protein": "firefly_luciferase",
+    "ground_truth_notes": "GT: EPPS, PEG 4000, 2,5-hexanediol. Extractor missed EPPS entirely (fn) and mis-identified '2,5 Hexanediol' as '1,6-hexanediol' (a different isomer not actually in the text) -> counted as one fp (wrong compound reported) plus one fn (true 2,5-hexanediol missed). Only PEG4000 is a true tp.",
+    "tp": 1,
+    "fp": 1,
+    "fn": 2
+  },
+  {
+    "pdb_id": "2D1R",
+    "protein": "firefly_luciferase",
+    "ground_truth_notes": "GT: PEG4000, lithium chloride ('Lithium chrolide' typo), magnesium chloride, ATP, D-Luciferin (substrate, small molecule), Tris-HCl ('Teis-HCl' typo). Extractor caught PEG4000, MgCl2, ATP but missed the three misspelled/unusual terms (lithium chloride, D-Luciferin, Tris-HCl) -> 3 fn.",
+    "tp": 3,
+    "fp": 0,
+    "fn": 3
+  },
+  {
+    "pdb_id": "6K4C",
+    "protein": "firefly_luciferase",
+    "ground_truth_notes": "GT: trisodium citrate, PEG 3000. Matched (sodium citrate family).",
+    "tp": 2,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "1QKP",
+    "protein": "bacteriorhodopsin",
+    "ground_truth_notes": "GT: octyl glucoside (detergent used to solubilize protein), monoolein, Na/K-phosphate buffer (mentioned twice in text as one entity). Extractor reported phosphate buffer twice but that is one entity at entity-level scoring, not an extra fp.",
+    "tp": 3,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "1QKO",
+    "protein": "bacteriorhodopsin",
+    "ground_truth_notes": "Same text/case as 1QKP. GT: octyl glucoside, monoolein, phosphate buffer.",
+    "tp": 3,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "4MD1",
+    "protein": "bacteriorhodopsin",
+    "ground_truth_notes": "GT: monoolein only. Matched.",
+    "tp": 1,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "4MD2",
+    "protein": "bacteriorhodopsin",
+    "ground_truth_notes": "GT: monoolein only. Matched.",
+    "tp": 1,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "5B6V",
+    "protein": "bacteriorhodopsin",
+    "ground_truth_notes": "GT: Na/K phosphate, PEG 2000. Matched.",
+    "tp": 2,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "5H2I",
+    "protein": "bacteriorhodopsin",
+    "ground_truth_notes": "GT: Na/K phosphate, PEG 2000. Matched.",
+    "tp": 2,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "5H2O",
+    "protein": "bacteriorhodopsin",
+    "ground_truth_notes": "GT: Na/K phosphate, PEG 2000. Matched.",
+    "tp": 2,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "6G7I",
+    "protein": "bacteriorhodopsin",
+    "ground_truth_notes": "GT: PEG 2000, Na+/K+ phosphate buffer. Matched.",
+    "tp": 2,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "6GA4",
+    "protein": "bacteriorhodopsin",
+    "ground_truth_notes": "GT: PEG 2000, K2HPO4/NaH2PO4 phosphate buffer (treated as one combined buffer entity since text writes it as a ratio, not two separately-concentrated salts). Matched.",
+    "tp": 2,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "6GAI",
+    "protein": "bacteriorhodopsin",
+    "ground_truth_notes": "Same as 6GA4. GT: PEG 2000, phosphate buffer.",
+    "tp": 2,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "4D5U",
+    "protein": "porin_OmpF",
+    "ground_truth_notes": "GT: PEG 4000, NaCl, CdCl2 (explicit additive). All matched.",
+    "tp": 3,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "3O0E",
+    "protein": "porin_OmpF",
+    "ground_truth_notes": "GT: PEG 3350, lithium sulfate (Li2SO4), sodium cacodylate. All matched.",
+    "tp": 3,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "3K1B",
+    "protein": "porin_OmpF",
+    "ground_truth_notes": "GT: sodium phosphate monobasic, potassium phosphate monobasic (two separately-concentrated named salts), acetate buffer. All matched.",
+    "tp": 3,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "4LSE",
+    "protein": "porin_OmpF",
+    "ground_truth_notes": "GT: PEG 200, sodium cacodylate, magnesium chloride. All matched.",
+    "tp": 3,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "5NUR",
+    "protein": "porin_OmpF",
+    "ground_truth_notes": "GT: sodium sulfate, lithium sulfate, Tris, PEG 400. All matched (Tris matched as Tris-HCl family).",
+    "tp": 4,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "3HWB",
+    "protein": "porin_OmpF",
+    "ground_truth_notes": "GT: NaCl, Na-phosphate buffer, BOG (n-octyl-beta-D-glucoside), octylPOE, sodium azide, PEG 2000. All 6 matched.",
+    "tp": 6,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "3K19",
+    "protein": "porin_OmpF",
+    "ground_truth_notes": "GT: NaH2PO4 and K2HPO4 (two distinct concentrations given, counted as 2 entities), sodium chloride, imidazole = 4 total. All matched.",
+    "tp": 4,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "1OCC",
+    "protein": "cytochrome_c_oxidase_subunit",
+    "ground_truth_notes": "Only 'pH 6.8' given, no reagents named. GT=0, extractor correctly returned nothing.",
+    "tp": 0,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "5ZCO",
+    "protein": "cytochrome_c_oxidase_subunit",
+    "ground_truth_notes": "GT: PEG 4000, sodium phosphate. Matched.",
+    "tp": 2,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "6JUW",
+    "protein": "cytochrome_c_oxidase_subunit",
+    "ground_truth_notes": "GT: PEG 4000, sodium phosphate buffer. Matched.",
+    "tp": 2,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "3X2Q",
+    "protein": "cytochrome_c_oxidase_subunit",
+    "ground_truth_notes": "GT: sodium phosphate, decylmaltoside (detergent), PEG 4000. All matched.",
+    "tp": 3,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "7W3E",
+    "protein": "cytochrome_c_oxidase_subunit",
+    "ground_truth_notes": "GT: PEG 4000, sodium phosphate buffer. Matched.",
+    "tp": 2,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "9IKH",
+    "protein": "cytochrome_c_oxidase_subunit",
+    "ground_truth_notes": "GT: sodium phosphate, decyl-maltoside, PEG 4000. Extractor missed 'decyl-maltoside' (hyphenated spelling variant not matched, though unhyphenated 'decylmaltoside' is matched elsewhere) -> fn.",
+    "tp": 2,
+    "fp": 0,
+    "fn": 1
+  },
+  {
+    "pdb_id": "1BMF",
+    "protein": "ATP_synthase_F1",
+    "ground_truth_notes": "Only 'pH 8.2' given, no reagents. GT=0, extractor correctly empty.",
+    "tp": 0,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "1W0K",
+    "protein": "ATP_synthase_F1",
+    "ground_truth_notes": "GT: azide (named small-molecule inhibitor present during crystallization, explicitly stated). Extractor returned nothing -> fn.",
+    "tp": 0,
+    "fp": 0,
+    "fn": 1
+  },
+  {
+    "pdb_id": "1W0J",
+    "protein": "ATP_synthase_F1",
+    "ground_truth_notes": "Same text as 1W0K. GT: azide, missed -> fn.",
+    "tp": 0,
+    "fp": 0,
+    "fn": 1
+  },
+  {
+    "pdb_id": "2W6H",
+    "protein": "ATP_synthase_F1",
+    "ground_truth_notes": "GT: Tris-HCl, NaCl, MgSO4, ADP, AlCl3, NaF, PMSF, PEG 6000 = 8. All matched.",
+    "tp": 8,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "2W6F",
+    "protein": "ATP_synthase_F1",
+    "ground_truth_notes": "Same text as 2W6H. All 8 matched.",
+    "tp": 8,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "2CK3",
+    "protein": "ATP_synthase_F1",
+    "ground_truth_notes": "GT: Tris-HCl, NaCl, MgSO4, AMP-PNP, ADP, sodium azide (NAN3), PMSF, PEG 6000 = 8. All matched.",
+    "tp": 8,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "2JIZ",
+    "protein": "ATP_synthase_F1",
+    "ground_truth_notes": "Only 'pH 8.2' given, no reagents. GT=0, extractor correctly empty.",
+    "tp": 0,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "2W6G",
+    "protein": "ATP_synthase_F1",
+    "ground_truth_notes": "Same text as 2W6H. All 8 matched.",
+    "tp": 8,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "1E1Q",
+    "protein": "F1_ATPase_beta",
+    "ground_truth_notes": "Only 'pH 8.00' given, no reagents. GT=0, extractor correctly empty.",
+    "tp": 0,
+    "fp": 0,
+    "fn": 0
+  },
+  {
+    "pdb_id": "1H8H",
+    "protein": "F1_ATPase_beta",
+    "ground_truth_notes": "GT: azide (named inhibitor present during crystallization). Extractor returned nothing -> fn.",
+    "tp": 0,
+    "fp": 0,
+    "fn": 1
+  },
+  {
+    "pdb_id": "1NBM",
+    "protein": "F1_ATPase_beta",
+    "ground_truth_notes": "GT: Tris-HCl, NaCl, MgSO4, EDTA, PMSF ('PHENYL METHYLSULPHONYL FLUORIDE', British spelling), sodium azide, PEG MME 5000, AMP-PNP, ADP = 9. Extractor missed PMSF due to the split/British spelling variant ('METHYLSULPHONYL' vs dictionary's 'METHYLSULFONYL') -> fn; all other 8 matched.",
+    "tp": 8,
+    "fp": 0,
+    "fn": 1
+  }
+]

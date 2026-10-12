@@ -50,6 +50,14 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
+# Anonymous session cookie used only to let a visitor recognize their own
+# rows in the (fully shared) search history -- no accounts, no IP. The
+# default 2-week age is too short for that purpose, so it's extended to a
+# year; SESSION_SAVE_EVERY_REQUEST keeps resetting that expiry while the
+# cookie is actually in use, rather than it going stale between visits.
+SESSION_COOKIE_AGE = 60 * 60 * 24 * 365
+SESSION_SAVE_EVERY_REQUEST = True
+
 ROOT_URLCONF = 'config.urls'
 
 TEMPLATES = [
