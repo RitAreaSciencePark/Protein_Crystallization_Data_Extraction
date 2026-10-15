@@ -1,4 +1,13 @@
-# Crystal Explorer
+<table>
+<tr>
+<td><img src="viewer/static/viewer/crystal-explorer-mark.png" width="90" alt="Crystal Explorer logo"></td>
+<td><h1>Crystal Explorer</h1></td>
+</tr>
+</table>
+
+[![License: MIT](https://img.shields.io/github/license/RitAreaSciencePark/Protein_Crystallization_Data_Extraction)](../LICENSE)
+![Python](https://img.shields.io/badge/python-3.12-blue)
+![Django](https://img.shields.io/badge/django-6.0-darkgreen)
 
 A Django app that runs the full crystallization-condition pipeline
 straight from a web form:
@@ -33,20 +42,24 @@ python manage.py runserver
 
 Then open http://127.0.0.1:8000/, fill in the form, and hit **Run search**.
 
-To use the LLM fallback for compound extraction (resolves reagents the
-built-in dictionary doesn't recognize, and learns them for next time),
-set `ANTHROPIC_API_KEY` in the environment before starting the server,
-and check the "Use Claude..." box in the form.
+An LLM-assisted fallback (resolving reagents the dictionary doesn't
+recognize, via Claude) is described as future work, not yet wired into
+the live app -- see the paper's Discussion/Limitations/Future Work
+section.
 
-## Notes on running the search synchronously
+## Notes on running the search in the background
 
-The search view runs stage 1-4 of the pipeline **inside the HTTP
-request** -- simplest to set up, but it means the browser tab waits
-for the whole thing (RCSB search + per-hit mmCIF fetches + plotting) to
-finish before the results page loads. The form defaults `max_hits` to 25
-to keep this reasonable. For heavier use (many hits, many users), moving
-this to a background task (Celery, Django-Q, etc.) that the results page
-polls for would be the next step -- ask if you want that built out.
+The search view hands stage 1-4 of the pipeline to a background
+Python thread and redirects to the results page immediately -- the
+browser tab isn't blocked waiting for RCSB search + per-hit mmCIF
+fetches + plotting to finish. The results page shows a "Search
+running..." panel that auto-refreshes every few seconds until the run
+completes (or shows the error message if it failed). This uses
+`threading`, not a real task queue (Celery, Django-Q, etc.), since
+deployment here is a single `manage.py runserver` process with no
+separate worker/process manager -- moving to a real queue would be
+the next step if that changes (e.g. multiple server processes, where
+an in-process thread wouldn't be visible to other workers).
 
 ## Pipeline
 
@@ -128,8 +141,8 @@ flowchart TB
 - Sequence field accepting raw text or a full FASTA record (header lines and blank lines stripped automatically).
 - Sequence type selector -- Protein / DNA / RNA.
 - Minimum identity (0-1) and max E-value thresholds.
-- Max PDB entries to fetch (default 25, capped at 200 -- kept modest since the search runs synchronously).
-- Optional "Use Claude to resolve compounds the dictionary misses" checkbox (needs `ANTHROPIC_API_KEY` on the server).
+- Max PDB entries to fetch (default 25, capped at 200).
+- Optional "Lab / institution" field (self-reported, shown in the run's FAIR metadata).
 - Inline field validation errors; submit button disables and shows a "Running…" note while the pipeline executes.
 - Smart re-run handling: an identical search redirects straight to its existing results with no re-run; the same protein/sequence with different thresholds reuses and overwrites that same run instead of piling up duplicates in History.
 - Friendly error messages on failure (e.g. a plain-language "bad sequence format" message instead of a raw HTTP error).
@@ -147,7 +160,7 @@ flowchart TB
 
 ### History
 - Paginated list (25 per page) of every past search, newest first.
-- Per-run: protein name + sequence preview, sequence type, search parameters (identity/E-value/max hits/Claude fallback), status pill (Completed/Failed/Running -- failed runs show their error message), matched-condition count, submission time, and runtime.
+- Per-run: protein name + sequence preview, sequence type, search parameters (identity/E-value/max hits), status pill (Completed/Failed/Running -- failed runs show their error message), matched-condition count, submission time, and runtime.
 - "View results" link for completed runs.
 - Delete button (with a confirmation prompt) that removes both the history entry and its output files from disk.
 - Empty state with a link back to Explorer when no searches exist yet.

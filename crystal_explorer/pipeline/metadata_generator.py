@@ -20,11 +20,17 @@ License: MIT © 2025 RitAreaSciencePark
 """
 
 import os
+import re
 import json
 import hashlib
+import csv
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Any
+from typing import Dict, List, Any, Optional
+
+from pipeline.compound_extraction import get_reagent_category
+
+_COMPOUND_NAME_RE = re.compile(r"'([^']+)'")
 
 
 class FAIRMetadataGenerator:
@@ -71,7 +77,8 @@ class FAIRMetadataGenerator:
         ".fasta": "fasta",
     }
 
-    def __init__(self, run_identifier: str, output_dir: str, sequence_type: str = None):
+    def __init__(self, run_identifier: str, output_dir: str, sequence_type: str = None,
+                 search_params: Optional[Dict[str, Any]] = None):
         """
         Initialize the metadata generator.
 
@@ -83,10 +90,16 @@ class FAIRMetadataGenerator:
             sequence_type (str): Biological sequence type searched
                 ('protein', 'dna', 'rna'). Falls back to `run_identifier`
                 if not given, so this class still works standalone.
+            search_params (dict): The actual parameters this run was
+                submitted with (identity_cutoff, evalue_cutoff, max_hits,
+                llm_fallback) -- recorded as-is so the metadata reflects
+                what THIS search actually used, not just that a search
+                happened. Optional so this class still works standalone.
         """
         self.sequence_type_name = run_identifier
         self.sequence_type = sequence_type or run_identifier
         self.output_dir = output_dir
+        self.search_params = search_params or {}
         self.search_timestamp = datetime.utcnow()
 
     @staticmethod
@@ -167,9 +180,78 @@ class FAIRMetadataGenerator:
         Grouped_conditions-20260611-154230
         """
         stem = Path(file_name).stem.replace(" ", "_")
-        timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
+        # Reuses the run's own UTC timestamp (not datetime.now(), which is
+        # local time) so every id/timestamp in this document agrees.
+        timestamp = self.search_timestamp.strftime("%Y%m%d-%H%M%S")
 
         return f"{stem}-{timestamp}"
+
+    def _build_run_summary(self) -> Dict[str, Any]:
+        """Summarize what THIS search actually found, by reading the run's
+        own output CSVs -- distinct PDB entries retrieved, distinct
+        reagents/categories the extractor identified, and how many unique
+        crystallization conditions they were grouped into. This is the
+        part of the metadata that's specific to Crystal Explorer rather
+        than being true of any generic file export; before this, the
+        metadata only recorded that these CSVs existed, never what they
+        actually contained."""
+        summary: Dict[str, Any] = {
+            "retained_pdb_entries": 0,
+            "pdb_ids": [],
+            "distinct_reagents": [],
+            "reagent_count": 0,
+            "reagents_by_category": {},
+            "unique_conditions": None,
+        }
+
+        hits_path = os.path.join(self.output_dir, "Output.csv")
+        if os.path.isfile(hits_path):
+            try:
+                with open(hits_path, newline="", encoding="utf-8") as f:
+                    pdb_ids = [row["pdb_id"] for row in csv.DictReader(f) if row.get("pdb_id")]
+                summary["retained_pdb_entries"] = len(pdb_ids)
+                summary["pdb_ids"] = sorted(set(pdb_ids))
+            except (OSError, csv.Error, KeyError):
+                pass
+
+        compounds_path = os.path.join(self.output_dir, "Output_compounds.csv")
+        if os.path.isfile(compounds_path):
+            try:
+                reagents = set()
+                with open(compounds_path, newline="", encoding="utf-8") as f:
+                    for row in csv.DictReader(f):
+                        reagents.update(_COMPOUND_NAME_RE.findall(row.get("compound") or ""))
+                summary["distinct_reagents"] = sorted(reagents)
+                summary["reagent_count"] = len(reagents)
+                by_category: Dict[str, int] = {}
+                for name in reagents:
+                    category = get_reagent_category(name)
+                    by_category[category] = by_category.get(category, 0) + 1
+                summary["reagents_by_category"] = by_category
+            except (OSError, csv.Error):
+                pass
+
+        grouped_path = os.path.join(self.output_dir, "Grouped_conditions.csv")
+        if os.path.isfile(grouped_path):
+            try:
+                with open(grouped_path, newline="", encoding="utf-8") as f:
+                    rows = list(csv.DictReader(f))
+                summary["unique_conditions"] = len(rows)
+                # Grouped rows merge PDB_ID as a comma-joined string per
+                # row; recover the full retrieved set in case Output.csv
+                # wasn't available above.
+                if not summary["pdb_ids"]:
+                    merged_ids = set()
+                    for row in rows:
+                        merged_ids.update(
+                            pid.strip() for pid in (row.get("PDB_ID") or "").split(",") if pid.strip()
+                        )
+                    summary["pdb_ids"] = sorted(merged_ids)
+                    summary["retained_pdb_entries"] = len(merged_ids)
+            except (OSError, csv.Error):
+                pass
+
+        return summary
 
     def generate_file_metadata(self, file_path: str) -> Dict[str, Any]:
         """
@@ -301,6 +383,33 @@ class FAIRMetadataGenerator:
                 "total_files": total_files,
                 "total_size_kb": round(total_size_kb, 2),
             },
+
+            # The parameters THIS search was actually submitted with, so
+            # the record documents what was run, not just that something
+            # was run (previously missing entirely, despite being present
+            # on the search form and the SearchRun row).
+            "search_parameters": {
+                "identity_cutoff": self.search_params.get("identity"),
+                "evalue_cutoff": self.search_params.get("evalue"),
+                "max_hits": self.search_params.get("max_hits"),
+                "sequence_type": self.sequence_type,
+            },
+
+            # Who ran THIS search -- self-reported on the form, optional,
+            # never inferred from IP/session. Distinct from "organization"
+            # above, which describes Crystal Explorer's own authorship,
+            # not whoever is using it for a given run.
+            "submitted_by": {
+                "lab_name": self.search_params.get("lab_name") or None,
+            },
+
+            # What this search actually found -- the retrieved PDB
+            # entries and the reagents/conditions the extractor
+            # identified in them. This is the traceability the paper
+            # describes ("every suggested condition stays traceable back
+            # to the structure... that reported it"), now carried in the
+            # exported metadata itself rather than only in the web table.
+            "run_summary": self._build_run_summary(),
         }
 
         return dataset_metadata
@@ -394,7 +503,8 @@ class FAIRMetadataGenerator:
         return metadata_json_path
 
 
-def generate_metadata_for_outputs(run_identifier: str, output_dir: str, sequence_type: str = None) -> str:
+def generate_metadata_for_outputs(run_identifier: str, output_dir: str, sequence_type: str = None,
+                                   search_params: Optional[Dict[str, Any]] = None) -> str:
     """
     Convenience function to generate FAIR-compliant metadata for all output
     files of one Crystal Explorer run.
@@ -405,6 +515,9 @@ def generate_metadata_for_outputs(run_identifier: str, output_dir: str, sequence
         sequence_type (str): Biological sequence type searched
             ('protein', 'dna', 'rna'). Falls back to `run_identifier` if
             not given.
+        search_params (dict): The actual parameters this run was submitted
+            with (identity, evalue, max_hits, llm_fallback), recorded in
+            the metadata's "search_parameters" block. Optional.
 
     Returns:
         str: Path to the generated metadata JSON file
@@ -412,9 +525,11 @@ def generate_metadata_for_outputs(run_identifier: str, output_dir: str, sequence
     Example:
         >>> metadata_path = generate_metadata_for_outputs(
         ...     "MyProtein_20260901-120000", "pipeline_outputs/MyProtein_20260901-120000/",
-        ...     sequence_type="protein")
+        ...     sequence_type="protein",
+        ...     search_params={"identity": 0.5, "evalue": 1.0, "max_hits": 30})
         >>> print(f"Metadata saved to: {metadata_path}")
     """
     print("Generating FAIR-compliant metadata for all output files...")
-    generator = FAIRMetadataGenerator(run_identifier, output_dir, sequence_type=sequence_type)
+    generator = FAIRMetadataGenerator(run_identifier, output_dir, sequence_type=sequence_type,
+                                       search_params=search_params)
     return generator.process_all_output_files()

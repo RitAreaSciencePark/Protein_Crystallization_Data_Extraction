@@ -30,11 +30,17 @@ class SequenceSearchForm(forms.Form):
         label="Max PDB entries", initial=25, min_value=1, max_value=200,
         help_text="Kept modest by default since this runs synchronously in your browser request.",
     )
-    llm_fallback = forms.BooleanField(
-        label="Use Claude to resolve compounds the dictionary misses",
+    lab_name = forms.CharField(
+        label="Lab / institution (optional)",
+        max_length=200,
         required=False,
-        help_text="Requires ANTHROPIC_API_KEY set on the server.",
+        widget=forms.TextInput(attrs={"placeholder": "e.g. Area Science Park"}),
+        help_text="Self-reported, shown in this run's metadata -- not an account, "
+                   "and never inferred from your IP or browser.",
     )
+
+    def clean_lab_name(self):
+        return self.cleaned_data["lab_name"].strip()
 
     def clean_sequence(self):
         """Strip FASTA header lines ('>' prefixed) and whitespace, same

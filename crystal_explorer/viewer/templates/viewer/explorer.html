@@ -79,6 +79,57 @@
   button.run-btn:disabled { opacity: 0.6; cursor: wait; }
   .running-note { font-size: 0.8rem; color: var(--ink-muted); margin-top: 0.5rem; }
 
+  .progress-track {
+    width: 100%; height: 8px; border-radius: 4px;
+    background: var(--line); overflow: hidden; margin: 0.9rem 0 0.4rem;
+  }
+  .progress-fill {
+    height: 100%; background: var(--accent); border-radius: 4px;
+    transition: width 0.3s ease;
+  }
+  .progress-caption {
+    font-size: 0.8rem; color: var(--ink-muted);
+    display: flex; justify-content: space-between;
+  }
+
+  /* ---- results summary strip ---- */
+  .summary-strip { padding: 1.1rem 1.4rem; }
+  .summary-tiles {
+    display: flex; flex-wrap: wrap; gap: 1.6rem;
+  }
+  .summary-tile { display: flex; flex-direction: column; gap: 0.15rem; }
+  .summary-number {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 1.9rem; font-weight: 600; color: var(--accent);
+    font-variant-numeric: tabular-nums;
+  }
+  .summary-caption { font-size: 0.78rem; color: var(--ink-muted); }
+  .summary-chips {
+    display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem;
+    margin-top: 1rem; padding-top: 0.9rem; border-top: 1px solid var(--line);
+  }
+  .summary-chips-label { font-size: 0.78rem; color: var(--ink-muted); margin-right: 0.2rem; }
+  .reagent-chip {
+    display: inline-flex; align-items: baseline; gap: 0.35rem;
+    font-size: 0.8rem; padding: 0.25rem 0.65rem; border-radius: 999px;
+    background: var(--panel-alt, #F3F5F6); border: 1px solid var(--line);
+    white-space: nowrap;
+  }
+  .reagent-chip-pct { color: var(--ink-muted); font-size: 0.72rem; }
+  .reagent-chip--buffer { border-color: #0B6E7D; background: rgba(11, 110, 125, 0.08); }
+  .reagent-chip--salt { border-color: #E69F00; background: rgba(230, 159, 0, 0.1); }
+  .reagent-chip--precipitant { border-color: #0072B2; background: rgba(0, 114, 178, 0.08); }
+  .reagent-chip--additive { border-color: #8A94A6; background: rgba(138, 148, 166, 0.1); }
+  .category-legend {
+    display: flex; flex-wrap: wrap; gap: 0.9rem;
+    margin-top: 0.6rem; font-size: 0.75rem; color: var(--ink-muted);
+  }
+  .category-legend-item { display: inline-flex; align-items: center; gap: 0.35rem; }
+  .category-legend-swatch {
+    width: 0.65rem; height: 0.65rem; border-radius: 50%; display: inline-block;
+  }
+
+
   /* ---- output column ---- */
   .output-placeholder {
     border: 1px dashed var(--line);
@@ -356,8 +407,6 @@
   <div class="panel">
     <p class="panel-label">{% if protein_name %}New search{% else %}Run a search{% endif %}</p>
 
-    {% if run_error %}<div class="error-box">{{ run_error }}</div>{% endif %}
-
     <form class="search-form" method="post" action="{% url 'viewer:index' %}" id="search-form">
       {% csrf_token %}
 
@@ -393,11 +442,11 @@
         {{ form.evalue }}
       </div>
 
-      <div class="field checkbox-field">
-        {{ form.llm_fallback }}
-        {{ form.llm_fallback.label_tag }}
+      <div class="field">
+        {{ form.lab_name.label_tag }}
+        {{ form.lab_name }}
+        <div class="helptext">{{ form.lab_name.help_text }}</div>
       </div>
-      <div class="helptext" style="margin-top: -0.7rem;">{{ form.llm_fallback.help_text }}</div>
 
       <button type="submit" class="run-btn" id="run-btn">Run search</button>
       <p class="running-note" id="running-note" style="display:none;">
@@ -407,7 +456,28 @@
   </div>
 
   <div>
-    {% if error %}
+    {% if running %}
+      <div class="panel">
+        <div class="output-placeholder">
+          <strong>SEARCH RUNNING&hellip;</strong><br>
+          Still working on it -- RCSB homolog search and compound extraction
+          can take anywhere from a few seconds to a couple of minutes
+          depending on how many hits match. This page refreshes itself
+          automatically; <a href="{{ request.path }}">refresh now</a>
+          if you'd rather not wait.
+          <div class="progress-track">
+            <div class="progress-fill" style="width: {{ progress_percent }}%;"></div>
+          </div>
+          <div class="progress-caption">
+            <span>{{ progress_label|default:"Starting" }}</span>
+            <span>{{ progress_percent }}%</span>
+          </div>
+        </div>
+      </div>
+      <script>
+        setTimeout(function () { window.location.reload(); }, 4000);
+      </script>
+    {% elif error %}
       <div class="panel"><div class="error-box">{{ error }}</div></div>
     {% elif no_hits %}
       <div class="panel">
@@ -417,6 +487,44 @@
         </div>
       </div>
     {% elif peg_plot_div %}
+      {% if summary_stats %}
+        <div class="panel summary-strip">
+          <div class="summary-tiles">
+            <div class="summary-tile">
+              <span class="summary-number">{{ summary_stats.pdb_count }}</span>
+              <span class="summary-caption">PDB entries</span>
+            </div>
+            <div class="summary-tile">
+              <span class="summary-number">{{ summary_stats.conditions_count }}</span>
+              <span class="summary-caption">Conditions found</span>
+            </div>
+            <div class="summary-tile">
+              <span class="summary-number">{{ summary_stats.reagent_count }}</span>
+              <span class="summary-caption">Distinct reagents</span>
+            </div>
+          </div>
+          {% if summary_stats.top_reagents %}
+            <div class="summary-chips">
+              <span class="summary-chips-label">Most common:</span>
+              {% for r in summary_stats.top_reagents %}
+                <span class="reagent-chip reagent-chip--{{ r.category|lower }}">
+                  {{ r.name }} <span class="reagent-chip-pct">{{ r.percent }}%</span>
+                </span>
+              {% endfor %}
+            </div>
+          {% endif %}
+          {% if summary_stats.category_legend %}
+            <div class="category-legend">
+              {% for c in summary_stats.category_legend %}
+                <span class="category-legend-item">
+                  <span class="category-legend-swatch" style="background: {{ c.color }};"></span>{{ c.category }}
+                </span>
+              {% endfor %}
+            </div>
+          {% endif %}
+        </div>
+      {% endif %}
+
       <div class="panel">
         <p class="panel-label">pH vs. PEG concentration &nbsp;/&nbsp; pH vs. Temperature</p>
         <div class="plots-row">

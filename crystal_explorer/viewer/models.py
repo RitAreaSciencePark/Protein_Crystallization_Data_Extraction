@@ -53,6 +53,14 @@ class SearchRun(models.Model):
             "shows only their own rows."
         ),
     )
+    lab_name = models.CharField(
+        max_length=200, blank=True, default="",
+        help_text=(
+            "Self-reported lab/institution name for this run, typed into "
+            "the search form -- optional, never inferred from IP or "
+            "session. Surfaced in the run's FAIR metadata JSON."
+        ),
+    )
     sequence_type = models.CharField(max_length=10)
     identity = models.FloatField()
     evalue = models.FloatField()
@@ -64,6 +72,14 @@ class SearchRun(models.Model):
     )
 
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default=STATUS_RUNNING)
+    progress_percent = models.IntegerField(
+        default=0,
+        help_text="Coarse progress through the pipeline's stages while status=running; 0-100.",
+    )
+    progress_label = models.CharField(
+        max_length=80, blank=True, default="",
+        help_text="Short human label for the current stage, e.g. 'Searching RCSB for homologs'.",
+    )
     error_message = models.TextField(blank=True)
     row_count = models.IntegerField(null=True, blank=True)
     runtime_seconds = models.FloatField(default=0.0, help_text="Time spent running the pipeline.")

@@ -373,6 +373,48 @@ def build_reagent_frequency_by_category_plot(freq: list, top_n: int = 8) -> go.F
     return fig
 
 
+def build_summary_stats(df: pd.DataFrame, reagent_freq: list, top_n: int = 6) -> dict:
+    """A few at-a-glance numbers for the top of the results page --
+    distinct PDB entries, conditions found, distinct reagents, and the
+    top `top_n` reagents as chips (name/category/count/percent), so a
+    visitor gets the shape of the result before scanning the full table.
+    All derived from data already computed for the table/plots below --
+    no extra pipeline work."""
+    distinct_pdb_ids = set()
+    for value in df.get("PDB_ID", pd.Series(dtype=str)):
+        distinct_pdb_ids.update(_split_merged_ids(value))
+
+    conditions_count = len(df)
+    top_reagents = []
+    categories_shown = set()
+    for entry in reagent_freq[:top_n]:
+        top_reagents.append({
+            "name": entry["name"],
+            "category": entry["category"],
+            "count": entry["count"],
+            "percent": round(100 * entry["count"] / entry["total"]) if entry["total"] else 0,
+        })
+        categories_shown.add(entry["category"])
+
+    # Only the categories actually present among the chips above -- in
+    # CATEGORY_ORDER order -- so the legend never lists a color that
+    # doesn't appear (e.g. a search with no Additive among its top
+    # reagents).
+    category_legend = [
+        {"category": category, "color": CATEGORY_COLORS[category]}
+        for category in CATEGORY_ORDER
+        if category in categories_shown
+    ]
+
+    return {
+        "pdb_count": len(distinct_pdb_ids),
+        "conditions_count": conditions_count,
+        "reagent_count": len(reagent_freq),
+        "top_reagents": top_reagents,
+        "category_legend": category_legend,
+    }
+
+
 # Kept for backward compatibility with any existing callers.
 build_plot = build_peg_plot
 

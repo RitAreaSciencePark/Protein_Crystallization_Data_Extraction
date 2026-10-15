@@ -5,11 +5,6 @@ from typing import List, Dict, Optional, Tuple
 
 import pandas as pd
 
-try:
-    import requests
-except ImportError:  # requests is only needed for the optional LLM fallback
-    requests = None
-
 
 # --------------------------------------------------------------------------- #
 # 1. Reagent dictionary
@@ -82,14 +77,15 @@ REAGENT_DICTIONARY: Dict[str, List[str]] = {
                           "amimonium sulfate",
                           "ammonimu sulphate", "ammonium slufate",
                           "ammonium sulf ate", "ammonium sulfphate", "(nh4)so4", "(nh4)2 so4", "nh4so4",
-                          "amso4", "as"],
+                          "amso4", "as", "ams"],
     "sodium chloride": ["sodium chloride", "nacl", "sodium choloride"],
     "lithium sulfate": ["lithium sulfate", "lithium sulphate", "li2so4", "liso4"],
     "lithium chloride": ["lithium chloride", "licl"],
     "magnesium chloride": ["magnesium chloride", "mgcl2", "mg2cl", "mgcl 2", "mgcl"],
     "magnesium sulfate": ["magnesium sulfate", "magnesium sulphate", "mgso4"],
     "calcium chloride": ["calcium chloride", "cacl2"],
-    "sodium phosphate": ["sodium phosphate", "nah2po4", "na2hpo4", "sodium phospahte", "na2po4", "napi"],
+    "sodium phosphate": ["sodium phosphate", "nah2po4", "na2hpo4", "sodium phospahte", "na2po4", "napi",
+                         "na phosphate buffer", "na phosphate"],
     "potassium phosphate": ["potassium phosphate", "kh2po4", "k2hpo4", "potassium dihydrogen phosphate", "potassium dihydrogenphosphate",
                              "kh2po4/k2hpo4", "k2hpo4/kh2po4", "potassium dihydrogen orthophosphate"],
     "sodium/potassium phosphate": ["sodium potassium phosphate", "sodium/potassium phosphate",
@@ -97,10 +93,12 @@ REAGENT_DICTIONARY: Dict[str, List[str]] = {
                                     "pottasium phosphate", "nakpo4", "na-k phosphate", "k/na phosphate",
                                     "k2hpo4/nah2po4", "k2hpo4 /nah2po4", "k2hpo4/ nah2po4", "nah2po4/k2hpo4",
                                     "kh2po4/na2hpo4", "na2hpo4/kh2po4", "na k phosphate",
-                                    "k/na-pi", "k/na pi", "k-na-pi"],
+                                    "k/na-pi", "k/na pi", "k-na-pi", "na+ / k+ phosphate buffer",
+                                    "na+/k+ phosphate buffer", "na+ / k+ phosphate", "na+/k+ phosphate",
+                                    "na/k - phosphate", "na/k-phosphate"],
     "sodium pyrophosphate": ["sodium pyrophosphate", "tetrasodium pyrophosphate", "na4p2o7", "sodium diphosphate"],
     "sodium acetate": ["sodium acetate", "sodium actate", "naoac", "naac", "naacetate", "na-acetate",
-                       "na acetate", "acna"],
+                       "na acetate", "acna", "na(ch3coo)"],
     "copper acetate": ["copper acetate", "cupric acetate", "cu(oac)2", "ac2cu"],
     "magnesium citrate": ["magnesium citrate", "mg citrate"],
     "sodium citrate": ["sodium citrate", "tri-sodium citrate", "NAcitrate", "trisodium citrate", "na citrate", "Na-citrate", "na3citrate", "na3cit", "na3-cit", "nacit", "citrate-na", "citric sodium", "tri-na citrate"],
@@ -116,7 +114,10 @@ REAGENT_DICTIONARY: Dict[str, List[str]] = {
     "ammonium nitrate": ["ammonium nitrate","nh4no3"],
     "ammonium acetate": ["ammonium acetate","nh4 acetate"],
     "ammonium citrate": ["ammonium citrate", "citrate-ammonium", "citrate ammonium"],
-    "ammonium phosphate": ["ammonium phosphate","(nh4)3po4", "ammonium dihydrogen phosphate", "nh4h2po4"],
+    "ammonium phosphate": ["ammonium phosphate","(nh4)3po4", "ammonium dihydrogen phosphate", "nh4h2po4",
+                           "(nh4)2hpo4"],
+    "glyceryl tributyrate": ["glyceryl tributyrate", "tributyrin"],
+    "paraoxon-ethyl": ["paraoxon-ethyl", "paraoxon ethyl", "paraoxon"],
     "ammonium bicarbonate": ["ammonium bicarbonate","nh4hco3"],
     "potassium sulfate": ["potassium sulfate","potassium sulphate","k2so4"],
     "Monosodium phosphate": ["monosodium phosphate", "sodium phosphate monobasic", "nah2po4", "na h2po4", "sodium dihydrogen phosphate", "sodium dihydrogenphosphate"],
@@ -157,7 +158,7 @@ REAGENT_DICTIONARY: Dict[str, List[str]] = {
     "Sodium maleate": ["sodium maleate","maleic acid sodium salt", "disodium maleate"],
     "Sodium tartrate": ["sodium tartrate", "disodium tartrate", "sodium L-tartrate"],
     "Di-sodium tartrate": ["di-sodium tartrate", "disodium tartrate","sodium tartrate"],
-    "Magnesium acetate": ["magnesium acetate", "mg acetate", "mg(oac)2", "mgaco"],
+    "Magnesium acetate": ["magnesium acetate", "mg acetate", "mg(oac)2", "mgaco", "mgac", "mg-ac"],
     "Magnesium formate": ["magnesium formate", "mg formate", "mg(hcoo)2"],
     "Cobalt(II) chloride": ["cobalt chloride", "cobalt(ii) chloride", "cobalt (ii) chloride", "cocl2", "cobaltous chloride"],
     "Cobalt(III) chloride": ["cobalt(iii) chloride", "cobalt (iii) chloride", "cocl3"],
@@ -209,7 +210,8 @@ REAGENT_DICTIONARY: Dict[str, List[str]] = {
     "phosphate buffer": ["phosphate buffer","phosphate"],
     "Phosphate-citrate buffer": ["phosphate citrate", "phosphate-citrate", "citrate phosphate",
                                   "citrate-phosphate", "phosphate-citrate buffer",
-                                  "na2hpo4/citric acid", "na2hpo4-citric acid"],
+                                  "na2hpo4/citric acid", "na2hpo4-citric acid",
+                                  "citrate-po4 buffer", "citrate-po4", "citrate po4", "po4-citrate"],
     "sodium cacodylate": ["sodium cacodylate", "cacodylate", "dimethylarsinic acid sodium salt",
                           "na-cacodylate", "na cacodylate", "nacacodylate", "na caodylate", "cacodylic acid"],
     "Trisodium citrate-citric acid": ["trisodium citrate-citric acid", "trisodium citrate citric acid", "trisodium citrate/citric acid", "sodium citrate citric acid buffer", "citric acid sodium citrate", "sodium citrate: citric acid"],
@@ -233,6 +235,9 @@ REAGENT_DICTIONARY: Dict[str, List[str]] = {
     "Gadolinium chloride hexahydrate": ["gadolinium(iii) chloride hexahydrate", "gadolinium chloride hexahydrate",
                                           "gdcl3"],
     "Gadolinium nitrate": ["gadolinium nitrate", "gd(no3)3"],
+    "silver nitrate": ["silver nitrate", "agno3"],
+    "phenylphosphorodiamidate": ["phenylphosphorodiamidate", "phenyl phosphorodiamidate"],
+    "Deoxy-BigCHAP": ["deoxy-bigchap", "deoxy bigchap", "deoxy big chap", "deoxy-big chap"],
     "potassium ferricyanide": ["potassium ferricyanide", "potassium ferricyanate", "k3fe(cn)6"],
     "MMT buffer": ["mmt buffer", "mmt", "malic acid mes tris buffer"],
     "ferrous citrate": ["ferrous citrate", "iron(ii) citrate"],
@@ -247,6 +252,7 @@ REAGENT_DICTIONARY: Dict[str, List[str]] = {
 
     # --- Organic precipitants ---
     "1,6-hexanediol": ["1,6-hexanediol", "hexanediol"],
+    "2,5-hexanediol": ["2,5-hexanediol", "2,5 hexanediol"],
     "1,4-butanediol": ["1,4-butanediol", "butanediol" ],
     "tert-butanol": ["tert-butanol", "t-butanol", "tbutanol"],
     "methanol": ["methanol", "methyl alcohol", "meoh"],
@@ -270,8 +276,9 @@ REAGENT_DICTIONARY: Dict[str, List[str]] = {
     "glycerol": ["glycerol", "anhydrous glycerol"],
     "DMSO": ["dmso", "dimethyl sulfoxide"],
     "ATP": ["atp", "adenosine triphosphate"],
+    "ATPgammaS": ["atpgammas", "atp-gamma-s", "atp gamma s", "adenosine 5'-o-(3-thiotriphosphate)"],
     "MPD": ["mpd", "2-methyl-2,4-pentanediol", "hexylene glycol", "methylpentanediol"],
-    "isopropanol": ["isopropanol", "2-propanol", "isopropyl alcohol"],
+    "isopropanol": ["isopropanol", "2-propanol", "isopropyl alcohol", "propan-2-ol"],
     "ethylene glycol": ["ethylene glycol", "ethylen glycole", "eg"],
     "triethylene glycol": ["triethylene glycol", "triethyleneglycol", "tri-ethylene glycol"],
     "DTT": ["dtt", "dithiothreitol"],
@@ -498,6 +505,7 @@ REAGENT_CATEGORY = {
     '1,4-butanediol': 'Precipitant',
     '1,5-pentanediol': 'Precipitant',
     '1,6-hexanediol': 'Precipitant',
+    '2,5-hexanediol': 'Precipitant',
     '1-Deoxynojirimycin': 'Additive',
     '2,3-butanediol': 'Precipitant',
     '2-Hydroxyethyl disulfide': 'Additive',
@@ -509,6 +517,7 @@ REAGENT_CATEGORY = {
     'AMP': 'Additive',
     'AMP-PNP': 'Additive',
     'ATP': 'Additive',
+    'ATPgammaS': 'Additive',
     'ATP magnesium salt': 'Additive',
     'Acarbose': 'Additive',
     'Adenosylcobalamin': 'Additive',
@@ -814,6 +823,11 @@ REAGENT_CATEGORY = {
     'sodium sulfite': 'Salt',
     'Gadolinium chloride hexahydrate': 'Additive',
     'Gadolinium nitrate': 'Additive',
+    'silver nitrate': 'Additive',
+    'phenylphosphorodiamidate': 'Additive',
+    'glyceryl tributyrate': 'Additive',
+    'paraoxon-ethyl': 'Additive',
+    'Deoxy-BigCHAP': 'Additive',
     'potassium ferricyanide': 'Additive',
     'MMT buffer': 'Buffer',
     'ferrous citrate': 'Additive',
@@ -887,18 +901,20 @@ _PATTERN_NUM_FIRST = None
 _PATTERN_REAGENT_FIRST = None
 _PATTERN_REAGENT_ONLY = None
 
-_NUMBER = r"\d+(?:\.\d+|,\d{1,2}(?!\d))?"
+_NUMBER = r"\d+(?:\.\d+|,\d{1,2}(?!\d))?(?:[eE][+-]?\d+)?"
 # The second alternative handles European decimal-comma notation (e.g.
 # "2,25M" meaning 2.25 M, seen in 2R38) without colliding with a
 # thousands-grouping comma like "1,000" -- capped at 1-2 digits with a
 # lookahead blocking a 3rd, since a real decimal fraction here is never
-# written 3+ digits deep but a grouping separator always is.
+# written 3+ digits deep but a grouping separator always is. The trailing
+# group handles scientific notation ("3e-4 M" meaning 0.0003 M) -- Python's
+# float() already parses that form natively once captured whole.
 # Optional second number for a range like "15-25%" or "15% - 25%" (a "%"
 # is allowed -- and discarded -- right after the first number too, since
 # real pdbx_details text writes both forms). Captures into "amount2";
 # match_clause() decides what to do with it (see _resolve_range).
 _RANGE_SUFFIX = rf"(?:\s*%?\s*[-~]\s*(?P<amount2>{_NUMBER}))?"
-_CONC_UNIT = r"(?:%\s*\(?w/v\)?|%\s*\(?v/v\)?|%|millimolar|mmolar|micromolar|microm|molar|mM|uM|\u00b5M|M|mg/mL|mg/ml)"
+_CONC_UNIT = r"(?:%\s*\(?w[/.]v\)?|%\s*\(?v[/.]v\)?|%|millimolar|mmolar|micromolar|microm|molar|mM|uM|\u00b5M|M|mg/mL|mg/ml)"
 
 # Aliases too easily confused with ordinary English words to trust as a
 # bare, context-free reagent mention (pattern C) -- e.g. "as" (ammonium
@@ -1009,6 +1025,11 @@ def _rebuild_patterns() -> None:
 def _normalize_unit(unit: str) -> str:
     """Normalize a unit string for consistency."""
     unit = re.sub(r"[()]", "", unit).strip().lower().replace(" ", "")
+    # A depositor's typo of "w.v"/"v.v" for "w/v"/"v/v" (period for slash)
+    # is accepted by _CONC_UNIT's matching regex but still needs its own
+    # punctuation normalized here, or it would fall through the mapping
+    # below unmatched and display with the stray period intact.
+    unit = re.sub(r"([wv])\.([wv])", r"\1/\2", unit)
     mapping = {
         "%w/v": "% w/v", "%v/v": "% v/v", "%": "%",
         "m": "M", "mm": "mM", "um": "µM", "µm": "µM",
@@ -1025,15 +1046,43 @@ def _format_concentration(amount: str, unit: str) -> str:
     single number -- those are passed through as-is instead of being fed
     to float(), which would raise and silently degrade the whole
     concentration to "nan" even though a perfectly good range was already
-    computed."""
+    computed. float() is tried FIRST, not a bare "-" substring check, since
+    a negative scientific-notation exponent ("3e-4") also contains a "-"
+    but is a single valid number, not a range -- only fall back to the
+    range pass-through once float() actually fails to parse it."""
     if not amount:
         return "nan"
-    if "-" in amount:
-        return f"{amount} {unit}".strip()
     try:
         return f"{float(amount)} {unit}".strip()
     except (ValueError, TypeError):
-        return "nan"
+        pass
+    if "-" in amount:
+        return f"{amount} {unit}".strip()
+    return "nan"
+
+
+def _convert_micromolar_to_millimolar(amount: str, unit: str) -> Tuple[str, str]:
+    """Convert a resolved µM amount -- a single value or an "X-Y" range
+    string from _resolve_range -- to its mM-equivalent (x 0.001 = 1e-3),
+    so every concentration in the output sits on one consistent mM/M
+    scale instead of mixing in µM. Any other unit, or an unparseable
+    amount (e.g. "nan"), passes through unchanged."""
+    if unit != "µM" or not amount:
+        return amount, unit
+
+    def scale(v: str) -> str:
+        scaled = float(v) * 0.001
+        if scaled == int(scaled):
+            return str(int(scaled))
+        return f"{scaled:.6f}".rstrip("0").rstrip(".")
+
+    try:
+        if "-" in amount:
+            low, high = amount.split("-", 1)
+            return f"{scale(low)}-{scale(high)}", "mM"
+        return scale(amount), "mM"
+    except ValueError:
+        return amount, unit
 
 
 def _mean_of(low: str, high: str) -> str:
@@ -1156,6 +1205,12 @@ def split_into_clauses(details: str) -> List[str]:
     # that position is far more likely to be a real word fragment.
     details = re.sub(r"(\d+)(O+)(?=(?:MM|UM|M)\b)",
                       lambda m: m.group(1) + "0" * len(m.group(2)), details)
+    # Same typo, leading position: "O.2M" for "0.2M" -- a capital "O"
+    # standing in for the leading zero of a decimal amount, recognized by
+    # being immediately followed by ".<digit>" (no real word matches that
+    # shape). Word-boundary-anchored so it only fires at the start of a
+    # number-like token, not mid-word.
+    details = re.sub(r"\bO(?=\.\d)", "0", details)
     # A depositor occasionally sandwiches the w/v-or-v/v qualifier between
     # "PEG" and its molecular weight (e.g. "PEG (v/v) 600") instead of
     # after it. That breaks the "peg 600" alias match entirely -- the
@@ -1237,6 +1292,7 @@ def _match_clause_with_span(clause: str) -> Tuple[Optional[Dict[str, str]], Opti
         amount = _resolve_range(m.group("amount").strip(), m.groupdict().get("amount2"),
                                  m.group("unit"), canonical)
         unit = _normalize_unit(m.group("unit"))
+        amount, unit = _convert_micromolar_to_millimolar(amount, unit)
         trailing_unit = m.groupdict().get("trailing_unit")
         if trailing_unit and "w/v" not in unit and "v/v" not in unit:
             unit = f"{unit} {trailing_unit.lower()}" if unit else trailing_unit.lower()
@@ -1259,6 +1315,7 @@ def _match_clause_with_span(clause: str) -> Tuple[Optional[Dict[str, str]], Opti
         amount = _resolve_range(m.group("amount").strip(), m.groupdict().get("amount2"),
                                  m.group("unit"), canonical)
         unit = _normalize_unit(m.group("unit"))
+        amount, unit = _convert_micromolar_to_millimolar(amount, unit)
         return {
             "compound": canonical,
             "amount": amount,
@@ -1370,11 +1427,10 @@ def format_compounds(matches: List[Dict]) -> str:
     return ", ".join(f"'{m['compound']}' ({m['concentration']})" for m in matches)
 
 
-def process_csv(input_csv: str, output_csv: str, pdbx_column: str = "pdbx_details",
-               use_llm_fallback: bool = False) -> None:
-    """Extract compounds from a CSV file using the reagent dictionary
-    and LLM fallback if enabled. Saves the results to output_csv.
-    
+def process_csv(input_csv: str, output_csv: str, pdbx_column: str = "pdbx_details") -> None:
+    """Extract compounds from a CSV file using the reagent dictionary.
+    Saves the results to output_csv.
+
     This function reads the input CSV, extracts compounds from pdbx_details,
     and writes the original data plus a new 'compound' column to output_csv."""
     if not os.path.exists(input_csv):
@@ -1399,9 +1455,7 @@ def process_csv(input_csv: str, output_csv: str, pdbx_column: str = "pdbx_detail
             clause_matches = match_clause_all(clause)
             if clause_matches:
                 matched_compounds.extend(clause_matches)
-            elif use_llm_fallback and requests:
-                pass
-        
+
         compounds_list.append(format_compounds(matched_compounds))
     
     # Add the compound column to the dataframe

@@ -1,4 +1,5 @@
 {% extends "viewer/base.html" %}
+{% load static %}
 
 {% block title %}Crystal Explorer{% endblock %}
 
@@ -6,26 +7,49 @@
 
 {% block extra_style %}
 <style>
+  /* Compact, page-specific overrides of the shared chrome so the whole
+     home page fits one viewport without scrolling on a typical desktop
+     window -- scoped to this page only (this block doesn't render
+     anywhere else), never touches base.html's defaults for other pages. */
+  body { display: flex; flex-direction: column; min-height: 100vh; }
+  .topnav { padding: 0.45rem 2.5rem; }
+  .topnav-brand .brand-mark { width: 3.6rem; height: 3.6rem; }
+  .topnav-brand .brand-word { font-size: 1.7rem; }
+  .topnav-brand .brand-tagline { font-size: 0.58rem; }
+  .topnav-links a { font-size: 1.2rem; }
+  header { padding: 0.75rem 2.5rem 0.5rem; }
+  header h1 { font-size: 1.35rem; margin-bottom: 0.15rem; }
+  header p { font-size: 0.62rem; }
+  main {
+    max-width: none;
+    padding: 0.5rem 1.5rem 0.4rem;
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  footer { padding: 0.5rem 2.5rem; flex: none; }
+
   .mission-list {
     list-style: none;
-    margin: 0 0 1.0rem;
+    margin: 0 0 0.85rem;
     padding: 0;
     display: flex;
     flex-direction: column;
-    gap: 1.1rem;
+    gap: 0.85rem;
     max-width: none;
     width: 100%;
   }
   .mission-item {
     display: flex;
-    gap: 1rem;
+    gap: 0.9rem;
     align-items: flex-start;
     width: 100%;
   }
   .mission-index {
     flex: 0 0 auto;
-    width: 1.9rem;
-    height: 1.9rem;
+    width: 2.1rem;
+    height: 2.1rem;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -33,25 +57,25 @@
     background: var(--head-green);
     color: var(--accent);
     font-family: 'IBM Plex Mono', monospace;
-    font-size: 0.8rem;
+    font-size: 0.88rem;
     font-weight: 700;
   }
-  .mission-body { padding-top: 0.1rem; }
+  .mission-body { padding-top: 0.05rem; }
   .mission-body .mission-title {
     display: block;
     font-family: 'Space Grotesk', sans-serif;
     font-weight: 600;
-    font-size: 1.00rem;
+    font-size: 1.0rem;
     letter-spacing: 0.05em;
     text-transform: uppercase;
     color: var(--head-blue);
-    margin: 0 0 0.3rem;
+    margin: 0 0 0.25rem;
   }
   .hero-lead {
     font-family: 'Fraunces', Georgia, serif;
-    font-size: 1.0rem;
+    font-size: 0.95rem;
     font-weight: 400;
-    line-height: 1.7;
+    line-height: 1.6;
     letter-spacing: 0.005em;
     color: var(--ink);
     margin: 0;
@@ -64,64 +88,155 @@
   }
   .hero-cta {
     display: inline-block;
-    margin-top: 0.75rem;
+    margin-top: 0.55rem;
     background: var(--accent);
     color: rgb(163, 208, 235);
     text-decoration: none;
-    padding: 0.75rem 1.25rem;
+    padding: 0.7rem 1.3rem;
     border-radius: 4px;
     font-family: 'Space Grotesk', sans-serif;
     font-weight: 600;
-    font-size: 0.95rem;
+    font-size: 0.92rem;
   }
   .hero-cta:hover { opacity: 0.92; }
-  .feature-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 1.25rem;
+  .home-row {
+    display: flex;
+    gap: 1.75rem;
+    align-items: stretch;
+    flex-wrap: wrap;
   }
-  @media (max-width: 900px) {
-    .feature-grid { grid-template-columns: 1fr; }
-  }
-  .feature-card {
-    background: var(--panel);
-    border: 1px solid var(--line);
+  .pipeline-diagram {
+    flex: 1 1 420px;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
     border-radius: 4px;
-    padding: 1.25rem;
+    border: 1px solid var(--line);
+    overflow: hidden;
+    background: #FFFFFF;
   }
-  .feature-card .step {
-    display: inline-block;
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 0.72rem;
-    font-weight: 700;
-    letter-spacing: 0.08em;
-    color: var(--flash);
-    margin-bottom: 0.4rem;
-  }
-  .feature-card h3 {
+  .pipeline-diagram-header {
+    background: var(--head-blue);
+    color: #FFFFFF;
     font-family: 'Space Grotesk', sans-serif;
-    font-size: 1.05rem;
-    margin: 0 0 0.5rem;
-    color: var(--head-blue);
+    font-weight: 700;
+    font-size: 1rem;
+    padding: 0.8rem 1.4rem;
   }
-  .feature-card p {
-    font-family: 'Fraunces', Georgia, serif;
-    font-size: 0.95rem;
-    color: var(--ink-muted);
-    line-height: 1.6;
-    letter-spacing: 0.005em;
-    margin: 0;
+  .pipeline-diagram-body {
+    position: relative;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 1.4rem;
   }
-  .feature-card p strong {
+  .pipeline-diagram-body::before {
+    content: "";
+    position: absolute;
+    left: 46px;
+    top: 46px;
+    bottom: 46px;
+    width: 3px;
+    background: linear-gradient(180deg, #0B6E7D, #E69F00, #0072B2, #8B5CF6);
+  }
+  .pipeline-stage {
+    position: relative;
+    display: flex;
+    gap: 0.9rem;
+    align-items: flex-start;
+  }
+  .pipeline-stage-icon {
+    position: relative;
+    flex: none;
+    width: 3rem;
+    height: 3rem;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--stage-color);
+    box-shadow: 0 0 0 4px #FFFFFF;
+    overflow: hidden;
+  }
+  .pipeline-stage-icon img { width: 68%; height: 68%; object-fit: contain; }
+  .pipeline-stage-text { padding-top: 0.1rem; }
+  .pipeline-stage-text h4 {
+    margin: 0 0 0.2rem;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 0.9rem;
     color: var(--ink);
-    font-weight: 600;
   }
+  .pipeline-stage-text p {
+    margin: 0;
+    font-size: 0.78rem;
+    line-height: 1.5;
+    color: var(--ink-muted);
+  }
+  .pipeline-stage-text code {
+    font-size: 0.74rem;
+    background: var(--panel-alt, #F3F5F6);
+    padding: 0.02rem 0.3rem;
+    border-radius: 3px;
+  }
+  .home-mission-panel {
+    flex: 1 1 420px;
+    min-width: 0;
+    padding: 0;
+    margin-bottom: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  .mission-header {
+    background: var(--head-blue);
+    color: #FFFFFF;
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 700;
+    font-size: 1rem;
+    padding: 0.8rem 1.4rem;
+  }
+  .mission-content {
+    padding: 1.4rem 1.6rem;
+    flex: 1;
+  }
+  .home-footer {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.3rem 1.5rem;
+    flex-wrap: wrap;
+  }
+  .home-footer-org {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+  }
+  .home-footer-org img { height: 1.5rem; width: auto; flex: none; }
+  .home-footer-org-text {
+    color: var(--ink-muted);
+    line-height: 1.5;
+    font-size: 0.82rem;
+  }
+  .home-footer-org-name {
+    color: var(--ink-muted);
+    font-weight: 700;
+    text-decoration: none;
+  }
+  .home-footer-org-name:hover { color: var(--accent); }
+  .home-footer-org-text a { color: var(--ink-muted); }
+  .home-footer-org-text a:hover { color: var(--accent); }
+  .home-footer-license { color: var(--ink-muted); white-space: nowrap; }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="panel">
-  <p class="panel-label">Mission</p>
+<div class="home-row">
+<div class="panel home-mission-panel">
+  <div class="mission-header">Crystal Explorer: Mission</div>
+  <div class="mission-content">
   <ul class="mission-list">
     <li class="mission-item">
       <span class="mission-index">1</span>
@@ -141,9 +256,11 @@
         <span class="mission-title">Visualize &amp; export</span>
         <p class="hero-lead">
           The result: interactive <strong>pH-vs-PEG</strong> and <strong>pH-vs-temperature</strong>
-          plots colored by sequence identity, a full per-entry conditions table with one-click 3D
-          structure views, and exportable CSV/PDF summaries &mdash; everything a lab needs to plan its
-          next crystallization trial, without manually digging through dozens of PDB entries by hand.
+          plots colored by search score, reagent-frequency charts broken down by
+          <strong>buffer / salt / precipitant / additive</strong>, a full per-entry conditions table
+          with one-click 3D structure views, and exportable CSV/PDF/FAIR-metadata summaries &mdash;
+          everything a lab needs to plan its next crystallization trial, without manually digging
+          through dozens of PDB entries by hand.
         </p>
       </div>
     </li>
@@ -152,42 +269,77 @@
       <div class="mission-body">
         <span class="mission-title">Revisit anytime</span>
         <p class="hero-lead">
-          Every search is saved to a <strong>history</strong>, so past runs stay a click away
-          instead of being rerun from scratch.
+          Searches run in the background, and every one is saved to <strong>your browser
+          session's history</strong>, so past runs stay a click away instead of being rerun
+          from scratch.
         </p>
       </div>
     </li>
   </ul>
   <a class="hero-cta" href="{% url 'viewer:index' %}">Launch Explorer &rarr;</a>
-</div>
-
-<div class="panel">
-  <p class="panel-label">How it works</p>
-  <div class="feature-grid">
-    <div class="feature-card">
-      <span class="step">01 &middot; Search</span>
-      <h3>Find homologs</h3>
-      <p>
-        Paste a raw sequence or FASTA record. Crystal Explorer searches RCSB PDB for structures
-        sharing your protein's fold, filtered by minimum identity and E-value.
-      </p>
-    </div>
-    <div class="feature-card">
-      <span class="step">02 &middot; Extract</span>
-      <h3>Parse conditions</h3>
-      <p>
-        Each hit's crystallization notes are mined with a chemistry-aware dictionary (with an
-        optional LLM fallback) to pull out reagents from the pdbx_details.
-      </p>
-    </div>
-    <div class="feature-card">
-      <span class="step">03 &middot; Visualize</span>
-      <h3>Compare &amp; export</h3>
-      <p>
-        Browse results as interactive plots and a searchable table, jump into a 3D structure
-        viewer, and export CSV/PDF summaries for the bench.
-      </p>
-    </div>
   </div>
+</div>
+<div class="pipeline-diagram">
+  <div class="pipeline-diagram-header">Crystal Explorer: Sequence Extraction Pipeline</div>
+  <div class="pipeline-diagram-body">
+
+    <div class="pipeline-stage">
+      <div class="pipeline-stage-icon" style="--stage-color: #0B6E7D">
+        <img src="{% static 'viewer/icon-search.png' %}" alt="">
+      </div>
+      <div class="pipeline-stage-text">
+        <h4>01. Search RCSB Database</h4>
+        <p>Queries the RCSB Search API v2 with your protein, DNA, or RNA sequence &mdash; optionally tagged with your lab/institution &mdash; filtered by identity and E-value, running in the background with a live progress bar.</p>
+      </div>
+    </div>
+
+    <div class="pipeline-stage">
+      <div class="pipeline-stage-icon" style="--stage-color: #E69F00">
+        <img src="{% static 'viewer/icon-extract.png' %}" alt="">
+      </div>
+      <div class="pipeline-stage-text">
+        <h4>02. Extract Reagent Details</h4>
+        <p>Mines free-text <code>pdbx_details</code> with a 354-reagent, 1,180+-alias dictionary, categorizing each hit into Buffer, Salt, Precipitant, or Additive and normalizing its concentration.</p>
+      </div>
+    </div>
+
+    <div class="pipeline-stage">
+      <div class="pipeline-stage-icon" style="--stage-color: #0072B2">
+        <img src="{% static 'viewer/icon-plot.png' %}" alt="">
+      </div>
+      <div class="pipeline-stage-text">
+        <h4>03. Group &amp; Plot Data</h4>
+        <p>Uses pandas and matplotlib to generate grouped-conditions CSVs, pH-vs-PEG/Temp plots, and PDF tables.</p>
+      </div>
+    </div>
+
+    <div class="pipeline-stage">
+      <div class="pipeline-stage-icon" style="--stage-color: #8B5CF6">
+        <img src="{% static 'viewer/icon-fair.png' %}" alt="">
+      </div>
+      <div class="pipeline-stage-text">
+        <h4>04. Generate FAIR Metadata</h4>
+        <p>Converts run outputs and search parameters into DCAT-style, FAIR-compliant JSON metadata files for export.</p>
+      </div>
+    </div>
+
+  </div>
+</div>
+</div>
+{% endblock %}
+
+{% block footer %}
+<div class="home-footer">
+  <div class="home-footer-org">
+    <a href="{% url 'viewer:organization' %}"><img src="{% static 'viewer/area-logo.png' %}" alt="AREA Science Park logo"></a>
+    <span class="home-footer-org-text">
+      <a href="{% url 'viewer:organization' %}" class="home-footer-org-name">Area Science Park</a>
+      &nbsp;|&nbsp; P.IVA 00531590321
+      &nbsp;|&nbsp; Padriciano, 99 - 34149, Trieste - Italy
+      &nbsp;|&nbsp; tel: <a href="tel:+390403755111">+39 040 375 51 11</a>
+      &nbsp;|&nbsp; email: <a href="mailto:urp@areasciencepark.it">urp@areasciencepark.it</a>
+    </span>
+  </div>
+  <span class="home-footer-license">&copy; 2025 RitAreaSciencePark &middot; MIT License</span>
 </div>
 {% endblock %}
