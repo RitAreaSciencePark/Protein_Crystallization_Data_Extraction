@@ -72,12 +72,14 @@ def parse_compound_string(compound_str):
 def extract_peg_percent(compound_str):
     """Pull the first PEG entry's percentage concentration out of the
     aggregated compound string, e.g. "'PEG 8000' (10% w/v)" -> 10.0.
+    A range ("'PEG 8000' (16-20 %)") is plotted at its midpoint, 18.0.
     Returns np.nan if there's no PEG entry or it has no numeric % value."""
     for name, concentration in parse_compound_string(compound_str):
         if name.strip().upper().startswith("PEG"):
-            m = re.search(r"(\d+(?:\.\d+)?)\s*%", concentration)
+            m = re.search(r"(\d+(?:\.\d+)?)(?:\s*-\s*(\d+(?:\.\d+)?))?\s*%", concentration)
             if m:
-                return float(m.group(1))
+                low = float(m.group(1))
+                return (low + float(m.group(2))) / 2 if m.group(2) else low
     return np.nan
 
 

@@ -120,7 +120,7 @@
     color: #FFFFFF;
     font-family: 'Space Grotesk', sans-serif;
     font-weight: 700;
-    font-size: 1rem;
+    font-size: 1.3rem;
     padding: 0.8rem 1.4rem;
   }
   .pipeline-diagram-body {
@@ -156,7 +156,8 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background: var(--stage-color);
+    background: #FFFFFF;
+    border: 2px solid var(--stage-color);
     box-shadow: 0 0 0 4px #FFFFFF;
     overflow: hidden;
   }
@@ -170,9 +171,11 @@
   }
   .pipeline-stage-text p {
     margin: 0;
-    font-size: 0.78rem;
+    font-family: 'Fraunces', Georgia, serif;
+    font-size: 0.82rem;
     line-height: 1.5;
-    color: var(--ink-muted);
+    letter-spacing: 0.005em;
+    color: var(--ink);
   }
   .pipeline-stage-text code {
     font-size: 0.74rem;
@@ -194,7 +197,7 @@
     color: #FFFFFF;
     font-family: 'Space Grotesk', sans-serif;
     font-weight: 700;
-    font-size: 1rem;
+    font-size: 1.3rem;
     padding: 0.8rem 1.4rem;
   }
   .mission-content {
@@ -235,7 +238,7 @@
 {% block content %}
 <div class="home-row">
 <div class="panel home-mission-panel">
-  <div class="mission-header">Crystal Explorer: Mission</div>
+  <div class="mission-header">Mission</div>
   <div class="mission-content">
   <ul class="mission-list">
     <li class="mission-item">
@@ -280,7 +283,7 @@
   </div>
 </div>
 <div class="pipeline-diagram">
-  <div class="pipeline-diagram-header">Crystal Explorer: Sequence Extraction Pipeline</div>
+  <div class="pipeline-diagram-header">Sequence Extraction Pipeline</div>
   <div class="pipeline-diagram-body">
 
     <div class="pipeline-stage">

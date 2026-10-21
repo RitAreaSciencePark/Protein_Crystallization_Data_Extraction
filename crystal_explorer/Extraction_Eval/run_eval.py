@@ -44,7 +44,7 @@ for name, info in targets.items():
     t1 = time.time()
 
     compounds_csv = os.path.join(protein_dir, "Output_compounds.csv")
-    ce.process_csv(output_csv, compounds_csv, use_llm_fallback=False)
+    ce.process_csv(output_csv, compounds_csv)
 
     df = pd.read_csv(output_csv)
     result = {"name": name, "pdb_id": info["pdb_id"], "retained_hits": len(df),
