@@ -1,5 +1,21 @@
 
-# Protein Crystallization Data Extraction (PCDE)
+<table>
+<tr>
+<td><img src="crystal_explorer/viewer/static/viewer/crystal-explorer-mark.png" width="90" alt="Project logo"></td>
+<td><h1>Protein Crystallization Data Extraction (PCDE)</h1></td>
+</tr>
+</table>
+
+[![license](https://img.shields.io/badge/license-MIT-green)](LICENSE)
+![python](https://img.shields.io/badge/python-3.12-blue)
+![django](https://img.shields.io/badge/django-6.0-darkgreen)
+![FAIR data](https://img.shields.io/badge/FAIR-data-orange)
+![data source](https://img.shields.io/badge/data%20source-RCSB%20PDB-informational)
+![plots](https://img.shields.io/badge/plots-Plotly-purple)
+![method](https://img.shields.io/badge/method-X--ray%20crystallography-teal)
+![Biopython](https://img.shields.io/badge/Biopython-1.87-yellow)
+![metadata](https://img.shields.io/badge/metadata-JSON--LD-lightgrey)
+![topic](https://img.shields.io/badge/topic-protein%20crystallization-blueviolet)
 
 Protein crystallography remains one of the primary methods for determining three-dimensional protein structures. Identifying the right crystallization conditions is a critical bottleneck. This tool mines the RCSB Protein Data Bank (PDB) to retrieve, filter, annotate, and visualize crystallization condition data for any input sequence — turning raw PDB metadata into structured, FAIR-compliant datasets.
 
@@ -7,17 +23,21 @@ Protein crystallography remains one of the primary methods for determining three
 
 ## Table of Contents
 
-- [Overview](#overview)
+- [Repository Contents](#repository-contents)
+- [Project Overview](#project-overview)
+- [Key features](#key-features)
+- [Workflow Architecture](#-workflow-architecture)
 - [How it works](#how-it-works)
-- [Project structure](#project-structure)
+- [Project Architecture](#project-architecture)
 - [Installation](#installation)
 - [Usage](#usage)
   - [Web application](#web-application)
-  - [Command-line scripts](#command-line-scripts)
+  - [Command-line for standalone pipeline scripts](#command-line-for-standalone-pipeline-scripts)
 - [Output files](#output-files)
 - [Module reference](#module-reference)
 - [Dependencies](#dependencies)
 - [Licence](#licence)
+- [Citation](#citation)
 
 ---
 
@@ -46,6 +66,7 @@ This directory contains the Django web application: a form-driven front end that
 
 --- 
 ## Project Overview
+
 Determining the right conditions to crystallize a protein is one of the most time-consuming challenge in structural biology. The primary goal is to eliminate the manual bottleneck of screening thousands of chemical cocktails by providing a **PDB-assisted shortcut**. This project addresses that challenge by mining the PDB for crystallization conditions used to solve structures of proteins similar to a given query sequence, allowing researchers to skip initial trial-and-error phases and move directly to optimization.
 
 ---
@@ -72,7 +93,7 @@ A Django-based web application wraps the full pipeline in a browser interface. A
 ### High - Resolution Vizualization
 Two scatter plots are generated automatically: pH versus temperature and pH versus PEG concentration with data points coloured by sequence similarity score using the viridis colormap and shaped by crystallization method. A coloured PDF summary table compiles successful crystallization conditions with full metadata.
 
- ## 🧬 Workflow Architecture
+## 🧬 Workflow Architecture
 
 The pipeline is organized into four main stages, as illustrated in the project’s graphical abstract:
 
@@ -160,36 +181,37 @@ Output files
 (CSV · FASTA · PNG plots · PDF table)
 ```
 
-The web application (`crystal_explorer/`) wraps the entire pipeline in a Django interface. The search runs synchronously inside the HTTP request — the browser tab waits for RCSB search, per-hit metadata extraction, and plotting to finish before the results page loads — so `max_hits` defaults to a modest value to keep run times reasonable.
+The web application (`crystal_explorer/`) wraps the entire pipeline in a Django interface. The search view hands the pipeline to a background thread and redirects to the results page immediately; that page shows a "Search running..." panel that auto-refreshes until the run finishes (or shows the error if it failed).
 
 ---
 
 
 ## Project Architecture
 
-┌─────────────────────────────────────────────────────┐
-│  Protein Crystallization Data Extraction Tool       │
-└─────────────────────────────────────────────────────┘
-                          │
-        ┌─────────────────┼─────────────────┐
-        │                 │                 │
-    ┌───▼────┐      ┌────▼───┐      ┌─────▼─────┐
-    │   src/  │      │src_fasta│     │  Django   │
-    │ Core    │      │  File   │     │   Web App │
-    │ Scripts │      │ Handler │     │           │
-    └───┬────┘      └────┬───┘      └─────┬─────┘
-        │                │                │
-        ├─ PDB Search API                 │
-        ├─ Data Extraction                │
-        ├─ Metadata Generation            ├─ Web Interface
-        ├─ Database Operations            ├─ Pipeline Views
-        ├─ Sequence Analysis              ├─ URL Routing
-        └─ Visualization                  └─ Forms & Utils
-                                               │
-                                          ┌────▼────┐
-                                          │ SQLite  │
-                                          │Database │
-                                          └─────────┘
+```text
+┌──────────────────────────────────────────────────────────┐
+│       Protein Crystallization Data Extraction Tool       │
+└────────────────────────────┬─────────────────────────────┘
+                             │
+         ┌───────────────────┼───────────────────┐
+         │                   │                   │
+   ┌─────▼─────┐       ┌─────▼─────┐       ┌─────▼─────┐
+   │   src/    │       │ src_fasta │       │  Django   │
+   │   Core    │       │   File    │       │  Web App  │
+   │  Scripts  │       │  Handler  │       │           │
+   └─────┬─────┘       └───────────┘       └─────┬─────┘
+         │                                       │
+         ├── PDB Search API                      ├── Web Interface
+         ├── Data Extraction                     ├── Pipeline Views
+         ├── Metadata Generation                 ├── URL Routing
+         ├── Database Operations                 └── Forms & Utils
+         ├── Sequence Analysis                         │
+         └── Visualization                       ┌─────▼─────┐
+                                                 │  SQLite   │
+                                                 │ Database  │
+                                                 └───────────┘
+```
+
 ---
 
 ## Installation
@@ -381,11 +403,11 @@ The web app re-runs the same pipeline logic as its own importable `pipeline/` pa
 
 #### `viewer/forms.py`
 
-Defines `SequenceSearchForm`: protein name, sequence, sequence type, identity/E-value/max-hits thresholds, and an optional Claude-fallback checkbox for compounds the built-in reagent dictionary can't resolve.
+Defines `SequenceSearchForm`: protein name, sequence, sequence type, identity/E-value/max-hits thresholds, and an optional self-reported lab/institution name.
 
 #### `viewer/views.py`
 
-Handles HTTP requests. `index` runs the pipeline synchronously and redirects to the results page (reusing a prior run instead of re-running it if the same sequence/settings were already searched); `results` loads a run's `Grouped_conditions.csv` and renders its plots/table; `history` lists past runs; `download` serves the static exports (PDF, PNG, FASTA, compounds CSV, metadata JSON).
+Handles HTTP requests. `index` spawns the pipeline on a background thread and redirects to the results page immediately (reusing a prior run instead of re-running it if the same sequence/settings were already searched); `results` shows a running/failed state or loads a completed run's `Grouped_conditions.csv` and renders its plots/table; `history` lists past runs; `download` serves the static exports (PDF, PNG, FASTA, compounds CSV, metadata JSON).
 
 #### `viewer/data.py`
 
