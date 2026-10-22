@@ -17,7 +17,7 @@
 ![metadata](https://img.shields.io/badge/metadata-JSON--LD-lightgrey)
 ![topic](https://img.shields.io/badge/topic-protein%20crystallization-blueviolet)
 
-Protein crystallography remains one of the primary methods for determining three-dimensional protein structures. Identifying the right crystallization conditions is a critical bottleneck. This tool mines the RCSB Protein Data Bank (PDB) to retrieve, filter, annotate, and visualize crystallization condition data for any input sequence — turning raw PDB metadata into structured, FAIR-compliant datasets.
+Protein crystallography remains one of the primary methods for determining three-dimensional protein structures, and identifying the right crystallization conditions is a critical bottleneck. Given a protein, DNA or RNA sequence, this tool finds its X-ray-solved homologs in the RCSB Protein Data Bank (PDB) and turns their free-text crystallization notes into structured reagent and concentration data, with interactive plots, a conditions table and FAIR-compliant metadata. It is available as standalone scripts and as **Crystal Explorer**, a Django web application that runs the whole pipeline from a browser.
 
 ---
 
@@ -61,7 +61,11 @@ This directory contains **structure.pkl** file which is the pdb database with th
 
 ### `crystal_explorer/`
 
-This directory contains the Django web application: a form-driven front end that runs the same three-stage pipeline (RCSB search → compound extraction → plotting) server-side and shows the results as an interactive plot and table. See [`crystal_explorer/README.md`](crystal_explorer/README.md) for setup and project-layout details specific to the app.
+This directory contains **Crystal Explorer**, the Django web application: a form-driven front end that runs a four-stage pipeline (RCSB search → compound extraction → grouping and plotting → FAIR metadata) in the background and shows the results as interactive plots and a conditions table. See [`crystal_explorer/README.md`](crystal_explorer/README.md) for setup and project-layout details specific to the app.
+
+### `crystal_explorer/Extraction_Eval/`
+
+Evaluation of the web app's compound extractor against manually audited PDB entries.
 
 
 --- 
@@ -79,7 +83,7 @@ The pipeline accepts any protein, DNA, or RNA sequence and automatically queries
 Every crystallization parameter is extracted using a two-tier strategy: the structured mmCIF field is read first, and if absent or empty, regular expression mining is applied to the free-text `pdbx_details` field. This ensures that no experimentally reported information is lost due to incomplete structured annotation.
 
 ### Intelligent free-text parsing
-The `pdbx_details` field is parsed using a multi-step natural language processing pipeline adapted from the crystallization database of Dudek et al. It handles PEG/MPEG name normalisation, concentration unit conversion, numeric range averaging, mixture compound expansion, and compound name standardisation against a curated reference dictionary — producing clean, machine-readable compound–concentration pairs from unstructured depositor text.
+The free-text `pdbx_details` field is turned into compound–concentration pairs. The standalone scripts (`src/`) use the crystallization database of Lynch, Dudek et al. (`structures.pkl`); the web app uses its own curated dictionary (`compound_extraction.py`) of **409 reagents and 1,629 aliases** (abbreviations, formulas, common typos), each classified as Buffer, Salt, Precipitant or Additive.
 
 ### Parallel data collection
 Metadata extraction uses a configurable multi-threaded `ThreadPoolExecutor`, processing multiple PDB entries simultaneously. A live progress bar (tqdm) updates in real time as each entry completes, giving immediate visibility into pipeline progress.
@@ -88,7 +92,7 @@ Metadata extraction uses a configurable multi-threaded `ThreadPoolExecutor`, pro
 Every row in the output dataset is traceable to its source through the PDB accession code, PubMed ID, and experimental method. All data originates from the publicly accessible RCSB REST and GraphQL APIs using open standards (mmCIF, JSON, FASTA), and outputs are saved in non-proprietary formats (CSV, PDF, PNG).
 
 ### Interactive web application
-A Django-based web application wraps the full pipeline in a browser interface. All output files are available for inline viewing and direct download when the pipeline completes.
+**Crystal Explorer**, a Django web application, wraps the full pipeline in a browser interface: background searches, interactive Plotly plots and reagent-frequency charts, a conditions table linked to RCSB, UniProt, PubChem and a Mol\* 3D view, a per-session search history, and downloadable outputs (PDF, PNG, CSV, FAIR JSON-LD metadata).
 
 ### High - Resolution Vizualization
 Two scatter plots are generated automatically: pH versus temperature and pH versus PEG concentration with data points coloured by sequence similarity score using the viridis colormap and shaped by crystallization method. A coloured PDF summary table compiles successful crystallization conditions with full metadata.
@@ -218,7 +222,7 @@ The web application (`crystal_explorer/`) wraps the entire pipeline in a Django 
 
 ### Prerequisites
 
-- Python 3.10 or later
+- Python 3.12 or later
 - pip
 
 ### Steps
@@ -226,7 +230,7 @@ The web application (`crystal_explorer/`) wraps the entire pipeline in a Django 
 ```bash
 # 1. Clone the repository
 git clone https://github.com/RitAreaSciencePark/Protein_Crystallization_Data_Extraction.git
-cd PROTEIN_CRYSTALLIZATION_DATA_EXTRACTION
+cd Protein_Crystallization_Data_Extraction
 
 # 2. Create and activate a virtual environment
 python -m venv venv
@@ -234,7 +238,8 @@ source venv/bin/activate          # Linux / macOS
 venv\Scripts\activate             # Windows
 
 # 3. Install dependencies
-pip install -r requirements.txt
+pip install -r requirements.txt                    # standalone scripts (src/, src_fasta_file/)
+pip install -r crystal_explorer/requirements.txt   # web application
 
 # 4. Apply database migrations (web app only)
 cd crystal_explorer
@@ -256,7 +261,8 @@ The web application will be available at `http://127.0.0.1:8000`.
 2. Enter a **protein name** (used to name the output folder/files) and paste your **sequence** (raw or FASTA).
 3. Choose the **sequence type** (protein / DNA / RNA) and, optionally, adjust the identity, E-value, and max-hits thresholds.
 4. Click **Run search**.
-5. When the results page loads, browse the interactive plot and conditions table, or download the static PDF/PNG/CSV/metadata exports. Past runs are listed under **History** and are reused automatically if you resubmit the same sequence and settings.
+5. The results page shows a progress panel until the background search finishes.
+6. Browse the interactive plots, reagent-frequency charts and conditions table, or download the static PDF/PNG/CSV/metadata exports. Past runs are listed under **History** (per browser session) and are reused automatically if you resubmit the same sequence and settings.
 
 ---
 
@@ -401,6 +407,12 @@ Performs a PDB sequence search for each sequence in a cleaned FASTA dictionary. 
 
 The web app re-runs the same pipeline logic as its own importable `pipeline/` package (`pdb_sequence_search.py`, `compound_extraction.py`, `plot.py`, plus `metadata_generator.py` for FAIR-compliant output metadata), rather than importing directly from `src/`, so it can evolve independently of the standalone CLI scripts.
 
+#### `pipeline/compound_extraction.py`
+
+Extracts reagents and their concentrations from `pdbx_details` by splitting the text into clauses and matching each against the curated reagent dictionary.
+
+**Key function:** `process_csv(input_csv, output_csv)`
+
 #### `viewer/forms.py`
 
 Defines `SequenceSearchForm`: protein name, sequence, sequence type, identity/E-value/max-hits thresholds, and an optional self-reported lab/institution name.
@@ -429,16 +441,19 @@ See [`crystal_explorer/README.md`](crystal_explorer/README.md) for the full proj
 | `numpy` | Numerical operations |
 | `tabulate` | Terminal table formatting |
 | `pdf2image` | to open the pdf file in the web application |
+| `plotly` | Interactive plots in the web application |
+| `biopython` | Sequence handling |
 
 Install all dependencies with:
 
 ```bash
-pip install -r requirements.txt
+pip install -r requirements.txt                    # standalone scripts
+pip install -r crystal_explorer/requirements.txt   # web application
 ```
 ---
 ## Licence
 
-This project is released under the terms of the licence included in the `LICENCE` file: `Copyright (c) 2025 RitAreaSciencePark`
+This project is released under the MIT licence included in the [`LICENSE`](LICENSE) file: `Copyright (c) 2025 RitAreaSciencePark`
 
 ---
 
