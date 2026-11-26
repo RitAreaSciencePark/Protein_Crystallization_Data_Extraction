@@ -15,8 +15,10 @@ shared with any earlier panel, to measure the fixed extractor without bias.
 | F1 | **0.967** | 0.962 – 0.972 | 0.958 |
 | Entry-level exact match | **84.6 %** (846 / 1,000) | 82.4 – 86.8 % | 81.6 % |
 
-2,898 ground-truth reagent mentions: 2,731 true positives, 20 false
-positives, 167 false negatives (`audit_summary.json`).
+2,899 ground-truth reagent mentions: 2,732 true positives, 20 false
+positives, 167 false negatives (`audit_summary.json`). Entry 9N8E was
+recounted on 13 Nov 2026 (tp 2 -> 3, PEG 6000 left out of the original
+count). The metrics and CIs above are unchanged at the precision shown.
 
 Automatic coverage over the full 10,000-entry panel (no ground truth needed,
 `panel_10000_coverage.json`): 95.1 % of entries yield at least one compound,

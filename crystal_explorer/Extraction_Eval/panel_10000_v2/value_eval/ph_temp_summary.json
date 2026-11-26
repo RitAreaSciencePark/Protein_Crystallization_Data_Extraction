@@ -1,0 +1,25 @@
+{
+  "entries": 10000,
+  "pH": {
+    "field_missing_so_fallback_used": 2204,
+    "fallback_finds_value_when_used": 1391,
+    "implausible_when_used": 0,
+    "validation_entries_with_deposited_pH": 7796,
+    "validation_fallback_found": 6618,
+    "agree_exact": 6134,
+    "agree_within_0.1": 6161,
+    "agree_within_0.5": 6303,
+    "disagreements_with_several_pH_in_text": 216,
+    "rate_exact": 0.9269,
+    "rate_within_0.1": 0.9309,
+    "rate_within_0.5": 0.9524,
+    "fallback_coverage": 0.8489
+  },
+  "temperature": {
+    "field_missing_so_fallback_used": 1337,
+    "fallback_finds_value_when_used": 67,
+    "implausible_when_used_(outside_250-320K)": 59,
+    "validation_texts_without_auto_appended_temperature": 235,
+    "agree_within_1K": 123
+  }
+}

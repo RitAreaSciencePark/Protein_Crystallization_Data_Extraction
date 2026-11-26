@@ -23,7 +23,7 @@ from .data import (
     build_peg_plot, build_temp_plot, build_table_rows, build_method_legend,
     build_reagent_frequency, build_reagent_frequency_plot, build_reagent_frequency_by_category_plot,
     build_summary_stats,
-    load_conditions, score_gradient_stops, TABLE_COLUMNS, SCORE_MIN, SCORE_MAX, SCORE_TICKS,
+    load_conditions, seqid_gradient_stops, TABLE_COLUMNS, SEQID_MIN, SEQID_MAX, SEQID_TICKS,
 )
 
 # Make the pipeline package importable (pipeline/ sits at the project root).
@@ -533,10 +533,10 @@ def results(request, protein_name):
         "reagent_plot_div": reagent_plot_div,
         "reagent_category_plot_div": reagent_category_plot_div,
         "method_legend": method_legend,
-        "score_gradient_stops": score_gradient_stops(),
-        "score_min": SCORE_MIN,
-        "score_max": SCORE_MAX,
-        "score_ticks": SCORE_TICKS,
+        "seqid_gradient_stops": seqid_gradient_stops(),
+        "seqid_min": SEQID_MIN,
+        "seqid_max": SEQID_MAX,
+        "seqid_ticks": SEQID_TICKS,
         "table_rows": table_rows,
         "summary_stats": summary_stats,
         "table_columns": TABLE_COLUMNS,

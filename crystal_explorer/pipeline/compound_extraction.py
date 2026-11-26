@@ -619,7 +619,46 @@ REAGENT_DICTIONARY: Dict[str, List[str]] = {
     "Morpheus Amino Acids Mix": ["morpheus amino acids mix", "amino acids mix (md)", "aminoacidsmix",
                                   "amino acids mix", "amino acids"],
     "Morpheus Buffer System 3": ["morpheus buffer system 3", "buffer system 3 (md)", "buffer system 3"],
+
+# --- Reagents missing from the dictionary in the held-out audit (Nov 2026) ---
+# Added AFTER the 10,000-entry held-out panel was scored; the paper's held-out
+# figures refer to the version frozen before these additions.
+    "succinic acid": ["succinic acid"],
+    "guanidine": ["guanidine"],
+    "ethanolamine": ["ethanolamine"],
+    "sodium oxalate": ["sodium oxalate", "na oxalate", "na-oxalate"],
+    "18-crown-6": ["18-crown-6", "18 crown 6", "18-crown 6"],
+    "tripotassium phosphate": ["tripotassium phosphate", "potassium phosphate tribasic", "k3po4"],
+    "ytterbium chloride": ["ytterbium chloride", "ytterbium(iii) chloride", "ybcl3"],
+    "calcium nitrate": ["calcium nitrate", "ca(no3)2"],
+    "sodium fumarate": ["sodium fumarate", "na fumarate", "na-fumarate"],
+    "sodium phthalate": ["sodium phthalate"],
+    # bare "piperazine" would match inside HEPES's long name ("...-piperazine-1-ethanesulfonic acid")
+    "piperazine": ["piperazine hcl", "piperazine-hcl", "piperazine buffer"],
+    "deoxycholic acid": ["deoxycholic acid", "sodium deoxycholate", "deoxycholate"],
+    "sodium cholate": ["sodium cholate", "na cholate", "na-cholate", "cholic acid"],
+    "sodium glycocholate": ["sodium glycocholate", "na-glycocholate", "na glycocholate"],
+    "Zwittergent 3-12": ["zwittergent 3-12", "zwittergent 312", "zwittergent3-12"],
+    "n-nonyl-beta-D-thiomaltoside": ["n-nonyl-beta-d-thiomaltoside", "n-nonyl-β-d-thiomaltoside",
+                                     "nonyl-beta-d-thiomaltoside", "nonyl thiomaltoside"],
+    "tetrabutylphosphonium bromide": ["tetrabutylphosphonium bromide"],
+    "gamma-valerolactone": ["gamma-valerolactone", "γ-valerolactone"],
+    "sodium metatungstate": ["na6h2w12o40", "sodium metatungstate"],
+    "SeaPrep agarose": ["seaprep agarose", "agarose"],
+    "mercury(II) chloride": ["mercury(ii) chloride", "mercuric chloride", "mercury chloride", "hgcl2"],
+    "iron(II)": ["fe(ii)", "fe2+", "fe(2+)"],
+    "triglycine": ["triglycine", "glycyl-glycyl-glycine", "glycylglycylglycine", "gly-gly-gly", "gly3"],
+    "PCTP buffer": ["pctp buffer", "pctp"],
+    "KMB buffer": ["kmb buffer", "kmb"],
+    "AAB buffer": ["aab buffer", "aab"],
 }
+
+# Spelling variants of existing entries seen in the held-out audit
+REAGENT_DICTIONARY["iron sulfate"] += ["ferrous sulphate", "iron(ii) sulfate", "iron(ii) sulphate", "iron sulphate"]
+REAGENT_DICTIONARY["nickel sulfate"] += ["nickel sulphate", "nickel(ii) sulfate", "nickel(ii) sulphate"]
+REAGENT_DICTIONARY["Triton X-100"] += ["triton-x-100", "triton-x100", "tritonx-100", "triton x 100"]
+REAGENT_DICTIONARY["triethylene glycol"] += ["triethylene-glycol"]
+REAGENT_DICTIONARY["Poly(acrylic acid sodium salt) 5100"] += ["poly(acrylic acid sodium salt)5100"]
 
 # --------------------------------------------------------------------------- #
 # Reagent category -- Buffer / Salt / Precipitant / Additive -- used to group
@@ -1043,6 +1082,33 @@ REAGENT_CATEGORY = {
     'zinc acetate': 'Additive',
     'zinc chloride': 'Salt',
     'zinc sulfate': 'Additive',
+    # reagents added after the held-out audit (Nov 2026)
+    'succinic acid': 'Buffer',
+    'ethanolamine': 'Buffer',
+    'piperazine': 'Buffer',
+    'PCTP buffer': 'Buffer',
+    'KMB buffer': 'Buffer',
+    'AAB buffer': 'Buffer',
+    'tripotassium phosphate': 'Salt',
+    'sodium oxalate': 'Salt',
+    'ytterbium chloride': 'Salt',
+    'calcium nitrate': 'Salt',
+    'sodium fumarate': 'Salt',
+    'sodium phthalate': 'Salt',
+    'guanidine': 'Additive',
+    '18-crown-6': 'Additive',
+    'deoxycholic acid': 'Additive',
+    'sodium cholate': 'Additive',
+    'sodium glycocholate': 'Additive',
+    'Zwittergent 3-12': 'Additive',
+    'n-nonyl-beta-D-thiomaltoside': 'Additive',
+    'tetrabutylphosphonium bromide': 'Additive',
+    'gamma-valerolactone': 'Additive',
+    'sodium metatungstate': 'Additive',
+    'SeaPrep agarose': 'Additive',
+    'mercury(II) chloride': 'Additive',
+    'iron(II)': 'Additive',
+    'triglycine': 'Additive',
 }
 
 

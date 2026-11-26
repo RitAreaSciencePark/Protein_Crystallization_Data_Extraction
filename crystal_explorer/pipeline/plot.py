@@ -11,7 +11,7 @@ Reads
 `Output_compounds.csv` from the protein's output folder (the file
 compound_extraction.process_csv() produces), with columns:
 
-    pdb_id, entity_id, sequence_identity, evalue, score, Resolution,
+    pdb_id, entity_id, sequence_identity, evalue, Resolution,
     Pubmed_id, Polymer, Assembly, Method, pH, Temp, pdbx_details,
     pdbx_pH_range, Non_polymers, compound
 
@@ -53,6 +53,12 @@ import matplotlib.pyplot as plt
 import matplotlib.lines as mlines
 import matplotlib.patheffects as pe
 
+
+# Color scale for plotted points: sequence identity to the query, in percent
+# (mirrored by viewer/data.py so the web plots and static PNGs agree).
+SEQID_MIN = 50
+SEQID_MAX = 100
+SEQID_TICKS = [50, 60, 70, 80, 90, 100]
 
 # --------------------------------------------------------------------------- #
 # Parsing the aggregated `compound` string
@@ -112,12 +118,11 @@ def run_plot(protein_dir, protein_name, compounds_csv_name="Output_compounds.csv
     # names than this script's original column assumptions.)
     rename_map = {
         "pdb_id": "PDB_ID",
-        "score": "Score",
         "sequence_identity": "Seq_id",
     }
     df = df.rename(columns={k: v for k, v in rename_map.items() if k in df.columns})
 
-    for required in ["PDB_ID", "UniProt", "UniProt_query", "Score", "Seq_id", "Pubmed_id", "Polymer", "Assembly",
+    for required in ["PDB_ID", "UniProt", "UniProt_query", "Seq_id", "Pubmed_id", "Polymer", "Assembly",
                       "Method", "pH", "Temp", "pdbx_pH_range", "compound"]:
         if required not in df.columns:
             df[required] = np.nan
@@ -144,8 +149,7 @@ def run_plot(protein_dir, protein_name, compounds_csv_name="Output_compounds.csv
     # --------------------------------------------------------
     df["pH"] = pd.to_numeric(df["pH"], errors="coerce")
     df["Temp"] = pd.to_numeric(df["Temp"], errors="coerce")
-    df["Score"] = pd.to_numeric(df["Score"], errors="coerce")
-    df["Score"] = df["Score"].clip(0.5, 1)
+    df["Seq_id"] = pd.to_numeric(df["Seq_id"], errors="coerce")
 
     # --------------------------------------------------------
     # Parse pH range
@@ -243,8 +247,10 @@ def run_plot(protein_dir, protein_name, compounds_csv_name="Output_compounds.csv
 
     df["marker"] = df["Method"].apply(assign_marker)
 
+    # Points are colored by sequence identity to the query (%); identities
+    # below SEQID_MIN (the default search threshold) share the lowest color.
     cmap = plt.cm.viridis
-    norm = plt.Normalize(0.5, 1)
+    norm = plt.Normalize(SEQID_MIN, SEQID_MAX, clip=True)
 
     # --------------------------------------------------------
     # Group into unique conditions, merging PDB IDs, and assign row_id
@@ -294,11 +300,11 @@ def run_plot(protein_dir, protein_name, compounds_csv_name="Output_compounds.csv
         if merged_df.empty:
             return merged_df
 
-        for col in ["Score", "Seq_id", "pH", "Temp", "plot_pH_numeric", "PEG_con_plot"]:
+        for col in ["Seq_id", "pH", "Temp", "plot_pH_numeric", "PEG_con_plot"]:
             if col in merged_df.columns:
                 merged_df[col] = pd.to_numeric(merged_df[col], errors="coerce")
 
-        merged_df = merged_df.sort_values("Score", ascending=False).reset_index(drop=True)
+        merged_df = merged_df.sort_values("Seq_id", ascending=False).reset_index(drop=True)
         merged_df.drop(columns=["_condition_key"], inplace=True)
         merged_df["row_id"] = merged_df.index
         return merged_df
@@ -311,7 +317,7 @@ def run_plot(protein_dir, protein_name, compounds_csv_name="Output_compounds.csv
     print(f"Grouped conditions (with row_id) saved to: {grouped_csv_path}")
 
     # ========================================================
-    # 1. FULL PLOT pH vs Temp (with Score coloring)
+    # 1. FULL PLOT pH vs Temp (colored by sequence identity)
     # ========================================================
     fig, ax_temp = plt.subplots(figsize=(10, 6))
 
@@ -323,8 +329,8 @@ def run_plot(protein_dir, protein_name, compounds_csv_name="Output_compounds.csv
             x, y,
             yerr=[[row["err_low"]], [row["err_high"]]] if row["has_ph"] else None,
             fmt=row["marker"],
-            color=cmap(norm(row["Score"] if pd.notna(row["Score"]) else 0.5)),
-            ecolor=cmap(norm(row["Score"] if pd.notna(row["Score"]) else 0.5)),
+            color=cmap(norm(row["Seq_id"] if pd.notna(row["Seq_id"]) else SEQID_MIN)),
+            ecolor=cmap(norm(row["Seq_id"] if pd.notna(row["Seq_id"]) else SEQID_MIN)),
             markeredgecolor="black",
             markersize=9,
             capsize=3,
@@ -369,17 +375,17 @@ def run_plot(protein_dir, protein_name, compounds_csv_name="Output_compounds.csv
     sm = plt.cm.ScalarMappable(cmap=cmap, norm=norm)
     sm.set_array([])
     cbar = fig.colorbar(sm, ax=ax_temp, pad=0.02)
-    cbar.set_label("Score", rotation=270, labelpad=15)
-    fixed_ticks = [0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
+    cbar.set_label("Sequence identity (%)", rotation=270, labelpad=15)
+    fixed_ticks = SEQID_TICKS
     cbar.set_ticks(fixed_ticks)
-    cbar.set_ticklabels([f"{t:.1f}" for t in fixed_ticks])
+    cbar.set_ticklabels([str(t) for t in fixed_ticks])
 
     temp_png = os.path.join(protein_dir, f"{protein_name}_TEMP.png")
     fig.savefig(temp_png, dpi=300, bbox_inches="tight")
     plt.close(fig)
 
     # ========================================================
-    # 2. FULL PLOT pH vs PEG concentration (with Score coloring)
+    # 2. FULL PLOT pH vs PEG concentration (colored by sequence identity)
     # ========================================================
     fig, ax_peg = plt.subplots(figsize=(10, 6))
 
@@ -406,8 +412,8 @@ def run_plot(protein_dir, protein_name, compounds_csv_name="Output_compounds.csv
             x, y,
             yerr=[[row["err_low"]], [row["err_high"]]] if row["has_ph"] else None,
             fmt=row["marker"],
-            color=cmap(norm(row["Score"] if pd.notna(row["Score"]) else 0.5)),
-            ecolor=cmap(norm(row["Score"] if pd.notna(row["Score"]) else 0.5)),
+            color=cmap(norm(row["Seq_id"] if pd.notna(row["Seq_id"]) else SEQID_MIN)),
+            ecolor=cmap(norm(row["Seq_id"] if pd.notna(row["Seq_id"]) else SEQID_MIN)),
             markeredgecolor="black",
             markersize=9,
             capsize=3,
@@ -446,9 +452,9 @@ def run_plot(protein_dir, protein_name, compounds_csv_name="Output_compounds.csv
     sm = plt.cm.ScalarMappable(cmap=cmap, norm=norm)
     sm.set_array([])
     cbar = fig.colorbar(sm, ax=ax_peg, pad=0.02)
-    cbar.set_label("Score", rotation=270, labelpad=15)
+    cbar.set_label("Sequence identity (%)", rotation=270, labelpad=15)
     cbar.set_ticks(fixed_ticks)
-    cbar.set_ticklabels([f"{t:.1f}" for t in fixed_ticks])
+    cbar.set_ticklabels([str(t) for t in fixed_ticks])
 
     peg_png = os.path.join(protein_dir, f"{protein_name}_PEG.png")
     fig.savefig(peg_png, dpi=300, bbox_inches="tight")
@@ -476,8 +482,7 @@ def run_plot(protein_dir, protein_name, compounds_csv_name="Output_compounds.csv
         table_rows.append([
             str(group["row_id"]),
             group["PDB_ID"],
-            f"{group['Score']:.3f}" if pd.notna(group["Score"]) else "",
-            f"{group['Seq_id']:.3f}" if pd.notna(group["Seq_id"]) else "",
+            f"{group['Seq_id']:.1f}" if pd.notna(group["Seq_id"]) else "",
             _clean_pubmed(group["Pubmed_id"]),
             _clean_cell(group.get("Polymer")),
             _clean_cell(group.get("Assembly")),
@@ -488,10 +493,10 @@ def run_plot(protein_dir, protein_name, compounds_csv_name="Output_compounds.csv
             _clean_cell(group.get("compound")),
         ])
 
-    main_header = ["", "", "", "", "", "", "", "", "", "", "", "CRYSTALLIZATION COCKTAILS"]
-    sub_headers = ["#", "PDB_ID", "Score", "Seq_id", "Pubmed_id", "Polymer", "Assembly",
+    main_header = ["", "", "", "", "", "", "", "", "", "", "CRYSTALLIZATION COCKTAILS"]
+    sub_headers = ["#", "PDB_ID", "Seq_id", "Pubmed_id", "Polymer", "Assembly",
                    "Method", "3D View", "pH", "Temp", "Compounds"]
-    col_widths = [0.03, 0.14, 0.05, 0.05, 0.08, 0.07, 0.09, 0.10, 0.09, 0.04, 0.04, 0.32]
+    col_widths = [0.03, 0.14, 0.06, 0.08, 0.07, 0.09, 0.10, 0.09, 0.05, 0.05, 0.34]
 
     tbl = ax.table(
         cellText=[main_header, sub_headers] + table_rows,
@@ -513,7 +518,6 @@ def run_plot(protein_dir, protein_name, compounds_csv_name="Output_compounds.csv
     col_colors = {
         "#": "#DDDDDD",
         "PDB_ID": "#98ACBA",
-        "Score": "#B7EFBC",
         "Seq_id": "#F17DFB",
         "Pubmed_id": "#D8BC8E",
         "Polymer": "#4DAEC8",
@@ -552,7 +556,7 @@ def run_plot(protein_dir, protein_name, compounds_csv_name="Output_compounds.csv
         cell.set_linewidth(1.2)
 
     wrap_widths = {
-        "#": 4, "PDB_ID": 18, "Score": 6, "Seq_id": 6, "Pubmed_id": 10,
+        "#": 4, "PDB_ID": 18, "Seq_id": 6, "Pubmed_id": 10,
         "Polymer": 10, "Assembly": 14, "Method": 18, "3D View": 16,
         "pH": 6, "Temp": 6, "Compounds": 57,
     }

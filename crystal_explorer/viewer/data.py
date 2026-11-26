@@ -17,7 +17,7 @@ keeps the web app and the static exports showing identical groupings and
 identical row numbering.
 
 Column expectations (from plot.py's run_plot -> Grouped_conditions.csv):
-    row_id, PDB_ID, Score, Seq_id, Pubmed_id, Polymer, Assembly, Method,
+    row_id, PDB_ID, Seq_id, Pubmed_id, Polymer, Assembly, Method,
     Ligands, pH, Temp, plot_pH_numeric, PEG_con_plot, compound
 
 Missing columns are tolerated -- anything not present is filled with NaN
@@ -25,6 +25,7 @@ so the page still renders instead of erroring out.
 """
 
 import ast
+import os
 import re
 
 import numpy as np
@@ -32,7 +33,7 @@ import pandas as pd
 import plotly.graph_objects as go
 
 REQUIRED_COLUMNS = [
-    "row_id", "PDB_ID", "UniProt", "UniProt_query", "Score", "Seq_id", "Pubmed_id", "Polymer", "Assembly",
+    "row_id", "PDB_ID", "UniProt", "UniProt_query", "Seq_id", "Pubmed_id", "Polymer", "Assembly",
     "Method", "Non_polymers", "plot_pH_numeric", "Temp", "PEG_con_plot", "compound",
 ]
 
@@ -54,22 +55,23 @@ NO_PH_Y = 4.0         # "No pH" row position
 NO_PEG_X = -5.0       # "No PEG" column position
 NO_TEMP_X = 270.0     # "No Temp" column position (below the ~275K typical minimum)
 
-# Score color scale shared by both plots' markers and the HTML legend below
-# them -- kept as plain hex stops (rather than relying on Plotly's internal
-# "Viridis" table) so the CSS gradient in the legend matches the marker
-# colors exactly.
-SCORE_MIN = 0.5
-SCORE_MAX = 1.0
-SCORE_TICKS = [0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
+# Sequence-identity color scale (%) shared by both plots' markers and the
+# HTML legend below them -- kept as plain hex stops (rather than relying on
+# Plotly's internal "Viridis" table) so the CSS gradient in the legend
+# matches the marker colors exactly. Mirrors pipeline/plot.py; identities
+# below SEQID_MIN (the default search threshold) share the lowest color.
+SEQID_MIN = 50
+SEQID_MAX = 100
+SEQID_TICKS = [50, 60, 70, 80, 90, 100]
 VIRIDIS_STOPS = [
     "#440154", "#482878", "#3e4989", "#31688e", "#26828e",
     "#1f9e89", "#35b779", "#6ece58", "#b5de2b", "#fde725",
 ]
 
 
-def score_gradient_stops() -> str:
-    """Color stops (no direction) matching the marker colorscale (cmin=0.5,
-    cmax=1.0) -- fed into a CSS custom property so the template can point
+def seqid_gradient_stops() -> str:
+    """Color stops (no direction) matching the marker colorscale (cmin=50,
+    cmax=100) -- fed into a CSS custom property so the template can point
     the gradient horizontally or vertically as the layout needs."""
     n = len(VIRIDIS_STOPS)
     return ", ".join(f"{color} {i / (n - 1) * 100:.1f}%" for i, color in enumerate(VIRIDIS_STOPS))
@@ -120,11 +122,10 @@ def load_conditions(grouped_csv_path: str) -> pd.DataFrame:
     df["Method"] = df["Method"].fillna("unspecified").astype(str)
     df.loc[df["Method"] == "", "Method"] = "unspecified"
 
-    for col in ["Score", "Seq_id", "Temp", "plot_pH_numeric", "PEG_con_plot"]:
+    for col in ["Seq_id", "Temp", "plot_pH_numeric", "PEG_con_plot"]:
         df[col] = pd.to_numeric(df[col], errors="coerce")
-    df["Score"] = df["Score"].clip(SCORE_MIN, SCORE_MAX)
 
-    df = df.sort_values("Score", ascending=False).reset_index(drop=True)
+    df = df.sort_values("Seq_id", ascending=False).reset_index(drop=True)
     return df
 
 
@@ -145,11 +146,11 @@ def _build_scatter_plot(df: pd.DataFrame, x_col: str, x_fallback: float,
 
         x = group[x_col].fillna(x_fallback)
         y = group["plot_pH_numeric"].fillna(NO_PH_Y)
-        score = group["Score"].fillna(0.5)
+        seqid = group["Seq_id"].fillna(SEQID_MIN).clip(SEQID_MIN, SEQID_MAX)
 
         hover_text = []
         for rec in group.to_dict("records"):
-            score_str = f"{rec['Score']:.3f}" if pd.notna(rec["Score"]) else "n/a"
+            seqid_str = f"{rec['Seq_id']:.1f}%" if pd.notna(rec["Seq_id"]) else "n/a"
             ph_str = f"{rec['plot_pH_numeric']:.2f}" if pd.notna(rec["plot_pH_numeric"]) else "n/a"
             x_str = x_hover_fmt.format(rec[x_col]) if pd.notna(rec[x_col]) else "n/a"
             hover_text.append(
@@ -157,7 +158,7 @@ def _build_scatter_plot(df: pd.DataFrame, x_col: str, x_fallback: float,
                 f"Method: {rec['Method']}<br>"
                 f"pH: {ph_str}<br>"
                 f"{x_hover_label}: {x_str}<br>"
-                f"Score: {score_str}"
+                f"Sequence identity: {seqid_str}"
             )
 
         fig.add_trace(go.Scatter(
@@ -169,10 +170,10 @@ def _build_scatter_plot(df: pd.DataFrame, x_col: str, x_fallback: float,
             marker=dict(
                 symbol=marker_symbol,
                 size=14,
-                color=score,
+                color=seqid,
                 colorscale="Viridis",
-                cmin=SCORE_MIN,
-                cmax=SCORE_MAX,
+                cmin=SEQID_MIN,
+                cmax=SEQID_MAX,
                 line=dict(width=1, color="#14181B"),
                 showscale=False,
             ),
@@ -183,8 +184,8 @@ def _build_scatter_plot(df: pd.DataFrame, x_col: str, x_fallback: float,
         ))
 
     # No per-plot legend or colorbar -- both plots share one "Method"
-    # legend and one Score gradient, rendered as HTML below the plots
-    # (see build_method_legend / score_gradient_stops), so each plot's own
+    # legend and one sequence-identity gradient, rendered as HTML below the
+    # plots (see build_method_legend / seqid_gradient_stops), so each plot's own
     # space stays a plain square instead of losing width to a side legend.
     fig.update_layout(
         xaxis_title=x_label,
@@ -422,7 +423,6 @@ build_plot = build_peg_plot
 TABLE_COLUMNS = [
     ("PDB_ID", "PDB ID"),
     ("UniProt", "UniProt"),
-    ("Score", "Score"),
     ("Seq_id", "Seq. ID (%)"),
     ("Pubmed_id", "PubMed"),
     ("Polymer", "Polymer"),
@@ -602,7 +602,6 @@ def build_table_rows(df: pd.DataFrame):
         values = {
             "PDB_ID": pdb_id_cells,
             "UniProt": uniprot_groups,
-            "Score": f"{rec['Score']:.3f}" if pd.notna(rec["Score"]) else "",
             "Seq_id": f"{rec['Seq_id']:.1f}" if pd.notna(rec["Seq_id"]) else "",
             "Pubmed_id": _format_pubmed(rec["Pubmed_id"]),
             "Polymer": rec["Polymer"] if pd.notna(rec["Polymer"]) else "",

@@ -1,0 +1,895 @@
+{
+  "cutoff": "2020-01-01",
+  "seed": 2031,
+  "k": 5,
+  "per_target_weighting": {
+    "pairs_jaccard": {
+      "by_identity_bin": {
+        "<50%": {
+          "targets": 103,
+          "mean": 0.064,
+          "ci95": [
+            0.0512,
+            0.0787
+          ]
+        },
+        "50-70%": {
+          "targets": 228,
+          "mean": 0.0784,
+          "ci95": [
+            0.0661,
+            0.0931
+          ]
+        },
+        "70-90%": {
+          "targets": 227,
+          "mean": 0.0901,
+          "ci95": [
+            0.0767,
+            0.1049
+          ]
+        },
+        "90-98%": {
+          "targets": 294,
+          "mean": 0.1666,
+          "ci95": [
+            0.1433,
+            0.1936
+          ]
+        },
+        ">=98%": {
+          "targets": 637,
+          "mean": 0.452,
+          "ci95": [
+            0.4289,
+            0.4746
+          ]
+        }
+      },
+      "same_uniprot": {
+        "targets": 637,
+        "mean": 0.442,
+        "ci95": [
+          0.4192,
+          0.4647
+        ]
+      },
+      "different_uniprot": {
+        "targets": 384,
+        "mean": 0.1058,
+        "ci95": [
+          0.0936,
+          0.1187
+        ]
+      },
+      "same_uniprot_different_paper": {
+        "targets": 589,
+        "mean": 0.367,
+        "ci95": [
+          0.3442,
+          0.3905
+        ]
+      },
+      "share_of_pairs_in_top10pct_targets": 0.213
+    },
+    "leave_one_out": {
+      "all_homologs": {
+        "topk_precip_recovered": {
+          "hom": {
+            "targets": 643,
+            "mean": 0.8279,
+            "ci95": [
+              0.8113,
+              0.8452
+            ]
+          },
+          "gen": {
+            "targets": 643,
+            "mean": 0.6412,
+            "ci95": [
+              0.6126,
+              0.6688
+            ]
+          },
+          "rnd": {
+            "targets": 643,
+            "mean": 0.6197,
+            "ci95": [
+              0.6006,
+              0.6382
+            ]
+          }
+        },
+        "topk_reagent_recall": {
+          "hom": {
+            "targets": 649,
+            "mean": 0.7178,
+            "ci95": [
+              0.7015,
+              0.7348
+            ]
+          },
+          "gen": {
+            "targets": 649,
+            "mean": 0.3936,
+            "ci95": [
+              0.3778,
+              0.4063
+            ]
+          },
+          "rnd": {
+            "targets": 649,
+            "mean": 0.3339,
+            "ci95": [
+              0.3251,
+              0.342
+            ]
+          }
+        }
+      },
+      "other_papers": {
+        "topk_precip_recovered": {
+          "hom": {
+            "targets": 627,
+            "mean": 0.7535,
+            "ci95": [
+              0.7317,
+              0.7733
+            ]
+          },
+          "gen": {
+            "targets": 627,
+            "mean": 0.6411,
+            "ci95": [
+              0.6111,
+              0.6699
+            ]
+          },
+          "rnd": {
+            "targets": 627,
+            "mean": 0.6197,
+            "ci95": [
+              0.5998,
+              0.6392
+            ]
+          }
+        },
+        "topk_reagent_recall": {
+          "hom": {
+            "targets": 629,
+            "mean": 0.612,
+            "ci95": [
+              0.593,
+              0.6308
+            ]
+          },
+          "gen": {
+            "targets": 629,
+            "mean": 0.3999,
+            "ci95": [
+              0.3847,
+              0.4155
+            ]
+          },
+          "rnd": {
+            "targets": 629,
+            "mean": 0.3343,
+            "ci95": [
+              0.3258,
+              0.3429
+            ]
+          }
+        }
+      },
+      "different_uniprot": {
+        "topk_precip_recovered": {
+          "hom": {
+            "targets": 384,
+            "mean": 0.5433,
+            "ci95": [
+              0.5085,
+              0.5774
+            ]
+          },
+          "gen": {
+            "targets": 384,
+            "mean": 0.6479,
+            "ci95": [
+              0.6172,
+              0.6757
+            ]
+          },
+          "rnd": {
+            "targets": 384,
+            "mean": 0.5675,
+            "ci95": [
+              0.5465,
+              0.5897
+            ]
+          }
+        },
+        "topk_reagent_recall": {
+          "hom": {
+            "targets": 384,
+            "mean": 0.3106,
+            "ci95": [
+              0.288,
+              0.3349
+            ]
+          },
+          "gen": {
+            "targets": 384,
+            "mean": 0.3926,
+            "ci95": [
+              0.3741,
+              0.4097
+            ]
+          },
+          "rnd": {
+            "targets": 384,
+            "mean": 0.2781,
+            "ci95": [
+              0.2662,
+              0.2901
+            ]
+          }
+        }
+      }
+    }
+  },
+  "time_split_sizes": {
+    "train_entries": 7327,
+    "test_entries": 2673,
+    "test_with_reagents": 2646
+  },
+  "time_split": {
+    "all_homologs": {
+      "queries": 2386,
+      "targets": 409,
+      "mean_k": 4.46,
+      "precip": {
+        "hom": {
+          "n": 2243,
+          "targets": 398,
+          "mean": 0.7338,
+          "ci95": [
+            0.695,
+            0.775
+          ]
+        },
+        "gen": {
+          "n": 2243,
+          "targets": 398,
+          "mean": 0.6857,
+          "ci95": [
+            0.641,
+            0.7284
+          ]
+        },
+        "rnd": {
+          "n": 2243,
+          "targets": 398,
+          "mean": 0.6347,
+          "ci95": [
+            0.6012,
+            0.6662
+          ]
+        }
+      },
+      "precip_per_target": {
+        "hom": {
+          "targets": 398,
+          "mean": 0.7274,
+          "ci95": [
+            0.6908,
+            0.7627
+          ]
+        },
+        "gen": {
+          "targets": 398,
+          "mean": 0.6899,
+          "ci95": [
+            0.6526,
+            0.729
+          ]
+        },
+        "rnd": {
+          "targets": 398,
+          "mean": 0.6444,
+          "ci95": [
+            0.6181,
+            0.6706
+          ]
+        }
+      },
+      "recall": {
+        "hom": {
+          "n": 2386,
+          "targets": 409,
+          "mean": 0.5072,
+          "ci95": [
+            0.4714,
+            0.5434
+          ]
+        },
+        "gen": {
+          "n": 2386,
+          "targets": 409,
+          "mean": 0.4128,
+          "ci95": [
+            0.3853,
+            0.4386
+          ]
+        },
+        "rnd": {
+          "n": 2386,
+          "targets": 409,
+          "mean": 0.3272,
+          "ci95": [
+            0.3115,
+            0.3416
+          ]
+        }
+      },
+      "recall_per_target": {
+        "hom": {
+          "targets": 409,
+          "mean": 0.4816,
+          "ci95": [
+            0.4517,
+            0.5129
+          ]
+        },
+        "gen": {
+          "targets": 409,
+          "mean": 0.4156,
+          "ci95": [
+            0.3921,
+            0.4416
+          ]
+        },
+        "rnd": {
+          "targets": 409,
+          "mean": 0.329,
+          "ci95": [
+            0.3153,
+            0.3437
+          ]
+        }
+      },
+      "median_abs_dpH": {
+        "hom": 0.65,
+        "gen": 1.0,
+        "rnd": 1.06
+      },
+      "top1_exact_reagent_match": 0.15,
+      "share_top1_same_uniprot": 0.7687,
+      "by_top1_same_uniprot": {
+        "False": {
+          "queries": 552,
+          "hom_precip": {
+            "n": 500,
+            "targets": 151,
+            "mean": 0.702,
+            "ci95": [
+              0.6334,
+              0.7667
+            ]
+          },
+          "hom_recall": {
+            "n": 552,
+            "targets": 159,
+            "mean": 0.3306,
+            "ci95": [
+              0.2776,
+              0.3858
+            ]
+          },
+          "gen_precip": {
+            "n": 500,
+            "targets": 151,
+            "mean": 0.744,
+            "ci95": [
+              0.666,
+              0.8102
+            ]
+          },
+          "gen_recall": {
+            "n": 552,
+            "targets": 159,
+            "mean": 0.4016,
+            "ci95": [
+              0.344,
+              0.4606
+            ]
+          }
+        },
+        "True": {
+          "queries": 1834,
+          "hom_precip": {
+            "n": 1743,
+            "targets": 324,
+            "mean": 0.743,
+            "ci95": [
+              0.6952,
+              0.7858
+            ]
+          },
+          "hom_recall": {
+            "n": 1834,
+            "targets": 333,
+            "mean": 0.5603,
+            "ci95": [
+              0.5202,
+              0.6004
+            ]
+          },
+          "gen_precip": {
+            "n": 1743,
+            "targets": 324,
+            "mean": 0.669,
+            "ci95": [
+              0.6151,
+              0.7222
+            ]
+          },
+          "gen_recall": {
+            "n": 1834,
+            "targets": 333,
+            "mean": 0.4162,
+            "ci95": [
+              0.3833,
+              0.447
+            ]
+          }
+        }
+      },
+      "paired_diff_hom_minus_gen_precip": {
+        "n": 2243,
+        "targets": 398,
+        "mean": 0.0481,
+        "ci95": [
+          0.0071,
+          0.0879
+        ]
+      },
+      "paired_diff_hom_minus_gen_recall": {
+        "n": 2386,
+        "targets": 409,
+        "mean": 0.0944,
+        "ci95": [
+          0.0577,
+          0.1347
+        ]
+      },
+      "paired_diff_gen_minus_hom_dpH": {
+        "n": 1236,
+        "targets": 310,
+        "mean": 0.1346,
+        "ci95": [
+          0.0123,
+          0.2628
+        ]
+      }
+    },
+    "other_papers": {
+      "queries": 2385,
+      "targets": 409,
+      "mean_k": 4.46,
+      "precip": {
+        "hom": {
+          "n": 2242,
+          "targets": 398,
+          "mean": 0.7324,
+          "ci95": [
+            0.6927,
+            0.7713
+          ]
+        },
+        "gen": {
+          "n": 2242,
+          "targets": 398,
+          "mean": 0.686,
+          "ci95": [
+            0.641,
+            0.7308
+          ]
+        },
+        "rnd": {
+          "n": 2242,
+          "targets": 398,
+          "mean": 0.6354,
+          "ci95": [
+            0.6049,
+            0.6677
+          ]
+        }
+      },
+      "precip_per_target": {
+        "hom": {
+          "targets": 398,
+          "mean": 0.7257,
+          "ci95": [
+            0.6908,
+            0.7615
+          ]
+        },
+        "gen": {
+          "targets": 398,
+          "mean": 0.6903,
+          "ci95": [
+            0.6539,
+            0.7262
+          ]
+        },
+        "rnd": {
+          "targets": 398,
+          "mean": 0.6515,
+          "ci95": [
+            0.625,
+            0.6794
+          ]
+        }
+      },
+      "recall": {
+        "hom": {
+          "n": 2385,
+          "targets": 409,
+          "mean": 0.5066,
+          "ci95": [
+            0.472,
+            0.5401
+          ]
+        },
+        "gen": {
+          "n": 2385,
+          "targets": 409,
+          "mean": 0.4127,
+          "ci95": [
+            0.3852,
+            0.4409
+          ]
+        },
+        "rnd": {
+          "n": 2385,
+          "targets": 409,
+          "mean": 0.3255,
+          "ci95": [
+            0.3088,
+            0.3406
+          ]
+        }
+      },
+      "recall_per_target": {
+        "hom": {
+          "targets": 409,
+          "mean": 0.4811,
+          "ci95": [
+            0.4526,
+            0.5114
+          ]
+        },
+        "gen": {
+          "targets": 409,
+          "mean": 0.415,
+          "ci95": [
+            0.3908,
+            0.4395
+          ]
+        },
+        "rnd": {
+          "targets": 409,
+          "mean": 0.3358,
+          "ci95": [
+            0.3209,
+            0.3495
+          ]
+        }
+      },
+      "median_abs_dpH": {
+        "hom": 0.65,
+        "gen": 1.0,
+        "rnd": 1.05
+      },
+      "top1_exact_reagent_match": 0.1493,
+      "share_top1_same_uniprot": 0.7656,
+      "by_top1_same_uniprot": {
+        "False": {
+          "queries": 559,
+          "hom_precip": {
+            "n": 507,
+            "targets": 153,
+            "mean": 0.6943,
+            "ci95": [
+              0.6202,
+              0.7589
+            ]
+          },
+          "hom_recall": {
+            "n": 559,
+            "targets": 161,
+            "mean": 0.331,
+            "ci95": [
+              0.2802,
+              0.3828
+            ]
+          },
+          "gen_precip": {
+            "n": 507,
+            "targets": 153,
+            "mean": 0.7377,
+            "ci95": [
+              0.6621,
+              0.8043
+            ]
+          },
+          "gen_recall": {
+            "n": 559,
+            "targets": 161,
+            "mean": 0.404,
+            "ci95": [
+              0.3515,
+              0.4569
+            ]
+          }
+        },
+        "True": {
+          "queries": 1826,
+          "hom_precip": {
+            "n": 1735,
+            "targets": 319,
+            "mean": 0.7435,
+            "ci95": [
+              0.6934,
+              0.7904
+            ]
+          },
+          "hom_recall": {
+            "n": 1826,
+            "targets": 329,
+            "mean": 0.5604,
+            "ci95": [
+              0.5217,
+              0.6013
+            ]
+          },
+          "gen_precip": {
+            "n": 1735,
+            "targets": 319,
+            "mean": 0.6709,
+            "ci95": [
+              0.6189,
+              0.7264
+            ]
+          },
+          "gen_recall": {
+            "n": 1826,
+            "targets": 329,
+            "mean": 0.4154,
+            "ci95": [
+              0.3877,
+              0.4445
+            ]
+          }
+        }
+      },
+      "paired_diff_hom_minus_gen_precip": {
+        "n": 2242,
+        "targets": 398,
+        "mean": 0.0464,
+        "ci95": [
+          0.0068,
+          0.0904
+        ]
+      },
+      "paired_diff_hom_minus_gen_recall": {
+        "n": 2385,
+        "targets": 409,
+        "mean": 0.0939,
+        "ci95": [
+          0.0553,
+          0.1336
+        ]
+      },
+      "paired_diff_gen_minus_hom_dpH": {
+        "n": 1236,
+        "targets": 310,
+        "mean": 0.1325,
+        "ci95": [
+          0.0013,
+          0.2516
+        ]
+      }
+    },
+    "different_uniprot": {
+      "queries": 1312,
+      "targets": 262,
+      "mean_k": 3.77,
+      "precip": {
+        "hom": {
+          "n": 1215,
+          "targets": 250,
+          "mean": 0.5728,
+          "ci95": [
+            0.512,
+            0.6284
+          ]
+        },
+        "gen": {
+          "n": 1215,
+          "targets": 250,
+          "mean": 0.7333,
+          "ci95": [
+            0.6901,
+            0.7781
+          ]
+        },
+        "rnd": {
+          "n": 1215,
+          "targets": 250,
+          "mean": 0.5977,
+          "ci95": [
+            0.5588,
+            0.6343
+          ]
+        }
+      },
+      "precip_per_target": {
+        "hom": {
+          "targets": 250,
+          "mean": 0.5672,
+          "ci95": [
+            0.5173,
+            0.6195
+          ]
+        },
+        "gen": {
+          "targets": 250,
+          "mean": 0.7088,
+          "ci95": [
+            0.6645,
+            0.7508
+          ]
+        },
+        "rnd": {
+          "targets": 250,
+          "mean": 0.6179,
+          "ci95": [
+            0.5815,
+            0.6555
+          ]
+        }
+      },
+      "recall": {
+        "hom": {
+          "n": 1312,
+          "targets": 262,
+          "mean": 0.2521,
+          "ci95": [
+            0.2244,
+            0.2812
+          ]
+        },
+        "gen": {
+          "n": 1312,
+          "targets": 262,
+          "mean": 0.3776,
+          "ci95": [
+            0.3442,
+            0.4115
+          ]
+        },
+        "rnd": {
+          "n": 1312,
+          "targets": 262,
+          "mean": 0.2775,
+          "ci95": [
+            0.2561,
+            0.2978
+          ]
+        }
+      },
+      "recall_per_target": {
+        "hom": {
+          "targets": 262,
+          "mean": 0.262,
+          "ci95": [
+            0.2332,
+            0.2902
+          ]
+        },
+        "gen": {
+          "targets": 262,
+          "mean": 0.4036,
+          "ci95": [
+            0.3735,
+            0.4347
+          ]
+        },
+        "rnd": {
+          "targets": 262,
+          "mean": 0.2971,
+          "ci95": [
+            0.2794,
+            0.3144
+          ]
+        }
+      },
+      "median_abs_dpH": {
+        "hom": 1.0,
+        "gen": 1.0,
+        "rnd": 1.13
+      },
+      "top1_exact_reagent_match": 0.0084,
+      "share_top1_same_uniprot": 0.0,
+      "by_top1_same_uniprot": {
+        "False": {
+          "queries": 1312,
+          "hom_precip": {
+            "n": 1215,
+            "targets": 250,
+            "mean": 0.5728,
+            "ci95": [
+              0.5135,
+              0.6287
+            ]
+          },
+          "hom_recall": {
+            "n": 1312,
+            "targets": 262,
+            "mean": 0.2521,
+            "ci95": [
+              0.2252,
+              0.2834
+            ]
+          },
+          "gen_precip": {
+            "n": 1215,
+            "targets": 250,
+            "mean": 0.7333,
+            "ci95": [
+              0.6869,
+              0.7759
+            ]
+          },
+          "gen_recall": {
+            "n": 1312,
+            "targets": 262,
+            "mean": 0.3776,
+            "ci95": [
+              0.3439,
+              0.4116
+            ]
+          }
+        }
+      },
+      "paired_diff_hom_minus_gen_precip": {
+        "n": 1215,
+        "targets": 250,
+        "mean": -0.1605,
+        "ci95": [
+          -0.2156,
+          -0.1051
+        ]
+      },
+      "paired_diff_hom_minus_gen_recall": {
+        "n": 1312,
+        "targets": 262,
+        "mean": -0.1256,
+        "ci95": [
+          -0.1562,
+          -0.0968
+        ]
+      },
+      "paired_diff_gen_minus_hom_dpH": {
+        "n": 645,
+        "targets": 188,
+        "mean": -0.1249,
+        "ci95": [
+          -0.2513,
+          0.0127
+        ]
+      }
+    }
+  }
+}

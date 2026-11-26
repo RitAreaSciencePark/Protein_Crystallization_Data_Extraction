@@ -148,7 +148,7 @@ flowchart TB
 - Friendly error messages on failure (e.g. a plain-language "bad sequence format" message instead of a raw HTTP error).
 
 **Results**
-- Two interactive Plotly plots: pH vs. PEG concentration, and pH vs. Temperature -- colored by search score, shaped by crystallization method, with a shared legend.
+- Two interactive Plotly plots: pH vs. PEG concentration, and pH vs. Temperature -- colored by sequence identity, shaped by crystallization method, with a shared legend.
 - Click a point on either plot to scroll to and highlight its row in the table below.
 - Conditions table with one row per unique crystallization condition:
   - PDB ID(s) linking out to RCSB, UniProt accession(s) linking out to UniProt (the accession matching your query sequence is bolded; a complex's differing accessions per merged PDB ID are color-coded to show which belongs to which).

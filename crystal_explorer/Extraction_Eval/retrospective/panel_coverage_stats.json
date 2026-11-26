@@ -1,0 +1,108 @@
+{
+  "entries": 10000,
+  "targets_in_panel": 674,
+  "targets_run_ok": 683,
+  "clusters_30pct_eligible": 948,
+  "clusters_30pct_total": 25325,
+  "proteins": {
+    "unique_uniprot_accessions": 1814,
+    "unique_matched_chain_sequences": 4740,
+    "unique_source_organisms": 818,
+    "top_organisms": [
+      [
+        "Homo sapiens",
+        3842
+      ],
+      [
+        "Escherichia coli",
+        377
+      ],
+      [
+        "Mus musculus",
+        359
+      ],
+      [
+        "Escherichia coli K-12",
+        321
+      ],
+      [
+        "Rattus norvegicus",
+        189
+      ],
+      [
+        "Mycobacterium tuberculosis",
+        145
+      ],
+      [
+        "Bos taurus",
+        101
+      ],
+      [
+        "synthetic construct",
+        98
+      ]
+    ],
+    "chain_length_median": 300,
+    "chain_length_range": [
+      2,
+      2191
+    ]
+  },
+  "depositors": {
+    "unique_author_names": 12546,
+    "unique_last_authors (proxy for labs)": 2719,
+    "unique_first_authors": 3514,
+    "unique_primary_publications (PubMed)": 4420,
+    "entries_without_pubmed": 1673,
+    "deposition_years": [
+      1982,
+      2026
+    ],
+    "deposition_year_median": 2014
+  },
+  "conditions": {
+    "distinct_reagents": 300,
+    "distinct_reagent_combinations": 2945,
+    "distinct_precipitants": 65,
+    "precipitant_families (entry mentions)": {
+      "PEG 1-5k": 4166,
+      "salt (>= 0.8 M)": 1931,
+      "PEG >=6k": 1605,
+      "organic (MPD, alcohols, ...)": 986,
+      "PEG <1k": 826,
+      "PEG (unspecified MW)": 134
+    },
+    "pH": {
+      "n": 7796,
+      "min": 0.0,
+      "max": 10.7,
+      "p5_p50_p95": [
+        4.6,
+        7.0,
+        8.5
+      ],
+      "distinct_values": 106
+    },
+    "temperature_K": {
+      "n": 8663,
+      "p5_p50_p95": [
+        277.0,
+        293.0,
+        298.0
+      ],
+      "share_277K": 0.157,
+      "share_291_298K": 0.727
+    },
+    "crystallization_method": {
+      "vapor diffusion, hanging drop": 4531,
+      "vapor diffusion, sitting drop": 3193,
+      "not reported": 1274,
+      "vapor diffusion, unspecified": 693,
+      "batch / microbatch": 209,
+      "other": 38,
+      "other diffusion": 26,
+      "dialysis": 19,
+      "lipidic cubic phase": 17
+    }
+  }
+}

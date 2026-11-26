@@ -211,26 +211,6 @@
     gap: 0.3rem 1.5rem;
     flex-wrap: wrap;
   }
-  .home-footer-org {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.6rem;
-    flex-wrap: wrap;
-  }
-  .home-footer-org img { height: 1.5rem; width: auto; flex: none; }
-  .home-footer-org-text {
-    color: var(--ink-muted);
-    line-height: 1.5;
-    font-size: 0.82rem;
-  }
-  .home-footer-org-name {
-    color: var(--ink-muted);
-    font-weight: 700;
-    text-decoration: none;
-  }
-  .home-footer-org-name:hover { color: var(--accent); }
-  .home-footer-org-text a { color: var(--ink-muted); }
-  .home-footer-org-text a:hover { color: var(--accent); }
   .home-footer-license { color: var(--ink-muted); white-space: nowrap; }
 </style>
 {% endblock %}
@@ -259,7 +239,7 @@
         <span class="mission-title">Visualize &amp; export</span>
         <p class="hero-lead">
           The result: interactive <strong>pH-vs-PEG</strong> and <strong>pH-vs-temperature</strong>
-          plots colored by search score, reagent-frequency charts broken down by
+          plots colored by sequence identity, reagent-frequency charts broken down by
           <strong>buffer / salt / precipitant / additive</strong>, a full per-entry conditions table
           with one-click 3D structure views, and exportable CSV/PDF/FAIR-metadata summaries &mdash;
           everything a lab needs to plan its next crystallization trial, without manually digging
@@ -333,16 +313,6 @@
 
 {% block footer %}
 <div class="home-footer">
-  <div class="home-footer-org">
-    <a href="{% url 'viewer:organization' %}"><img src="{% static 'viewer/area-logo.png' %}" alt="AREA Science Park logo"></a>
-    <span class="home-footer-org-text">
-      <a href="{% url 'viewer:organization' %}" class="home-footer-org-name">Area Science Park</a>
-      &nbsp;|&nbsp; P.IVA 00531590321
-      &nbsp;|&nbsp; Padriciano, 99 - 34149, Trieste - Italy
-      &nbsp;|&nbsp; tel: <a href="tel:+390403755111">+39 040 375 51 11</a>
-      &nbsp;|&nbsp; email: <a href="mailto:urp@areasciencepark.it">urp@areasciencepark.it</a>
-    </span>
-  </div>
   <span class="home-footer-license">&copy; 2025 RitAreaSciencePark &middot; MIT License</span>
 </div>
 {% endblock %}

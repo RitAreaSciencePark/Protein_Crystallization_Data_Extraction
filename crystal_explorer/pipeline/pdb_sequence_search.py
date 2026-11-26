@@ -58,13 +58,19 @@ DATA_CRYSTAL_URL = "https://data.rcsb.org/rest/v1/core/exptl_crystal_grow/{pdb_i
 # --------------------------------------------------------------------------- #
 # 1. Sequence search
 # --------------------------------------------------------------------------- #
+# Hits are ranked by sequence identity only, locally (parse_hit_ids), not by
+# RCSB's relevance score -- the Search API cannot sort by match identity, so
+# the query fetches up to SEARCH_ROWS entities (the API's page maximum) and
+# the `max_hits` cut is applied after ranking.
+SEARCH_ROWS = 10000
+
+
 def build_sequence_query(
     sequence: str,
     identity_cutoff: float = 0.5,
     evalue_cutoff: float = 1.0,
     sequence_type: str = "protein",
     experimental_method: str = "X-RAY DIFFRACTION",
-    max_hits: int = 1000,
 ) -> dict:
     """Build the JSON payload for a sequence search restricted to a given
     experimental method (default: X-ray diffraction), returning results
@@ -98,9 +104,8 @@ def build_sequence_query(
         },
         "return_type": "polymer_entity",
         "request_options": {
-            "paginate": {"start": 0, "rows": max_hits},
+            "paginate": {"start": 0, "rows": SEARCH_ROWS},
             "results_content_type": ["experimental"],
-            "sort": [{"sort_by": "score", "direction": "desc"}],
             "results_verbosity": "verbose",  # include match_context (identity, e-value, alignment)
         },
     }
@@ -158,25 +163,31 @@ def _best_match_context(hit: dict) -> dict:
     return {field: best_mc.get(field) for field in _MATCH_CONTEXT_FIELDS}
 
 
-def parse_hit_ids(result_set: List[dict]) -> List[Dict]:
+def parse_hit_ids(result_set: List[dict], max_hits: Optional[int] = None) -> List[Dict]:
     """From polymer_entity identifiers like '4HHB_1', return one dict per
-    PDB entry with the normalized relevancy score plus the raw sequence
-    alignment stats (identity, e-value, bitscore, alignment coordinates),
-    deduplicated by pdb_id (keeping the highest-identity entity per entry)."""
+    PDB entry with the sequence alignment stats (identity, e-value),
+    deduplicated by pdb_id (keeping the highest-identity entity per entry),
+    ranked by sequence identity (ties: lower e-value first) and cut to the
+    `max_hits` most identical entries."""
     best: Dict[str, Dict] = {}
     for hit in result_set:
         ident = hit["identifier"]  # e.g. "4HHB_1"
         pdb_id, _, entity_id = ident.partition("_")
         row = {
             "entity_id": entity_id,
-            "score": hit.get("score", 0.0),
             **_best_match_context(hit),
         }
         current_identity = row.get("sequence_identity") or -1
         existing_identity = best.get(pdb_id, {}).get("sequence_identity") or -1
         if pdb_id not in best or current_identity > existing_identity:
             best[pdb_id] = row
-    return [{"pdb_id": pdb_id, **row} for pdb_id, row in best.items()]
+    ranked = sorted(
+        ({"pdb_id": pdb_id, **row} for pdb_id, row in best.items()),
+        key=lambda r: (-(r.get("sequence_identity") or 0.0),
+                       r["evalue"] if r.get("evalue") is not None else float("inf"),
+                       r["pdb_id"]),
+    )
+    return ranked[:max_hits] if max_hits else ranked
 
 
 # --------------------------------------------------------------------------- #
@@ -719,7 +730,6 @@ def find_homologs_with_conditions(
         identity_cutoff=identity_cutoff,
         evalue_cutoff=evalue_cutoff,
         sequence_type=sequence_type,
-        max_hits=max_hits,
     )
     if verbose:
         print(f"Searching RCSB PDB (X-ray only) for homologs "
@@ -727,7 +737,7 @@ def find_homologs_with_conditions(
               file=sys.stderr)
 
     result_set = run_sequence_search(query)
-    hits = parse_hit_ids(result_set)
+    hits = parse_hit_ids(result_set, max_hits=max_hits)
 
     if verbose:
         print(f"Found {len(hits)} matching PDB entries.", file=sys.stderr)
@@ -740,7 +750,6 @@ def find_homologs_with_conditions(
             "entity_id": hit.get("entity_id"),
             "sequence_identity": round(identity * 100, 2) if identity is not None else None,
             "evalue": hit.get("evalue"),
-            "score": round(hit.get("score", 0.0), 4),
         }
         if sleep:
             time.sleep(sleep)

@@ -1,0 +1,459 @@
+{
+  "ground_truth_reagents": 2899,
+  "lynch_sensible_entries": 755,
+  "lynch_empty_entries": 42,
+  "all": {
+    "entries": 1000,
+    "ours_extractor": {
+      "entries": 1000,
+      "tp": 2732,
+      "fp": 20,
+      "fn": 167,
+      "precision": 0.9927,
+      "precision_ci95": [
+        0.9893,
+        0.9959
+      ],
+      "recall": 0.9424,
+      "recall_ci95": [
+        0.9345,
+        0.9502
+      ],
+      "f1": 0.9669,
+      "f1_ci95": [
+        0.9618,
+        0.9717
+      ],
+      "entry_exact": 0.846,
+      "entry_exact_ci95": [
+        0.823,
+        0.867
+      ]
+    },
+    "lynch_parser_all_strict": {
+      "entries": 1000,
+      "tp": 2769,
+      "fp": 173,
+      "fn": 130,
+      "precision": 0.9412,
+      "precision_ci95": [
+        0.9256,
+        0.9559
+      ],
+      "recall": 0.9552,
+      "recall_ci95": [
+        0.9428,
+        0.9667
+      ],
+      "f1": 0.9481,
+      "f1_ci95": [
+        0.9375,
+        0.9583
+      ],
+      "entry_exact": 0.878,
+      "entry_exact_ci95": [
+        0.858,
+        0.898
+      ]
+    },
+    "lynch_parser_all_lenient": {
+      "entries": 1000,
+      "tp": 2783,
+      "fp": 173,
+      "fn": 116,
+      "precision": 0.9415,
+      "precision_ci95": [
+        0.9255,
+        0.9559
+      ],
+      "recall": 0.96,
+      "recall_ci95": [
+        0.9484,
+        0.9703
+      ],
+      "f1": 0.9506,
+      "f1_ci95": [
+        0.9399,
+        0.9603
+      ],
+      "entry_exact": 0.884,
+      "entry_exact_ci95": [
+        0.863,
+        0.903
+      ]
+    },
+    "lynch_parser_recognized": {
+      "entries": 1000,
+      "tp": 2587,
+      "fp": 13,
+      "fn": 312,
+      "precision": 0.995,
+      "precision_ci95": [
+        0.9908,
+        0.9981
+      ],
+      "recall": 0.8924,
+      "recall_ci95": [
+        0.8773,
+        0.9075
+      ],
+      "f1": 0.9409,
+      "f1_ci95": [
+        0.9324,
+        0.9495
+      ],
+      "entry_exact": 0.793,
+      "entry_exact_ci95": [
+        0.768,
+        0.818
+      ]
+    },
+    "lynch_database_view": {
+      "entries": 1000,
+      "tp": 2053,
+      "fp": 5,
+      "fn": 846,
+      "precision": 0.9976,
+      "precision_ci95": [
+        0.9939,
+        1.0
+      ],
+      "recall": 0.7082,
+      "recall_ci95": [
+        0.6752,
+        0.7412
+      ],
+      "f1": 0.8283,
+      "f1_ci95": [
+        0.8053,
+        0.8507
+      ],
+      "entry_exact": 0.773,
+      "entry_exact_ci95": [
+        0.747,
+        0.799
+      ]
+    }
+  },
+  "text_without_cryo_soak_reservoir": {
+    "entries": 939,
+    "ours_extractor": {
+      "entries": 939,
+      "tp": 2482,
+      "fp": 15,
+      "fn": 140,
+      "precision": 0.994,
+      "precision_ci95": [
+        0.9908,
+        0.9968
+      ],
+      "recall": 0.9466,
+      "recall_ci95": [
+        0.9384,
+        0.9549
+      ],
+      "f1": 0.9697,
+      "f1_ci95": [
+        0.9648,
+        0.9747
+      ],
+      "entry_exact": 0.8626,
+      "entry_exact_ci95": [
+        0.8413,
+        0.8839
+      ]
+    },
+    "lynch_parser_all_strict": {
+      "entries": 939,
+      "tp": 2573,
+      "fp": 105,
+      "fn": 49,
+      "precision": 0.9608,
+      "precision_ci95": [
+        0.9464,
+        0.9737
+      ],
+      "recall": 0.9813,
+      "recall_ci95": [
+        0.974,
+        0.9881
+      ],
+      "f1": 0.9709,
+      "f1_ci95": [
+        0.9624,
+        0.9788
+      ],
+      "entry_exact": 0.9201,
+      "entry_exact_ci95": [
+        0.9031,
+        0.9382
+      ]
+    },
+    "lynch_parser_all_lenient": {
+      "entries": 939,
+      "tp": 2582,
+      "fp": 105,
+      "fn": 40,
+      "precision": 0.9609,
+      "precision_ci95": [
+        0.947,
+        0.9738
+      ],
+      "recall": 0.9847,
+      "recall_ci95": [
+        0.9779,
+        0.991
+      ],
+      "f1": 0.9727,
+      "f1_ci95": [
+        0.9647,
+        0.9803
+      ],
+      "entry_exact": 0.9265,
+      "entry_exact_ci95": [
+        0.9095,
+        0.9425
+      ]
+    },
+    "lynch_parser_recognized": {
+      "entries": 939,
+      "tp": 2420,
+      "fp": 11,
+      "fn": 202,
+      "precision": 0.9955,
+      "precision_ci95": [
+        0.9911,
+        0.9988
+      ],
+      "recall": 0.923,
+      "recall_ci95": [
+        0.9111,
+        0.9347
+      ],
+      "f1": 0.9578,
+      "f1_ci95": [
+        0.9511,
+        0.9646
+      ],
+      "entry_exact": 0.8275,
+      "entry_exact_ci95": [
+        0.803,
+        0.852
+      ]
+    },
+    "lynch_database_view": {
+      "entries": 939,
+      "tp": 2000,
+      "fp": 5,
+      "fn": 622,
+      "precision": 0.9975,
+      "precision_ci95": [
+        0.9938,
+        1.0
+      ],
+      "recall": 0.7628,
+      "recall_ci95": [
+        0.7309,
+        0.7951
+      ],
+      "f1": 0.8645,
+      "f1_ci95": [
+        0.8434,
+        0.885
+      ],
+      "entry_exact": 0.8126,
+      "entry_exact_ci95": [
+        0.7881,
+        0.8381
+      ]
+    }
+  },
+  "text_with_cryo_soak_reservoir": {
+    "entries": 61,
+    "ours_extractor": {
+      "entries": 61,
+      "tp": 250,
+      "fp": 5,
+      "fn": 27,
+      "precision": 0.9804,
+      "precision_ci95": [
+        0.9585,
+        0.9962
+      ],
+      "recall": 0.9025,
+      "recall_ci95": [
+        0.8739,
+        0.9301
+      ],
+      "f1": 0.9398,
+      "f1_ci95": [
+        0.9192,
+        0.9585
+      ],
+      "entry_exact": 0.5902,
+      "entry_exact_ci95": [
+        0.475,
+        0.7049
+      ]
+    },
+    "lynch_parser_all_strict": {
+      "entries": 61,
+      "tp": 196,
+      "fp": 68,
+      "fn": 81,
+      "precision": 0.7424,
+      "precision_ci95": [
+        0.6779,
+        0.8095
+      ],
+      "recall": 0.7076,
+      "recall_ci95": [
+        0.6382,
+        0.7791
+      ],
+      "f1": 0.7246,
+      "f1_ci95": [
+        0.6753,
+        0.7735
+      ],
+      "entry_exact": 0.2295,
+      "entry_exact_ci95": [
+        0.1311,
+        0.3443
+      ]
+    },
+    "lynch_parser_all_lenient": {
+      "entries": 61,
+      "tp": 201,
+      "fp": 68,
+      "fn": 76,
+      "precision": 0.7472,
+      "precision_ci95": [
+        0.6809,
+        0.8182
+      ],
+      "recall": 0.7256,
+      "recall_ci95": [
+        0.657,
+        0.7954
+      ],
+      "f1": 0.7363,
+      "f1_ci95": [
+        0.6878,
+        0.7837
+      ],
+      "entry_exact": 0.2295,
+      "entry_exact_ci95": [
+        0.1311,
+        0.3443
+      ]
+    },
+    "lynch_parser_recognized": {
+      "entries": 61,
+      "tp": 167,
+      "fp": 2,
+      "fn": 110,
+      "precision": 0.9882,
+      "precision_ci95": [
+        0.9699,
+        1.0
+      ],
+      "recall": 0.6029,
+      "recall_ci95": [
+        0.537,
+        0.6692
+      ],
+      "f1": 0.7489,
+      "f1_ci95": [
+        0.6958,
+        0.7982
+      ],
+      "entry_exact": 0.2623,
+      "entry_exact_ci95": [
+        0.1639,
+        0.377
+      ]
+    },
+    "lynch_database_view": {
+      "entries": 61,
+      "tp": 53,
+      "fp": 0,
+      "fn": 224,
+      "precision": 1.0,
+      "precision_ci95": [
+        1.0,
+        1.0
+      ],
+      "recall": 0.1913,
+      "recall_ci95": [
+        0.1186,
+        0.2762
+      ],
+      "f1": 0.3212,
+      "f1_ci95": [
+        0.2121,
+        0.4329
+      ],
+      "entry_exact": 0.1639,
+      "entry_exact_ci95": [
+        0.082,
+        0.2623
+      ]
+    }
+  },
+  "sensible_entries_only": {
+    "entries": 755,
+    "ours_extractor": {
+      "entries": 755,
+      "tp": 2062,
+      "fp": 8,
+      "fn": 42,
+      "precision": 0.9961,
+      "precision_ci95": [
+        0.9932,
+        0.9986
+      ],
+      "recall": 0.98,
+      "recall_ci95": [
+        0.9741,
+        0.9857
+      ],
+      "f1": 0.988,
+      "f1_ci95": [
+        0.9842,
+        0.9916
+      ],
+      "entry_exact": 0.9457,
+      "entry_exact_ci95": [
+        0.9298,
+        0.9616
+      ]
+    },
+    "lynch_database_view": {
+      "entries": 755,
+      "tp": 2053,
+      "fp": 5,
+      "fn": 51,
+      "precision": 0.9976,
+      "precision_ci95": [
+        0.9937,
+        1.0
+      ],
+      "recall": 0.9758,
+      "recall_ci95": [
+        0.9628,
+        0.9864
+      ],
+      "f1": 0.9865,
+      "f1_ci95": [
+        0.9799,
+        0.9922
+      ],
+      "entry_exact": 0.9629,
+      "entry_exact_ci95": [
+        0.9483,
+        0.9762
+      ]
+    }
+  }
+}

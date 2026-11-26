@@ -139,7 +139,7 @@
     color: var(--ink-muted);
     font-size: 0.92rem;
   }
-  /* Each column (PDB ID, Score, Seq. ID, PubMed, Polymer, Assembly, Method,
+  /* Each column (PDB ID, Seq. ID, PubMed, Polymer, Assembly, Method,
      3D View, pH, Temp, Compounds) gets its own light tint, header
      included, so the eye can track a column down the table instead of
      just across a striped row. Sticky header stays opaque since every
@@ -187,30 +187,31 @@
     height: 100% !important;
   }
 
-  /* ---- score legend: a vertical bar between the two plots, stretched
+  /* ---- sequence-identity legend: a vertical bar between the two plots, stretched
      to their height via grid's default align-items: stretch ---- */
-  .legend-score-vertical {
+  .legend-seqid-vertical {
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 0.5rem;
     width: 74px;
   }
-  .legend-score-title {
+  .legend-seqid-title {
     font-family: 'IBM Plex Mono', monospace;
     font-size: 0.72rem;
     letter-spacing: 0.05em;
     text-transform: uppercase;
+    text-align: center;
     color: var(--ink-muted);
   }
-  .legend-score-visual-v {
+  .legend-seqid-visual-v {
     flex: 1;
     min-height: 0;
     display: flex;
     align-items: stretch;
     gap: 0.4rem;
   }
-  .legend-score-ticks-v {
+  .legend-seqid-ticks-v {
     display: flex;
     flex-direction: column;
     justify-content: space-between;
@@ -218,35 +219,35 @@
     font-size: 0.68rem;
     color: var(--ink-muted);
   }
-  .legend-score-bar-v {
+  .legend-seqid-bar-v {
     width: 14px;
     border-radius: 3px;
     border: 1px solid var(--line);
-    background: linear-gradient(to top, var(--score-stops));
+    background: linear-gradient(to top, var(--seqid-stops));
   }
   @media (max-width: 1150px) {
-    .legend-score-vertical {
+    .legend-seqid-vertical {
       flex-direction: row;
       width: auto;
       justify-content: center;
       gap: 0.75rem;
       margin: 0.25rem 0;
     }
-    .legend-score-visual-v {
+    .legend-seqid-visual-v {
       flex: none;
       flex-direction: column-reverse;
       align-items: stretch;
       width: 220px;
       gap: 0.3rem;
     }
-    .legend-score-ticks-v {
+    .legend-seqid-ticks-v {
       flex-direction: row-reverse;
       justify-content: space-between;
     }
-    .legend-score-bar-v {
+    .legend-seqid-bar-v {
       width: 100%;
       height: 12px;
-      background: linear-gradient(to right, var(--score-stops));
+      background: linear-gradient(to right, var(--seqid-stops));
     }
   }
 
@@ -530,13 +531,13 @@
         <div class="plots-row">
           <div id="plotly-plot-peg" class="plot-square">{{ peg_plot_div|safe }}</div>
 
-          <div class="legend-score-vertical">
-            <span class="legend-score-title">Score</span>
-            <div class="legend-score-visual-v">
-              <div class="legend-score-ticks-v">
-                {% for tick in score_ticks reversed %}<span>{{ tick }}</span>{% endfor %}
+          <div class="legend-seqid-vertical">
+            <span class="legend-seqid-title">Seq. identity (%)</span>
+            <div class="legend-seqid-visual-v">
+              <div class="legend-seqid-ticks-v">
+                {% for tick in seqid_ticks reversed %}<span>{{ tick }}</span>{% endfor %}
               </div>
-              <span class="legend-score-bar-v" style="--score-stops: {{ score_gradient_stops }};"></span>
+              <span class="legend-seqid-bar-v" style="--seqid-stops: {{ seqid_gradient_stops }};"></span>
             </div>
           </div>
 
@@ -555,7 +556,7 @@
           </div>
         {% endif %}
 
-        <p class="hint">Marker shape = crystallization method &middot; Marker color = search score &middot; Click a point on either plot to locate it below.</p>
+        <p class="hint">Marker shape = crystallization method &middot; Marker color = sequence identity &middot; Click a point on either plot to locate it below.</p>
       </div>
 
       {% if has_pdf or has_peg_png or has_temp_png or has_fasta or has_compounds_csv or has_metadata %}
