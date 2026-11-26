@@ -83,7 +83,7 @@ The pipeline accepts any protein, DNA, or RNA sequence and automatically queries
 Every crystallization parameter is extracted using a two-tier strategy: the structured mmCIF field is read first, and if absent or empty, regular expression mining is applied to the free-text `pdbx_details` field. This ensures that no experimentally reported information is lost due to incomplete structured annotation.
 
 ### Intelligent free-text parsing
-The free-text `pdbx_details` field is turned into compound–concentration pairs. The standalone scripts (`src/`) use the crystallization database of Lynch, Dudek et al. (`structures.pkl`); the web app uses its own curated dictionary (`compound_extraction.py`) of **409 reagents and 1,629 aliases** (abbreviations, formulas, common typos), each classified as Buffer, Salt, Precipitant or Additive.
+The free-text `pdbx_details` field is turned into compound–concentration pairs. The standalone scripts (`src/`) use the crystallization database of Lynch, Dudek et al. (`structures.pkl`); the web app uses its own curated dictionary (`compound_extraction.py`) of **436 reagents and 1,693 aliases** (abbreviations, formulas, common typos), each classified as Buffer, Salt, Precipitant or Additive.
 
 ### Parallel data collection
 Metadata extraction uses a configurable multi-threaded `ThreadPoolExecutor`, processing multiple PDB entries simultaneously. A live progress bar (tqdm) updates in real time as each entry completes, giving immediate visibility into pipeline progress.
